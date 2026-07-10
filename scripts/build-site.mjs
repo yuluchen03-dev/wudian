@@ -21,8 +21,8 @@ execFileSync(npm, ["--prefix", "frontend", "run", "build:clean"], {
 const dist = resolve(root, "dist");
 await rm(dist, { recursive: true, force: true });
 await mkdir(resolve(dist, "server"), { recursive: true });
-await mkdir(resolve(dist, "static"), { recursive: true });
-await cp(resolve(root, "frontend", "out"), resolve(dist, "static"), {
+await mkdir(resolve(dist, "client"), { recursive: true });
+await cp(resolve(root, "frontend", "out"), resolve(dist, "client"), {
   recursive: true,
 });
 await cp(
@@ -31,7 +31,7 @@ await cp(
 );
 
 const python = process.platform === "win32" ? "python.exe" : "python3";
-execFileSync(python, ["scripts/optimize-site-assets.py", resolve(dist, "static")], {
+execFileSync(python, ["scripts/optimize-site-assets.py", resolve(dist, "client")], {
   cwd: root,
   stdio: "inherit",
 });
