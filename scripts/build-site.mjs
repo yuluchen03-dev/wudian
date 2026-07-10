@@ -30,4 +30,10 @@ await cp(
   resolve(dist, "server", "index.js"),
 );
 
+const python = process.platform === "win32" ? "python.exe" : "python3";
+execFileSync(python, ["scripts/optimize-site-assets.py", resolve(dist, "static")], {
+  cwd: root,
+  stdio: "inherit",
+});
+
 console.log(`[site-build] prepared ${dist}`);
