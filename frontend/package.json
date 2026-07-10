@@ -1,0 +1,41 @@
+{
+  "name": "wudian-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-dev-port.ps1",
+    "dev:clean": "npm run clean --silent && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-dev-port.ps1",
+    "clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-next.ps1",
+    "stage-check": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stage-check.ps1",
+    "build": "next build",
+    "build:clean": "npm run clean --silent && next build",
+    "test": "node tests/thoughtCompass.test.cjs && node tests/roundtableFlow.test.cjs && node tests/roundtablePageWiring.test.cjs && node tests/sageChatWiring.test.cjs && node tests/demoHackathonWiring.test.cjs && node tests/hackathonReadiness.test.cjs && node tests/homePublicAccess.test.cjs && node tests/quoteCardsWiring.test.cjs && node tests/theaterExperienceWiring.test.cjs && node tests/comicExperienceWiring.test.cjs && node tests/visualAssetsWiring.test.cjs && node tests/bookCoverAssets.test.cjs",
+    "test:runtime-assets": "node tests/runtimeAssets.test.cjs",
+    "start": "next start",
+    "start:clean": "npm run stage-check --silent && next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.1",
+    "framer-motion": "^11.0.0",
+    "axios": "^1.6.5",
+    "swr": "^2.2.4",
+    "lucide-react": "^0.323.0",
+    "clsx": "^2.1.0",
+    "d3": "^7.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "typescript": "^5.3.3",
+    "postcss": "^8.4.33",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
+    "@types/d3": "^7.4.3"
+  }
+}

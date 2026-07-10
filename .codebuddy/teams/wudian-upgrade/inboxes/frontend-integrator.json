@@ -1,0 +1,20 @@
+[
+  {
+    "id": "msg-1781892652919-5lswsc",
+    "from": "auth-integrator",
+    "to": "frontend-integrator",
+    "type": "message",
+    "content": "JWT 认证已集成到所有业务 API。你需要知道的关键变化：\n\n## 修改的文件\n1. `backend/app/core/deps.py` - 新增 `get_optional_current_user` 可选认证依赖\n2. `backend/app/api/learning.py` - 所有端点接入认证\n3. `backend/app/api/community.py` - 所有端点接入认证\n4. `backend/app/api/ai.py` - 所有端点接入认证\n5. `backend/app/api/content.py` - 点赞/分享接入认证\n\n## 前端需要做的\n1. **登录获取 token**：POST `/api/auth/login`（用户名 test / 密码 test123），返回 `access_token` + `refresh_token`\n2. **携带 token**：所有需要认证的请求在 header 加 `Authorization: Bearer <access_token>`\n3. **token 过期处理**：收到 401 时用 refresh_token 调 POST `/api/auth/refresh` 获取新 token\n\n## 需要认证的接口（不带 token 会 401）\n- `/api/learning/*` 除 `daily-quote`、`quiz/{verse_id}`、`leaderboard` 外全部需要登录\n- `/api/ai/*` 全部需要登录\n- `/api/community/` 中：创建小组、加入/退出小组、小组打卡、发布笔记、点赞、评论、PK 需要 login\n- `/api/content/quote-cards/{id}/like` 和 `/share` 需要登录\n\n## 可选认证接口（匿名可访问，登录有额外功能）\n- `/api/community/groups`（列表）、`/groups/{id}`（详情）、`/notes`（流）、`/notes/{id}`（详情）、`/leaderboard`\n- 这些接口不传 token 也能用，但传了 token 会返回额外信息（如当前用户是否已点赞/已加入）\n\n## 公开接口（无需认证）\n- `/api/auth/register`、`/api/auth/login`、`/api/auth/refresh`\n- `/api/learning/daily-quote`、`/api/learning/quiz/{verse_id}`、`/api/learning/leaderboard`\n- `/api/content/quote-cards`（列表）、`/quote-cards/{id}`（详情）、`/theater/*`、`/comics/*`\n\n前端记得在 axios/fetch 拦截器中统一注入 Authorization header，并处理 401 跳转登录。",
+    "timestamp": "2026-06-19T18:10:52.919Z",
+    "read": true
+  },
+  {
+    "id": "shutdown-1781892827978",
+    "from": "team-lead",
+    "to": "frontend-integrator",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1781892827978\",\"reason\":\"任务完成，关闭\",\"from\":\"team-lead\",\"timestamp\":\"2026-06-19T18:13:47.978Z\"}",
+    "timestamp": "2026-06-19T18:13:47.978Z",
+    "read": true
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "name": "hackathon-polish",
+  "leadAgentId": "67e9b6c0a40644d586bab0e50709542a",
+  "workspacePath": "c:/Users/hacjr/Desktop/悟典",
+  "createdAt": "2026-06-19T18:38:15.223Z",
+  "options": {
+    "workspacePath": "c:/Users/hacjr/Desktop/悟典",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@hackathon-polish",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "sage-dialog-polisher@hackathon-polish",
+      "name": "sage-dialog-polisher",
+      "role": "孔子对话体验打磨工程师"
+    },
+    {
+      "memberId": "cache-engineer@hackathon-polish",
+      "name": "cache-engineer",
+      "role": "安全问答缓存工程师"
+    },
+    {
+      "memberId": "visual-designer@hackathon-polish",
+      "name": "visual-designer",
+      "role": "中式视觉升级设计师"
+    },
+    {
+      "memberId": "gamification-engineer@hackathon-polish",
+      "name": "gamification-engineer",
+      "role": "游戏化钩子精简工程师"
+    },
+    {
+      "memberId": "rag-engineer@hackathon-polish",
+      "name": "rag-engineer",
+      "role": "RAG检索质量优化工程师"
+    },
+    {
+      "memberId": "demo-page-engineer@hackathon-polish",
+      "name": "demo-page-engineer",
+      "role": "演示页面与pitch工程师"
+    }
+  ],
+  "isAutoTeam": false
+}

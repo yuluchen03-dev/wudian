@@ -1,0 +1,11 @@
+[
+  {
+    "id": "shutdown-1781892828748",
+    "from": "team-lead",
+    "to": "page-developer",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1781892828748\",\"reason\":\"任务完成，关闭\",\"from\":\"team-lead\",\"timestamp\":\"2026-06-19T18:13:48.748Z\"}",
+    "timestamp": "2026-06-19T18:13:48.748Z",
+    "read": true
+  }
+]

@@ -1,0 +1,218 @@
+{
+  "description": "百家论道专用经典语料。每条只作为对应圣贤/派别的可校验引用来源。",
+  "classics": {
+    "confucius": {
+      "book": "论语",
+      "verses": [
+        {
+          "id": "lunyu-taibo-01",
+          "chapter": "泰伯",
+          "source": "《论语·泰伯》",
+          "original": "士不可以不弘毅，任重而道远。",
+          "translation": "士人不可以不胸怀宽广、意志坚定，因为责任重大，道路遥远。",
+          "keywords": ["弘毅", "任重道远", "责任", "志向", "有为", "躺平", "担当"]
+        },
+        {
+          "id": "lunyu-shuer-01",
+          "chapter": "述而",
+          "source": "《论语·述而》",
+          "original": "用之则行，舍之则藏。",
+          "translation": "被任用就出来行道，不被任用就退藏守志。",
+          "keywords": ["进退", "退守", "守志", "时机", "躺平", "选择"]
+        },
+        {
+          "id": "lunyu-weilinggong-01",
+          "chapter": "卫灵公",
+          "source": "《论语·卫灵公》",
+          "original": "君子谋道不谋食。",
+          "translation": "君子谋求的是道义，不只是口腹生计。",
+          "keywords": ["君子", "谋道", "价值", "工作", "人生", "金钱"]
+        }
+      ]
+    },
+    "laozi": {
+      "book": "道德经",
+      "verses": [
+        {
+          "id": "daodejing-22-01",
+          "chapter": "第二十二章",
+          "source": "《道德经·第二十二章》",
+          "original": "夫唯不争，故天下莫能与之争。",
+          "translation": "正因为不与人争，所以天下反而没有谁能与他相争。",
+          "keywords": ["不争", "自在", "放下", "躺平", "内卷", "争胜", "顺势"]
+        },
+        {
+          "id": "daodejing-33-01",
+          "chapter": "第三十三章",
+          "source": "《道德经·第三十三章》",
+          "original": "知人者智，自知者明。",
+          "translation": "了解别人是智慧，了解自己才是明达。",
+          "keywords": ["自知", "明", "选择", "人生", "困惑", "判断"]
+        },
+        {
+          "id": "daodejing-44-01",
+          "chapter": "第四十四章",
+          "source": "《道德经·第四十四章》",
+          "original": "知足不辱，知止不殆，可以长久。",
+          "translation": "知道满足就不会受辱，知道止步就不会危险，因此可以长久。",
+          "keywords": ["知足", "知止", "长久", "焦虑", "欲望", "退守", "躺平"]
+        },
+        {
+          "id": "daodejing-08-01",
+          "chapter": "第八章",
+          "source": "《道德经·第八章》",
+          "original": "上善若水，水善利万物而不争。",
+          "translation": "最高的善像水一样，善于利益万物而不争夺。",
+          "keywords": ["不争", "柔弱", "水", "处世", "安放", "顺道"]
+        }
+      ]
+    },
+    "mozi": {
+      "book": "墨子",
+      "verses": [
+        {
+          "id": "mozi-feile-01",
+          "chapter": "非乐上",
+          "source": "《墨子·非乐上》",
+          "original": "赖其力者生，不赖其力者不生。",
+          "translation": "依靠自己出力的人能够生存，不依靠自己出力的人难以生存。",
+          "keywords": ["强力", "努力", "躺平", "非命", "行动", "生存", "责任"]
+        },
+        {
+          "id": "mozi-jianai-01",
+          "chapter": "兼爱上",
+          "source": "《墨子·兼爱上》",
+          "original": "兼相爱，交相利。",
+          "translation": "人与人应当普遍相爱，并且相互成就利益。",
+          "keywords": ["兼爱", "利他", "社会", "责任", "公平", "天下"]
+        },
+        {
+          "id": "mozi-jianai-02",
+          "chapter": "兼爱下",
+          "source": "《墨子·兼爱下》",
+          "original": "言必信，行必果。",
+          "translation": "说话必须守信，行动必须有结果。",
+          "keywords": ["行动", "实践", "结果", "执行", "承诺", "实干"]
+        },
+        {
+          "id": "mozi-feigong-01",
+          "chapter": "非攻上",
+          "source": "《墨子·非攻上》",
+          "original": "兴天下之利，除天下之害。",
+          "translation": "兴办对天下有利的事，除去对天下有害的事。",
+          "keywords": ["天下", "利害", "责任", "发声", "不公", "行动"]
+        }
+      ]
+    },
+    "hanfeizi": {
+      "book": "韩非子",
+      "verses": [
+        {
+          "id": "hanfeizi-youdu-01",
+          "chapter": "有度",
+          "source": "《韩非子·有度》",
+          "original": "法不阿贵，绳不挠曲。",
+          "translation": "法度不偏袒权贵，墨线不迁就弯曲。",
+          "keywords": ["法", "规则", "公平", "不公", "制度", "现实", "利害"]
+        },
+        {
+          "id": "hanfeizi-erbing-01",
+          "chapter": "二柄",
+          "source": "《韩非子·二柄》",
+          "original": "赏罚者，邦之利器也。",
+          "translation": "赏与罚，是治理国家的重要工具。",
+          "keywords": ["赏罚", "功劳", "规则", "现实", "职场", "退路", "计算"]
+        },
+        {
+          "id": "hanfeizi-wai-chu-shuo-01",
+          "chapter": "外储说左上",
+          "source": "《韩非子·外储说左上》",
+          "original": "事以密成，语以泄败。",
+          "translation": "事情因为保密而成，言语因为泄露而败。",
+          "keywords": ["务实", "策略", "风险", "现实", "行动", "判断"]
+        },
+        {
+          "id": "hanfeizi-wuzhu-01",
+          "chapter": "五蠹",
+          "source": "《韩非子·五蠹》",
+          "original": "世异则事异，事异则备变。",
+          "translation": "世道不同，事情就不同；事情不同，准备也应随之变化。",
+          "keywords": ["变化", "现实", "务实", "内卷", "选择", "变通"]
+        }
+      ]
+    },
+    "li_bai": {
+      "book": "李白诗文",
+      "verses": [
+        {
+          "id": "libai-jiangjinjiu-01",
+          "chapter": "将进酒",
+          "source": "《将进酒》",
+          "original": "人生得意须尽欢，莫使金樽空对月。",
+          "translation": "人生得意时应当尽情欢畅，不要让金杯空对明月。",
+          "keywords": ["尽欢", "痛快", "人生", "躺平", "内卷", "第三条路"]
+        },
+        {
+          "id": "libai-xinglunan-01",
+          "chapter": "行路难",
+          "source": "《行路难》",
+          "original": "长风破浪会有时，直挂云帆济沧海。",
+          "translation": "总会有乘长风破万里浪的时候，到那时扬起云帆横渡沧海。",
+          "keywords": ["自信", "困境", "出路", "人生", "进取"]
+        }
+      ]
+    },
+    "su_shi": {
+      "book": "苏轼词文",
+      "verses": [
+        {
+          "id": "sushi-dingfengbo-01",
+          "chapter": "定风波",
+          "source": "《定风波》",
+          "original": "回首向来萧瑟处，归去，也无风雨也无晴。",
+          "translation": "回头看刚才风雨萧瑟的地方，归去吧，也无所谓风雨，也无所谓天晴。",
+          "keywords": ["旷达", "风雨", "焦虑", "困境", "超脱"]
+        }
+      ]
+    },
+    "fan_zhongyan": {
+      "book": "范仲淹文",
+      "verses": [
+        {
+          "id": "fanzhongyan-yueyanglouji-01",
+          "chapter": "岳阳楼记",
+          "source": "《岳阳楼记》",
+          "original": "先天下之忧而忧，后天下之乐而乐。",
+          "translation": "在天下人忧虑之前先忧虑，在天下人快乐之后才快乐。",
+          "keywords": ["家国", "责任", "担当", "天下", "忧乐"]
+        }
+      ]
+    },
+    "wang_anshi": {
+      "book": "王安石诗文",
+      "verses": [
+        {
+          "id": "wanganshi-dengfeilaifeng-01",
+          "chapter": "登飞来峰",
+          "source": "《登飞来峰》",
+          "original": "不畏浮云遮望眼，自缘身在最高层。",
+          "translation": "不怕浮云遮住远望的眼睛，只因为自己站在最高处。",
+          "keywords": ["变法", "视野", "阻力", "实干", "改变"]
+        }
+      ]
+    },
+    "zhuge_liang": {
+      "book": "诸葛亮文",
+      "verses": [
+        {
+          "id": "zhugeliang-jiezishu-01",
+          "chapter": "诫子书",
+          "source": "《诫子书》",
+          "original": "非淡泊无以明志，非宁静无以致远。",
+          "translation": "不淡泊就不能明确志向，不宁静就不能达到远方。",
+          "keywords": ["宁静", "志向", "长期", "休整", "尽责"]
+        }
+      ]
+    }
+  }
+}

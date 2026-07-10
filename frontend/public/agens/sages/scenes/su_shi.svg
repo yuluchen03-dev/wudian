@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ddf7ee"/><stop offset="0.48" stop-color="#059669"/><stop offset="1" stop-color="#064e3b"/></linearGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.12"/></feComponentTransfer></filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#g)"/>
+  <rect width="1280" height="720" filter="url(#grain)" opacity="0.55"/>
+  <circle cx="1020" cy="150" r="210" fill="#fff" opacity="0.12"/>
+  <path d="M0 380 C160 250 240 290 360 178 C500 320 600 150 760 260 C850 325 920 300 1024 210 L1024 576 L0 576 Z" fill="#fff" opacity="0.22"/><path d="M0 438 C210 350 330 400 520 300 C700 210 840 330 1024 260" fill="none" stroke="#fff" stroke-width="8" opacity="0.2"/>
+  <path d="M92 118c120 40 240-44 365 0s230 38 360-20 240 12 344 58" stroke="#fff" stroke-width="6" fill="none" opacity="0.18"/>
+  <text x="78" y="630" font-family="serif" font-size="64" font-weight="700" fill="#fff" opacity="0.72">?</text>
+</svg>

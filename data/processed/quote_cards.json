@@ -1,0 +1,442 @@
+[
+  {
+    "id": "qc_001",
+    "quote": "学而时习之，不亦说乎",
+    "source": "《论语·学而》",
+    "vernacular": "学了知识然后按时温习它，不也是很愉快的事吗？",
+    "modern_interpretation": "学习不是一次性的消费，而是反复的练习。就像健身一样，练过一次不代表掌握了，反复操练才能真正内化为能力。孔子告诉我们：复习本身就是快乐之源。",
+    "style": "ink_wash",
+    "image_keyword": "水墨山水，一文人坐于竹林中展卷读书，墨色淡雅",
+    "background_color": "#faf6ed",
+    "accent_color": "#b91c1c",
+    "tags": [
+      "学习",
+      "温习",
+      "论语"
+    ],
+    "like_count": 128,
+    "share_count": 45,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_001.png"
+  },
+  {
+    "id": "qc_002",
+    "quote": "有朋自远方来，不亦乐乎",
+    "source": "《论语·学而》",
+    "vernacular": "有志同道合的朋友从远方来，不也是很快乐的事吗？",
+    "modern_interpretation": "在这个信息爆炸却人际关系疏远的时代，能有一个懂你的朋友跨越千山万水来看你，是人生最大的幸福。友谊的价值不因距离而减损。",
+    "style": "gold_seal",
+    "image_keyword": "两位古人于亭中相迎，远处山峦叠翠，金色印章点缀",
+    "background_color": "#fdfbf7",
+    "accent_color": "#c9a85e",
+    "tags": [
+      "友谊",
+      "快乐",
+      "论语"
+    ],
+    "like_count": 156,
+    "share_count": 62,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_002.png"
+  },
+  {
+    "id": "qc_003",
+    "quote": "人不知而不愠，不亦君子乎",
+    "source": "《论语·学而》",
+    "vernacular": "别人不了解自己却不怨恨，不也是有修养的君子吗？",
+    "modern_interpretation": "在社交媒体时代，被误解是常态。真正的君子不因别人的不理解而愤怒，因为内心的笃定不需要外界认证。这是最高级的自我认同。",
+    "style": "moonlight",
+    "image_keyword": "月夜下一人独坐窗前，月光如水洒落书案，意境清幽",
+    "background_color": "#1a1a2e",
+    "accent_color": "#e6d4a3",
+    "tags": [
+      "修养",
+      "君子",
+      "论语"
+    ],
+    "like_count": 98,
+    "share_count": 33,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_003.png"
+  },
+  {
+    "id": "qc_004",
+    "quote": "温故而知新，可以为师矣",
+    "source": "《论语·为政》",
+    "vernacular": "温习旧知识从而能获得新理解，就可以做老师了。",
+    "modern_interpretation": "高手和新手的区别在于：新手只学新东西，高手能在旧知识中发现新洞察。这就是费曼学习法的精髓——教是最好的学。",
+    "style": "bamboo_scroll",
+    "image_keyword": "竹简展开，上面刻有古文，旁边一盏油灯，古朴典雅",
+    "background_color": "#f5edd9",
+    "accent_color": "#8a8050",
+    "tags": [
+      "温习",
+      "为师",
+      "论语"
+    ],
+    "like_count": 142,
+    "share_count": 51,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_004.png"
+  },
+  {
+    "id": "qc_005",
+    "quote": "学而不思则罔，思而不学则殆",
+    "source": "《论语·为政》",
+    "vernacular": "只学习不思考就会迷惘，只思考不学习就会危险。",
+    "modern_interpretation": "信息时代最大的陷阱：刷了一整天文章却什么没学到（罔），或者光靠拍脑门想当然而不去学习（殆）。输入和思考必须形成闭环。",
+    "style": "ink_wash",
+    "image_keyword": "一文人左手执书右手托腮，似在沉思，水墨写意",
+    "background_color": "#faf6ed",
+    "accent_color": "#44403c",
+    "tags": [
+      "学思",
+      "方法论",
+      "论语"
+    ],
+    "like_count": 187,
+    "share_count": 78,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_005.png"
+  },
+  {
+    "id": "qc_006",
+    "quote": "知之为知之，不知为不知，是知也",
+    "source": "《论语·为政》",
+    "vernacular": "知道就是知道，不知道就是不知道，这才是真正的智慧。",
+    "modern_interpretation": "承认无知是最大的智慧。达克效应告诉我们：越是无知的人越自信。真正的智者敢于说'我不知道'，这才是认知的起点。",
+    "style": "cloud_mist",
+    "image_keyword": "云雾缭绕的山间，一人拱手而立，似在求知，意境空灵",
+    "background_color": "#f5f5f4",
+    "accent_color": "#78716c",
+    "tags": [
+      "求知",
+      "智慧",
+      "论语"
+    ],
+    "like_count": 165,
+    "share_count": 59,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_006.png"
+  },
+  {
+    "id": "qc_007",
+    "quote": "三人行，必有我师焉",
+    "source": "《论语·述而》",
+    "vernacular": "三个人一起走路，其中必定有可以做我老师的人。",
+    "modern_interpretation": "每个人都有你值得学习的地方。放下身段，用欣赏的眼光看身边的人，你会发现处处是课堂，人人是老师。成长型思维的古代版本。",
+    "style": "gold_seal",
+    "image_keyword": "三人行于山道，一人在前两人在后，各有所长，金印点缀",
+    "background_color": "#fdfbf7",
+    "accent_color": "#b91c1c",
+    "tags": [
+      "学习",
+      "谦逊",
+      "论语"
+    ],
+    "like_count": 201,
+    "share_count": 88,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_007.png"
+  },
+  {
+    "id": "qc_008",
+    "quote": "己所不欲，勿施于人",
+    "source": "《论语·卫灵公》",
+    "vernacular": "自己不想要的东西，不要强加给别人。",
+    "modern_interpretation": "这是世界伦理的黄金法则，跨越文化和宗教的共识。换位思考不是说出来的，是做出来的。在职场和生活中，这一条就够了。",
+    "style": "ink_wash",
+    "image_keyword": "两人对坐，一人递物一人摆手，水墨简洁构图",
+    "background_color": "#faf6ed",
+    "accent_color": "#b91c1c",
+    "tags": [
+      "恕道",
+      "黄金法则",
+      "论语"
+    ],
+    "like_count": 234,
+    "share_count": 102,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_008.png"
+  },
+  {
+    "id": "qc_009",
+    "quote": "君子坦荡荡，小人长戚戚",
+    "source": "《论语·述而》",
+    "vernacular": "君子心胸开阔坦荡，小人总是忧愁不安。",
+    "modern_interpretation": "内心光明的人走路都带风，心中有鬼的人天天焦虑。你的精神状态就是你品格的镜子。选择坦荡，就是选择了一种更轻松的活法。",
+    "style": "moonlight",
+    "image_keyword": "月光下广阔平原，一人昂首阔步，心境开阔",
+    "background_color": "#1a1a2e",
+    "accent_color": "#e6d4a3",
+    "tags": [
+      "君子",
+      "心态",
+      "论语"
+    ],
+    "like_count": 178,
+    "share_count": 71,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_009.png"
+  },
+  {
+    "id": "qc_010",
+    "quote": "见贤思齐焉，见不贤而内自省也",
+    "source": "《论语·里仁》",
+    "vernacular": "见到贤人就想着向他看齐，见到不贤的人就内心自我反省。",
+    "modern_interpretation": "每个人都是一面镜子。优秀的人让你看到方向，糟糕的人让你警醒自己。不嫉妒不嘲笑，把所有人都变成成长的养料。",
+    "style": "cloud_mist",
+    "image_keyword": "镜中映出两个人影，一贤一不肖，云雾中若隐若现",
+    "background_color": "#f5f5f4",
+    "accent_color": "#78716c",
+    "tags": [
+      "自省",
+      "成长",
+      "论语"
+    ],
+    "like_count": 145,
+    "share_count": 56,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_010.png"
+  },
+  {
+    "id": "qc_011",
+    "quote": "朝闻道，夕死可矣",
+    "source": "《论语·里仁》",
+    "vernacular": "早上明白了真理，晚上死去也心甘情愿。",
+    "modern_interpretation": "这是对真理最炽热的告白。人生的意义不在于活了多久，而在于是否触碰过真正有价值的东西。找到你的'道'，人生就有了锚点。",
+    "style": "gold_seal",
+    "image_keyword": "朝阳升起，一人面朝东方拱手，金色光芒四射",
+    "background_color": "#fdfbf7",
+    "accent_color": "#c9a85e",
+    "tags": [
+      "求道",
+      "理想",
+      "论语"
+    ],
+    "like_count": 198,
+    "share_count": 84,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_011.png"
+  },
+  {
+    "id": "qc_012",
+    "quote": "工欲善其事，必先利其器",
+    "source": "《论语·卫灵公》",
+    "vernacular": "工匠想要做好工作，必须先磨利他的工具。",
+    "modern_interpretation": "磨刀不误砍柴工。在动手之前先投资自己的工具和技能——好的编辑器、高效的方法论、扎实的基础知识。准备本身就是生产力。",
+    "style": "bamboo_scroll",
+    "image_keyword": "匠人磨刀石上磨砺工具，旁边摆放木料，竹简风",
+    "background_color": "#f5edd9",
+    "accent_color": "#8a8050",
+    "tags": [
+      "准备",
+      "工具",
+      "论语"
+    ],
+    "like_count": 134,
+    "share_count": 47,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_012.png"
+  },
+  {
+    "id": "qc_013",
+    "quote": "人无远虑，必有近忧",
+    "source": "《论语·卫灵公》",
+    "vernacular": "一个人没有长远的考虑，一定会有眼前的忧患。",
+    "modern_interpretation": "所有的'突然'都是蓄谋已久。今天的焦虑往往来自昨天的短视。做计划不是束缚，而是给未来的自己减少麻烦。",
+    "style": "ink_wash",
+    "image_keyword": "一人站于山巅远眺，云海翻涌，水墨大气磅礴",
+    "background_color": "#faf6ed",
+    "accent_color": "#44403c",
+    "tags": [
+      "远见",
+      "规划",
+      "论语"
+    ],
+    "like_count": 167,
+    "share_count": 63,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_013.png"
+  },
+  {
+    "id": "qc_014",
+    "quote": "君子和而不同，小人同而不和",
+    "source": "《论语·子路》",
+    "vernacular": "君子能与他人和谐相处但不盲目附和，小人盲目附和但内心不和谐。",
+    "modern_interpretation": "真正的团队不是一群说'对对对'的人，而是一群能争论但依然尊重彼此的人。'同'是表面的顺从，'和'是深层的共鸣。多元化是力量的来源。",
+    "style": "cloud_mist",
+    "image_keyword": "众人围坐讨论，各有姿态但不冲突，云雾中和谐共存",
+    "background_color": "#f5f5f4",
+    "accent_color": "#78716c",
+    "tags": [
+      "和谐",
+      "独立思考",
+      "论语"
+    ],
+    "like_count": 189,
+    "share_count": 76,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_014.png"
+  },
+  {
+    "id": "qc_015",
+    "quote": "敏而好学，不耻下问",
+    "source": "《论语·公冶长》",
+    "vernacular": "聪敏又好学，不以向地位低下的人请教为耻。",
+    "modern_interpretation": "最厉害的人往往最谦虚。在知识分工越来越细的今天，没有人能什么都会。敢于向任何人请教，是学习的加速器，也是自信的表现。",
+    "style": "gold_seal",
+    "image_keyword": "一位长者弯腰向少年请教，旁边书卷堆积，金色点缀",
+    "background_color": "#fdfbf7",
+    "accent_color": "#c9a85e",
+    "tags": [
+      "好学",
+      "谦虚",
+      "论语"
+    ],
+    "like_count": 143,
+    "share_count": 52,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_015.png"
+  },
+  {
+    "id": "qc_016",
+    "quote": "士不可以不弘毅，任重而道远",
+    "source": "《论语·泰伯》",
+    "vernacular": "读书人不可以不胸怀宽广、意志坚定，因为责任重大而且道路遥远。",
+    "modern_interpretation": "做大事的人需要两种品质：心胸要大，意志要坚。因为路很长，担子很重。这不是负担，这是使命。找到值得你负重前行的事。",
+    "style": "ink_wash",
+    "image_keyword": "一人背负行囊行走在漫长山路上，远山苍茫，水墨壮阔",
+    "background_color": "#faf6ed",
+    "accent_color": "#b91c1c",
+    "tags": [
+      "担当",
+      "坚毅",
+      "论语"
+    ],
+    "like_count": 176,
+    "share_count": 69,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_016.png"
+  },
+  {
+    "id": "qc_017",
+    "quote": "岁寒，然后知松柏之后凋也",
+    "source": "《论语·子罕》",
+    "vernacular": "到了寒冷的季节，才知道松柏是最后凋谢的。",
+    "modern_interpretation": "顺境中人人都不错，困境才能见真章。经济下行、行业寒冬时，谁是真人才一目了然。做那棵松柏——平时不张扬，难时顶得住。",
+    "style": "moonlight",
+    "image_keyword": "雪中松柏苍翠挺拔，月光下银装素裹，意境高洁",
+    "background_color": "#1a1a2e",
+    "accent_color": "#e6d4a3",
+    "tags": [
+      "坚守",
+      "品格",
+      "论语"
+    ],
+    "like_count": 154,
+    "share_count": 58,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_017.png"
+  },
+  {
+    "id": "qc_018",
+    "quote": "其身正，不令而行；其身不正，虽令不从",
+    "source": "《论语·子路》",
+    "vernacular": "自身品行端正，不发命令事情也能推行；自身品行不端，即使下命令别人也不服从。",
+    "modern_interpretation": "最好的管理不是喊口号，而是以身作则。你想让团队加班，自己先留下来；你想让孩子读书，自己先拿起书。影响力来自于行动而非职位。",
+    "style": "bamboo_scroll",
+    "image_keyword": "一将军身先士卒冲锋在前，士兵紧随其后，竹简风格",
+    "background_color": "#f5edd9",
+    "accent_color": "#8a8050",
+    "tags": [
+      "以身作则",
+      "领导力",
+      "论语"
+    ],
+    "like_count": 162,
+    "share_count": 61,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_018.png"
+  },
+  {
+    "id": "qc_019",
+    "quote": "富与贵，是人之所欲也；不以其道得之，不处也",
+    "source": "《论语·里仁》",
+    "vernacular": "富有和显贵是人人渴望的，但如果不用正当方式获得，就不接受。",
+    "modern_interpretation": "孔子不反对财富，他反对的是来路不正的财富。在诱惑面前守住底线，不是迂腐，而是对长期价值的投资。声誉是最贵的资产。",
+    "style": "gold_seal",
+    "image_keyword": "金玉满堂与一介书生对峙，书生转身而去，金色印章",
+    "background_color": "#fdfbf7",
+    "accent_color": "#c9a85e",
+    "tags": [
+      "财富",
+      "底线",
+      "论语"
+    ],
+    "like_count": 131,
+    "share_count": 44,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_019.png"
+  },
+  {
+    "id": "qc_020",
+    "quote": "吾日三省吾身",
+    "source": "《论语·学而》",
+    "vernacular": "我每天多次反省自己。",
+    "modern_interpretation": "复盘是成长的核心能力。每天花10分钟问自己：今天哪里做得好？哪里可以改进？明天怎么做更好？这就是曾子的'三省'，也是现代精英的日课。",
+    "style": "ink_wash",
+    "image_keyword": "一人对镜沉思，案上烛火摇曳，水墨宁静",
+    "background_color": "#faf6ed",
+    "accent_color": "#44403c",
+    "tags": [
+      "自省",
+      "复盘",
+      "论语"
+    ],
+    "like_count": 195,
+    "share_count": 82,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_020.png"
+  },
+  {
+    "id": "qc_021",
+    "quote": "不愤不启，不悱不发",
+    "source": "《论语·述而》",
+    "vernacular": "不到学生想弄明白而不得的程度不去启发他，不到学生想说而说不出的程度不去点拨他。",
+    "modern_interpretation": "最好的教育不是填鸭，而是在对方最渴望答案时给予点拨。这启示我们：主动求知的效果远超被动接受。带着问题去学，效率翻倍。",
+    "style": "cloud_mist",
+    "image_keyword": "师者与弟子对坐，弟子面露困惑若有所悟，云雾缭绕",
+    "background_color": "#f5f5f4",
+    "accent_color": "#78716c",
+    "tags": [
+      "教育",
+      "启发",
+      "论语"
+    ],
+    "like_count": 118,
+    "share_count": 39,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_021.png"
+  },
+  {
+    "id": "qc_022",
+    "quote": "知者不惑，仁者不忧，勇者不惧",
+    "source": "《论语·子罕》",
+    "vernacular": "聪明的人不迷惑，仁德的人不忧愁，勇敢的人不畏惧。",
+    "modern_interpretation": "智慧让人看清方向，善良让人内心安宁，勇气让人敢于行动。这三种品质构成了完整的人格。缺任何一块，人生都会倾斜。",
+    "style": "moonlight",
+    "image_keyword": "三身影立于月光下，分别象征智仁勇，意境深远",
+    "background_color": "#1a1a2e",
+    "accent_color": "#e6d4a3",
+    "tags": [
+      "三达德",
+      "人格",
+      "论语"
+    ],
+    "like_count": 208,
+    "share_count": 91,
+    "created_at": "2024-06-01T00:00:00",
+    "background_image": "/content/quote-backgrounds/qc_022.png"
+  }
+]

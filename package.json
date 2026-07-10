@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "stage-check": "npm --prefix frontend run stage-check",
+    "frontend:test": "npm --prefix frontend run test",
+    "backend:test": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Push-Location backend; python -m pytest tests -q; $code=$LASTEXITCODE; Pop-Location; exit $code\"",
+    "test": "npm run frontend:test && npm run backend:test",
+    "frontend:stage-check": "npm --prefix frontend run stage-check",
+    "frontend:clean": "npm --prefix frontend run clean",
+    "build:clean": "npm --prefix frontend run build:clean",
+    "frontend:build:clean": "npm --prefix frontend run build:clean",
+    "frontend:start:clean": "npm --prefix frontend run start:clean",
+    "site:build": "node scripts/build-site.mjs"
+  },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}

@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-paper: #f8f5ee;
+  --bg-paper-warm: #faf7f0;
+  --ink: #1c1917;
+  --ink-soft: #44403c;
+  --cinnabar: #b91c1c;
+  --bamboo: #5b8c5a;
+  --bamboo-soft: #7ba87b;
+  --bronze: #8a8050;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  background-color: var(--bg-paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* 键盘焦点可见性（无障碍） */
+:focus-visible {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.dark body {
+  background-color: #1c1917;
+  color: #e7e5e4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ============ 中式留白 utility classes ============ */
+
+.section-padding {
+  @apply px-4 py-12 md:py-16 lg:py-20;
+}
+
+.hero-spacing {
+  @apply pt-16 pb-12 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20;
+}
+
+.breathing-space {
+  @apply space-y-16 md:space-y-24;
+}
+
+.module-gap {
+  @apply mb-16 md:mb-24;
+}
+
+/* ============ 中式装饰元素 ============ */
+
+/* 生僻字下划线样式 */
+.rare-char {
+  border-bottom: 1px dashed var(--cinnabar);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.rare-char:hover {
+  color: var(--cinnabar);
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #44403c;
+}
+
+/* 古典分隔线（渐变水墨） */
+.classical-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #a8a29e 20%,
+    #a8a29e 80%,
+    transparent
+  );
+}
+
+/* 墨色虚线分隔（更克制） */
+.ink-dashed-divider {
+  height: 1px;
+  background-image: linear-gradient(to right, #78716c 50%, transparent 50%);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.5;
+}
+
+/* 章节标题装饰：小印章风格 */
+.section-seal {
+  @apply relative inline-block;
+}
+
+.section-seal::before {
+  content: "";
+  @apply absolute -left-3 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-cinnabar-600;
+  opacity: 0.8;
+}
+
+/* 宣纸纹理背景（微妙渐变） */
+.paper-texture {
+  background-image:
+    radial-gradient(ellipse at top, rgba(245, 237, 217, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(220, 192, 128, 0.08) 0%, transparent 50%);
+  background-color: var(--bg-paper-warm);
+}
+
+/* 宣纸纹理卡片 */
+.paper-texture-card {
+  background-image:
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.5) 0%, transparent 40%),
+    radial-gradient(ellipse at bottom right, rgba(220, 192, 128, 0.06) 0%, transparent 50%);
+}
+
+/* 印章风格按钮 */
+.seal-btn {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-cinnabar-600 text-rice-50 rounded font-serif tracking-wider transition-colors hover:bg-cinnabar-700;
+}
+
+/* 卡片基础 */
+.paper-card {
+  @apply bg-white/70 backdrop-blur-sm rounded-lg shadow-scroll border border-ink-100;
+}
+
+.dark .paper-card {
+  @apply bg-ink-700/70 border-ink-600;
+}
+
+/* 竖排文字（用于标题装饰） */
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+/* ============ 大字号/可读性优化 ============ */
+
+.reading-text {
+  @apply text-base leading-loose md:text-lg;
+  letter-spacing: 0.02em;
+}
+
+.hero-title {
+  @apply font-serif font-bold tracking-widest;
+  letter-spacing: 0.15em;
+}
+
+/* ============ 导航栏 hover 竹青下划线 ============ */
+
+.nav-link-bamboo {
+  @apply relative transition-colors;
+}
+
+.nav-link-bamboo::after {
+  content: "";
+  @apply absolute bottom-0 left-1/2 h-0.5 w-0 -translate-x-1/2 bg-bamboo-500 transition-all duration-300;
+}
+
+.nav-link-bamboo:hover::after,
+.nav-link-bamboo.active::after {
+  @apply w-full;
+}

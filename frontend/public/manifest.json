@@ -1,0 +1,20 @@
+{
+  "name": "悟典 · 四书五经互动学习平台",
+  "short_name": "悟典",
+  "description": "与千年圣贤对话，悟经典之大义",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf6ed",
+  "theme_color": "#b91c1c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "books"],
+  "lang": "zh-CN"
+}

@@ -1,0 +1,35 @@
+# ===== 核心框架 =====
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+sqlalchemy>=2.0.25
+alembic>=1.13.1
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# ===== 数据库驱动 =====
+# SQLite（默认，开发环境）
+aiosqlite>=0.19.0
+# PostgreSQL（生产环境，按需安装）
+# psycopg2-binary>=2.9.9
+# asyncpg>=0.29.0
+# pgvector>=0.2.4
+
+# ===== 认证 =====
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# ===== 工具 =====
+email-validator>=2.1.0
+httpx>=0.26.0
+tenacity>=8.2.3
+
+# ===== AI / RAG =====
+# openai: LLM 客户端（兼容 OpenAI/DeepSeek/Qwen/Ollama 协议）
+openai>=1.10.0
+# chromadb: 向量数据库（Windows 安装可能失败，未安装时自动降级为空检索）
+chromadb>=0.4.22
+# 以下为可选增强依赖，按需安装
+# langchain>=0.1.0
+# tiktoken>=0.6.0
+# redis>=5.0.1

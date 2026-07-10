@@ -1,0 +1,79 @@
+{
+  "id": "1c0c4a6d-b0c",
+  "topic": "Should I keep competing or step back?",
+  "phase": "round2",
+  "participants": [
+    "confucius",
+    "laozi"
+  ],
+  "rounds": [
+    {
+      "round_number": 1,
+      "round_type": "opinion",
+      "speeches": [
+        {
+          "sage_key": "confucius",
+          "sage_name": "孔子",
+          "round_number": 1,
+          "content": "测试发言一句。测试发言二句。",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言一句。",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            },
+            {
+              "sentence": "测试发言二句。",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "laozi",
+          "sage_name": "老子",
+          "round_number": 1,
+          "content": "测试发言一句。测试发言二句。",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言一句。",
+              "source": "《道德经·第八章》",
+              "original": "上善若水，水善利万物而不争。",
+              "similarity": 0.25,
+              "verifiable": true
+            },
+            {
+              "sentence": "测试发言二句。",
+              "source": "《道德经·第二十二章》",
+              "original": "夫唯不争，故天下莫能与之争。",
+              "similarity": 0.25,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        }
+      ],
+      "clashes": []
+    }
+  ],
+  "report": null,
+  "created_at": "2026-07-03T00:15:09.815813",
+  "round_counter": 1
+}

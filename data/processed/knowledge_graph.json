@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "version": "1.0",
+    "description": "悟典知识图谱数据：孔门弟子关系、儒家思想传承脉络、典故出处网络",
+    "updated_at": "2025-01-01"
+  },
+  "nodes": [
+    {
+      "id": "confucius",
+      "label": "孔子",
+      "type": "person",
+      "subtype": "sage",
+      "courtesy_name": "仲尼",
+      "birth_year": -551,
+      "death_year": -479,
+      "era": "春秋末期",
+      "description": "名丘，字仲尼，鲁国陬邑人。儒家学派创始人，被后世尊为「至圣先师」。开创私学，弟子三千，贤者七十二。",
+      "core_thought": "仁、礼、中庸、有教无类",
+      "tags": ["至圣", "儒家创始人", "教育家"]
+    },
+    {
+      "id": "yanhui",
+      "label": "颜回",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子渊",
+      "birth_year": -521,
+      "death_year": -481,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，德行科之首。安贫乐道，好学不倦，孔子最赏识的弟子，不幸早逝，孔子哭之恸。",
+      "core_thought": "不迁怒，不贰过；一箪食一瓢饮，不改其乐",
+      "tags": ["复圣", "德行科", "孔门十哲"]
+    },
+    {
+      "id": "zilu",
+      "label": "子路",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子路",
+      "real_name": "仲由",
+      "birth_year": -542,
+      "death_year": -480,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，政事科。性格勇武率直，好勇力行，常直言进谏孔子。仕卫时死于孔悝之难。",
+      "core_thought": "勇、信、果决；政在正己",
+      "tags": ["政事科", "孔门十哲", "勇者"]
+    },
+    {
+      "id": "zigong",
+      "label": "子贡",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子贡",
+      "real_name": "端木赐",
+      "birth_year": -520,
+      "death_year": -456,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，言语科。善辞令、精商贾，是孔门中最富有的弟子。孔子死后，为之守丧六年。",
+      "core_thought": "敏而好学，外交辩才；君子喻于义",
+      "tags": ["言语科", "孔门十哲", "儒商鼻祖"]
+    },
+    {
+      "id": "zizhang",
+      "label": "子张",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子张",
+      "real_name": "颛孙师",
+      "birth_year": -503,
+      "death_year": -440,
+      "era": "春秋末期",
+      "description": "孔门弟子，容貌俊美，志在从政。好问善思，后儒分为八，子张之儒为其一。",
+      "core_thought": "尊贤容众，嘉善矜不能",
+      "tags": ["子张之儒", "从政"]
+    },
+    {
+      "id": "zixia",
+      "label": "子夏",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子夏",
+      "real_name": "卜商",
+      "birth_year": -507,
+      "death_year": -420,
+      "era": "春秋末期至战国初期",
+      "description": "孔门十哲之一，文学科。以文学著称，居西河教授，为魏文侯师。传经之功甚大，《诗经》《春秋》多赖其传。",
+      "core_thought": "博学笃志，切问近思；学而优则仕",
+      "tags": ["文学科", "孔门十哲", "西河学派"]
+    },
+    {
+      "id": "ziyou",
+      "label": "子游",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子游",
+      "real_name": "言偃",
+      "birth_year": -506,
+      "death_year": -443,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，文学科。南方吴人，将儒学传播至江南。为武城宰，以礼乐教民。",
+      "core_thought": "大同小康；礼乐教化",
+      "tags": ["文学科", "孔门十哲", "南方儒学"]
+    },
+    {
+      "id": "ranqiu",
+      "label": "冉求",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子有",
+      "real_name": "冉求",
+      "birth_year": -522,
+      "death_year": -462,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，政事科。多才艺，为季氏宰。曾因助季氏聚敛而被孔子斥责。",
+      "core_thought": "务本求实，善理政事",
+      "tags": ["政事科", "孔门十哲"]
+    },
+    {
+      "id": "minsun",
+      "label": "闵损",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子骞",
+      "real_name": "闵子骞",
+      "birth_year": -536,
+      "death_year": -487,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，德行科。以孝行著称，「芦衣顺母」传为千古佳话。不仕权贵，淡泊名利。",
+      "core_thought": "孝悌为本，清静寡欲",
+      "tags": ["德行科", "孔门十哲", "二十四孝"]
+    },
+    {
+      "id": "ran_yong",
+      "label": "冉雍",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "仲弓",
+      "real_name": "冉雍",
+      "birth_year": -522,
+      "death_year": -466,
+      "era": "春秋末期",
+      "description": "孔门十哲之一，德行科。孔子称其「可使南面」，有帝王之才。荀子以之为儒家正统。",
+      "core_thought": "居敬行简，以德化民",
+      "tags": ["德行科", "孔门十哲"]
+    },
+    {
+      "id": "zengzi",
+      "label": "曾子",
+      "type": "person",
+      "subtype": "disciple",
+      "courtesy_name": "子舆",
+      "real_name": "曾参",
+      "birth_year": -505,
+      "death_year": -435,
+      "era": "春秋末期至战国初期",
+      "description": "孔子晚年弟子，以孝行与内省著称。传《孝经》，述《大学》，上承孔子，下启子思，是儒学承前启后的关键人物。",
+      "core_thought": "孝悌、慎独、吾日三省吾身",
+      "tags": ["宗圣", "传经", "内省"]
+    },
+    {
+      "id": "zisi",
+      "label": "子思",
+      "type": "person",
+      "subtype": "lineage",
+      "courtesy_name": "子思",
+      "real_name": "孔伋",
+      "birth_year": -483,
+      "death_year": -402,
+      "era": "战国初期",
+      "description": "孔子之孙，曾子弟子。作《中庸》，上承曾子，下启孟子，是思孟学派的核心人物。",
+      "core_thought": "中庸、诚、天命之谓性",
+      "tags": ["述圣", "思孟学派", "中庸"]
+    },
+    {
+      "id": "mencius",
+      "label": "孟子",
+      "type": "person",
+      "subtype": "lineage",
+      "courtesy_name": "子舆",
+      "real_name": "孟轲",
+      "birth_year": -372,
+      "death_year": -289,
+      "era": "战国中期",
+      "description": "受业于子思之门人，继承并发展了孔子学说。主张性善论、仁政、民贵君轻，被尊为「亚圣」。著《孟子》七篇。",
+      "core_thought": "性善、仁政、民贵君轻、浩然之气",
+      "tags": ["亚圣", "性善论", "仁政"]
+    },
+    {
+      "id": "xunzi",
+      "label": "荀子",
+      "type": "person",
+      "subtype": "lineage",
+      "courtesy_name": "卿",
+      "real_name": "荀况",
+      "birth_year": -313,
+      "death_year": -238,
+      "era": "战国末期",
+      "description": "儒家最后一位大师，主张性恶论，强调礼法并用。弟子韩非、李斯为法家代表。著《荀子》三十二篇。",
+      "core_thought": "性恶、隆礼重法、天行有常、制天命而用之",
+      "tags": ["性恶论", "礼法并用", "儒家总结者"]
+    },
+    {
+      "id": "dong_zhongshu",
+      "label": "董仲舒",
+      "type": "person",
+      "subtype": "lineage",
+      "birth_year": -179,
+      "death_year": -104,
+      "era": "西汉",
+      "description": "西汉大儒，提出「罢黜百家，独尊儒术」，使儒学成为官方意识形态。融合阴阳五行，构建天人感应体系。著《春秋繁露》。",
+      "core_thought": "天人感应、三纲五常、大一统",
+      "tags": ["独尊儒术", "天人感应", "今文经学"]
+    },
+    {
+      "id": "zhuxi",
+      "label": "朱熹",
+      "type": "person",
+      "subtype": "lineage",
+      "courtesy_name": "元晦",
+      "birth_year": 1130,
+      "death_year": 1200,
+      "era": "南宋",
+      "description": "理学集大成者，集北宋理学之大成，建立完整的理学体系。编注《四书章句集注》，成为元明清科举定本。",
+      "core_thought": "理气论、格物致知、存天理灭人欲",
+      "tags": ["理学", "朱子", "四书集注"]
+    },
+    {
+      "id": "concept_ren",
+      "label": "仁",
+      "type": "concept",
+      "description": "儒家核心思想，最高的道德准则。仁者爱人，包含孝悌、忠恕、礼让等内涵。樊迟问仁，子曰：「爱人」。",
+      "tags": ["核心概念", "道德"]
+    },
+    {
+      "id": "concept_li",
+      "label": "礼",
+      "type": "concept",
+      "description": "社会规范与仪式准则。克己复礼为仁，礼是仁的外在表现。包含吉礼、凶礼、军礼、宾礼、嘉礼五礼。",
+      "tags": ["核心概念", "规范"]
+    },
+    {
+      "id": "concept_zhongyong",
+      "label": "中庸",
+      "type": "concept",
+      "description": "不偏不倚、无过不及的处世之道。「中」为不偏不倚，「庸」为平常不易。子思作《中庸》专论之。",
+      "tags": ["核心概念", "方法论"]
+    },
+    {
+      "id": "concept_xiao",
+      "label": "孝",
+      "type": "concept",
+      "description": "儒家伦理的根基，百善孝为先。孝为仁之本，由家庭伦理推及社会政治。「其为人也孝弟，而好犯上者，鲜矣」。",
+      "tags": ["核心概念", "伦理"]
+    },
+    {
+      "id": "concept_xue",
+      "label": "学",
+      "type": "concept",
+      "description": "儒家修身之始。《论语》开篇即言「学而时习之」。包含博学、审问、慎思、明辨、笃行五个层次。",
+      "tags": ["核心概念", "修身"]
+    }
+  ],
+  "edges": [
+    {
+      "source": "confucius",
+      "target": "yanhui",
+      "relation": "师生",
+      "label": "最赏识弟子",
+      "description": "孔子屡赞颜回「贤哉回也」，视其为道统传人，惜其早逝。"
+    },
+    {
+      "source": "confucius",
+      "target": "zilu",
+      "relation": "师生",
+      "label": "早期弟子",
+      "description": "子路仅少孔子九岁，是最早的弟子之一，常随侍左右。"
+    },
+    {
+      "source": "confucius",
+      "target": "zigong",
+      "relation": "师生",
+      "label": "言语科高足",
+      "description": "子贡善辩，孔子常与之论道。孔子去世后，子贡为之守丧六年。"
+    },
+    {
+      "source": "confucius",
+      "target": "zizhang",
+      "relation": "师生",
+      "label": "从政弟子",
+      "description": "子张好学善问，志在从政，问政、问明、问崇德辨惑。"
+    },
+    {
+      "source": "confucius",
+      "target": "zixia",
+      "relation": "师生",
+      "label": "文学科高足",
+      "description": "子夏以文学著称，孔子赞其可与言诗。后居西河教授，传经之功甚大。"
+    },
+    {
+      "source": "confucius",
+      "target": "ziyou",
+      "relation": "师生",
+      "label": "文学科高足",
+      "description": "子游为武城宰，以礼乐教民，孔子赞其「割鸡焉用牛刀」而戏之。"
+    },
+    {
+      "source": "confucius",
+      "target": "ranqiu",
+      "relation": "师生",
+      "label": "政事科高足",
+      "description": "冉求多才多艺，为季氏宰，善理政事，但曾因助季氏聚敛被孔子斥责。"
+    },
+    {
+      "source": "confucius",
+      "target": "minsun",
+      "relation": "师生",
+      "label": "德行科高足",
+      "description": "闵子骞以孝行著称，「芦衣顺母」传为佳话，孔子称其「孝哉闵子骞」。"
+    },
+    {
+      "source": "confucius",
+      "target": "ran_yong",
+      "relation": "师生",
+      "label": "德行科高足",
+      "description": "孔子称冉雍「可使南面」，有帝王之才，荀子以其为儒家正统。"
+    },
+    {
+      "source": "confucius",
+      "target": "zengzi",
+      "relation": "师生",
+      "label": "传道弟子",
+      "description": "曾子为孔子晚年弟子，以孝与内省著称。孔子传之道，曾子传之子思，是儒学承前启后的关键。"
+    },
+    {
+      "source": "zengzi",
+      "target": "zisi",
+      "relation": "师生",
+      "label": "师承传授",
+      "description": "曾子授业于子思（孔子之孙），子思作《中庸》，是思孟学派桥梁。"
+    },
+    {
+      "source": "zisi",
+      "target": "mencius",
+      "relation": "师承",
+      "label": "私淑弟子",
+      "description": "孟子自言「予未得为孔子徒也，予私淑诸人也」，受业于子思之门人。"
+    },
+    {
+      "source": "mencius",
+      "target": "xunzi",
+      "relation": "学术传承",
+      "label": "儒学发展",
+      "description": "荀子与孟子同为战国儒家巨擘，但主张性恶论，与孟子性善论形成对照，丰富了儒学。"
+    },
+    {
+      "source": "xunzi",
+      "target": "dong_zhongshu",
+      "relation": "学术传承",
+      "label": "儒学制度化",
+      "description": "汉代儒学融合荀学礼法思想，董仲舒提出独尊儒术，使儒学成为官方意识形态。"
+    },
+    {
+      "source": "dong_zhongshu",
+      "target": "zhuxi",
+      "relation": "学术传承",
+      "label": "理学建构",
+      "description": "宋代理学吸收汉唐儒学，朱熹集大成，以《四书章句集注》确立新儒学体系。"
+    },
+    {
+      "source": "confucius",
+      "target": "concept_ren",
+      "relation": "提出",
+      "label": "核心思想",
+      "description": "孔子以「仁」为最高道德准则，是儒家思想的核心。"
+    },
+    {
+      "source": "confucius",
+      "target": "concept_li",
+      "relation": "提出",
+      "label": "核心思想",
+      "description": "「克己复礼为仁」，孔子重视周礼，以礼为仁的外在规范。"
+    },
+    {
+      "source": "concept_ren",
+      "target": "concept_xiao",
+      "relation": "包含",
+      "label": "仁之本",
+      "description": "「孝弟也者，其为仁之本与」，孝悌是仁的根基。"
+    },
+    {
+      "source": "confucius",
+      "target": "concept_zhongyong",
+      "relation": "提出",
+      "label": "方法论",
+      "description": "中庸为孔子所推崇的处世之道，后子思作《中庸》专论。"
+    },
+    {
+      "source": "zisi",
+      "target": "concept_zhongyong",
+      "relation": "阐发",
+      "label": "作《中庸》",
+      "description": "子思作《中庸》，系统阐发中庸之道，后编入《礼记》，为四书之一。"
+    },
+    {
+      "source": "mencius",
+      "target": "concept_ren",
+      "relation": "发展",
+      "label": "仁政",
+      "description": "孟子将孔子之「仁」发展为「仁政」学说，主张以德行仁者王。"
+    },
+    {
+      "source": "zengzi",
+      "target": "concept_xiao",
+      "relation": "阐发",
+      "label": "传《孝经》",
+      "description": "曾子以孝行著称，传《孝经》，将孝上升为至德要道。"
+    },
+    {
+      "source": "confucius",
+      "target": "concept_xue",
+      "relation": "提出",
+      "label": "修身之始",
+      "description": "「学而时习之，不亦说乎」，学是儒家修身的出发点。"
+    },
+    {
+      "source": "zixia",
+      "target": "concept_xue",
+      "relation": "阐发",
+      "label": "博学笃志",
+      "description": "子夏言「博学而笃志，切问而近思，仁在其中矣」，阐发为学之道。"
+    }
+  ]
+}

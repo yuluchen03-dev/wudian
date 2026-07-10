@@ -1,0 +1,75 @@
+{
+  "id": "5848e822-223",
+  "topic": "Should I keep competing or step back?",
+  "phase": "intervention",
+  "participants": [
+    "confucius",
+    "laozi",
+    "mozi",
+    "hanfeizi"
+  ],
+  "rounds": [
+    {
+      "round_number": 1,
+      "round_type": "mutual_question",
+      "speeches": [
+        {
+          "sage_key": "confucius",
+          "sage_name": "孔子",
+          "round_number": 1,
+          "content": "test speech for laozi",
+          "vernacular": "test vernacular",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "test speech for laozi",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "laozi",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "laozi",
+          "sage_name": "老子",
+          "round_number": 1,
+          "content": "test speech for laozi",
+          "vernacular": "test vernacular",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "test speech for laozi",
+              "source": "《道德经·第二十二章》",
+              "original": "夫唯不争，故天下莫能与之争。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        }
+      ],
+      "clashes": [
+        {
+          "from_sage": "confucius",
+          "to_sage": "laozi",
+          "clash_type": "extend",
+          "summary": "test speech for laozi"
+        }
+      ]
+    }
+  ],
+  "report": null,
+  "graph_trace": [],
+  "created_at": "2026-07-06T23:18:15.851448",
+  "round_counter": 1
+}

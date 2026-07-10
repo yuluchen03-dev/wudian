@@ -1,0 +1,11 @@
+[
+  {
+    "id": "shutdown-1781892828216",
+    "from": "team-lead",
+    "to": "ai-engineer",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1781892828216\",\"reason\":\"任务完成，关闭\",\"from\":\"team-lead\",\"timestamp\":\"2026-06-19T18:13:48.216Z\"}",
+    "timestamp": "2026-06-19T18:13:48.216Z",
+    "read": true
+  }
+]

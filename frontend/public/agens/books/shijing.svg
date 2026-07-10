@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#e3edf8"/><stop offset="0.48" stop-color="#1e3a5f"/><stop offset="1" stop-color="#111827"/></linearGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.12"/></feComponentTransfer></filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#g)"/>
+  <rect width="1280" height="720" filter="url(#grain)" opacity="0.55"/>
+  <circle cx="1020" cy="150" r="210" fill="#fff" opacity="0.12"/>
+  <rect x="560" y="188" width="300" height="190" rx="8" fill="#ffffff" opacity="0.22"/><path d="M110 430h820" stroke="#fff" stroke-width="8" opacity="0.22"/><rect x="170" y="270" width="190" height="112" rx="10" fill="#111827" opacity="0.22"/>
+  <path d="M92 118c120 40 240-44 365 0s230 38 360-20 240 12 344 58" stroke="#fff" stroke-width="6" fill="none" opacity="0.18"/>
+  <text x="78" y="630" font-family="serif" font-size="64" font-weight="700" fill="#fff" opacity="0.72">shijing</text>
+</svg>

@@ -1,0 +1,48 @@
+{
+  "name": "wudian-upgrade",
+  "leadAgentId": "67e9b6c0a40644d586bab0e50709542a",
+  "workspacePath": "c:/Users/hacjr/Desktop/悟典",
+  "createdAt": "2026-06-19T18:04:07.944Z",
+  "options": {
+    "workspacePath": "c:/Users/hacjr/Desktop/悟典",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@wudian-upgrade",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "frontend-integrator@wudian-upgrade",
+      "name": "frontend-integrator",
+      "role": "前后端联调工程师"
+    },
+    {
+      "memberId": "ai-engineer@wudian-upgrade",
+      "name": "ai-engineer",
+      "role": "AI/RAG配置工程师"
+    },
+    {
+      "memberId": "page-developer@wudian-upgrade",
+      "name": "page-developer",
+      "role": "前端页面开发工程师"
+    },
+    {
+      "memberId": "auth-integrator@wudian-upgrade",
+      "name": "auth-integrator",
+      "role": "认证集成工程师"
+    },
+    {
+      "memberId": "reader-ai-engineer@wudian-upgrade",
+      "name": "reader-ai-engineer",
+      "role": "阅读器AI集成工程师"
+    },
+    {
+      "memberId": "community-db-engineer@wudian-upgrade",
+      "name": "community-db-engineer",
+      "role": "社区持久化工程师"
+    }
+  ],
+  "isAutoTeam": false
+}

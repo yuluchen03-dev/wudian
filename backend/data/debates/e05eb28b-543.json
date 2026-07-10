@@ -1,0 +1,382 @@
+{
+  "id": "e05eb28b-543",
+  "topic": "我该不该躺平?",
+  "phase": "intervention",
+  "participants": [
+    "confucius",
+    "laozi",
+    "mozi",
+    "hanfeizi",
+    "li_bai"
+  ],
+  "rounds": [
+    {
+      "round_number": 1,
+      "round_type": "opinion",
+      "speeches": [
+        {
+          "sage_key": "confucius",
+          "sage_name": "孔子",
+          "round_number": 1,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "laozi",
+          "sage_name": "老子",
+          "round_number": 1,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《道德经·第二十二章》",
+              "original": "夫唯不争，故天下莫能与之争。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "mozi",
+          "sage_name": "墨子",
+          "round_number": 1,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《墨子·兼爱下》",
+              "original": "言必信，行必果。",
+              "similarity": 0.375,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "hanfeizi",
+          "sage_name": "韩非子",
+          "round_number": 1,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《韩非子·外储说左上》",
+              "original": "事以密成，语以泄败。",
+              "similarity": 0.25,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        }
+      ],
+      "clashes": []
+    },
+    {
+      "round_number": 2,
+      "round_type": "cross_debate",
+      "speeches": [
+        {
+          "sage_key": "confucius",
+          "sage_name": "孔子",
+          "round_number": 2,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "laozi",
+          "sage_name": "老子",
+          "round_number": 2,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《道德经·第二十二章》",
+              "original": "夫唯不争，故天下莫能与之争。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "mozi",
+          "sage_name": "墨子",
+          "round_number": 2,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《墨子·兼爱下》",
+              "original": "言必信，行必果。",
+              "similarity": 0.375,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "hanfeizi",
+          "sage_name": "韩非子",
+          "round_number": 2,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《韩非子·外储说左上》",
+              "original": "事以密成，语以泄败。",
+              "similarity": 0.25,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": false,
+          "confidence": "high"
+        }
+      ],
+      "clashes": [
+        {
+          "from_sage": "confucius",
+          "to_sage": "confucius",
+          "clash_type": "disagree",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "laozi",
+          "to_sage": "confucius",
+          "clash_type": "disagree",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "mozi",
+          "to_sage": "confucius",
+          "clash_type": "disagree",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "hanfeizi",
+          "to_sage": "confucius",
+          "clash_type": "disagree",
+          "summary": "测试发言"
+        }
+      ]
+    },
+    {
+      "round_number": 3,
+      "round_type": "guest",
+      "speeches": [
+        {
+          "sage_key": "li_bai",
+          "sage_name": "李白",
+          "round_number": 3,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《将进酒》",
+              "original": "人生得意须尽欢，莫使金樽空对月。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "confucius",
+          "is_guest": true,
+          "confidence": "high"
+        }
+      ],
+      "clashes": []
+    },
+    {
+      "round_number": 4,
+      "round_type": "guest_response",
+      "speeches": [
+        {
+          "sage_key": "confucius",
+          "sage_name": "孔子",
+          "round_number": 4,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《论语·泰伯》",
+              "original": "士不可以不弘毅，任重而道远。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "li_bai",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "laozi",
+          "sage_name": "老子",
+          "round_number": 4,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《道德经·第二十二章》",
+              "original": "夫唯不争，故天下莫能与之争。",
+              "similarity": 0.03125,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "li_bai",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "mozi",
+          "sage_name": "墨子",
+          "round_number": 4,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《墨子·兼爱下》",
+              "original": "言必信，行必果。",
+              "similarity": 0.375,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "li_bai",
+          "is_guest": false,
+          "confidence": "high"
+        },
+        {
+          "sage_key": "hanfeizi",
+          "sage_name": "韩非子",
+          "round_number": 4,
+          "content": "测试发言",
+          "vernacular": "测试白话",
+          "quote": "无",
+          "source": "无",
+          "citations": [],
+          "sentence_evidence": [
+            {
+              "sentence": "测试发言",
+              "source": "《韩非子·外储说左上》",
+              "original": "事以密成，语以泄败。",
+              "similarity": 0.25,
+              "verifiable": true
+            }
+          ],
+          "target_sage": "li_bai",
+          "is_guest": false,
+          "confidence": "high"
+        }
+      ],
+      "clashes": [
+        {
+          "from_sage": "confucius",
+          "to_sage": "li_bai",
+          "clash_type": "reframe",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "laozi",
+          "to_sage": "li_bai",
+          "clash_type": "reframe",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "mozi",
+          "to_sage": "li_bai",
+          "clash_type": "refute",
+          "summary": "测试发言"
+        },
+        {
+          "from_sage": "hanfeizi",
+          "to_sage": "li_bai",
+          "clash_type": "refute",
+          "summary": "测试发言"
+        }
+      ]
+    }
+  ],
+  "report": null,
+  "graph_trace": [],
+  "created_at": "2026-07-03T21:54:21.560306",
+  "round_counter": 4
+}

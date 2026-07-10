@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#f5efe0"/><stop offset="0.58" stop-color="#44403c"/><stop offset="1" stop-color="#111827"/></radialGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.16"/></feComponentTransfer></filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" filter="url(#grain)" opacity="0.45"/>
+  <path d="M92 408c42-88 96-132 164-132s122 44 164 132" fill="#111827" opacity="0.7"/>
+  <circle cx="256" cy="190" r="86" fill="#f3dfbf" opacity="0.95"/>
+  <path d="M178 194c22-58 48-86 80-86 38 0 66 28 76 86-30-20-56-30-78-30-26 0-52 10-78 30z" fill="#111827" opacity="0.9"/>
+  <path d="M136 348c72 36 168 38 240 0" fill="none" stroke="#f5efe0" stroke-width="14" opacity="0.52" stroke-linecap="round"/>
+  <text x="256" y="438" text-anchor="middle" font-family="serif" font-size="78" font-weight="700" fill="#f5efe0">?</text>
+</svg>
