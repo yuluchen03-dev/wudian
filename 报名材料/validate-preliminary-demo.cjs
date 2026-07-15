@@ -68,6 +68,13 @@ assert.match(scene, /THREE\.WebGLRenderer/, "Three.js WebGL renderer is required
 assert.match(scene, /setPixelRatio/, "Canvas pixel ratio must be capped");
 assert.match(scene, /is-2d-fallback/, "WebGL failure must activate portrait fallback");
 assert.match(scene, /prefers-reduced-motion/, "3D scene must respect reduced motion");
+for (const portrait of ["confucius.png", "mencius.png", "laozi.png"]) {
+  assert.ok(scene.includes(portrait), `3D scene must load ${portrait}`);
+}
+assert.match(scene, /THREE\.TextureLoader/, "3D portrait seats must use local textures");
+assert.match(scene, /createPortraitSeat/, "3D portrait-seat factory is required");
+assert.doesNotMatch(scene, /createSage|IcosahedronGeometry|userData\.arm/, "Geometric sage dolls must be removed");
+assert.match(html, /点击肖像切换立场/, "Debate hint must describe portrait interaction honestly");
 assert.match(app, /force2d/, "App must expose a deterministic 2D fallback test path");
 assert.match(app, /if \(total === 0\) return \{ self: 34, relationship: 33, change: 33 \}/, "Zero weights must return the neutral default");
 assert.match(app, /setActiveSage\("confucius"\); go\("debate"\)/, "Re-entering debate must synchronize the DOM and 3D active sage");
