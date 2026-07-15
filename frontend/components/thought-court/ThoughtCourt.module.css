@@ -1,0 +1,1070 @@
+/* ===== Thought Court Design Tokens ===== */
+.court {
+  --court-ink: #151714;
+  --court-paper: #f2eee4;
+  --court-cinnabar: #a43d32;
+  --court-jade: #4f7669;
+  --court-stone: #8e928c;
+  --court-radius: 8px;
+  --court-touch: 44px;
+  min-height: 100dvh;
+  color: var(--court-paper);
+  background: var(--court-ink);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Chrome Bar ===== */
+.chromeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  min-height: 64px;
+  background: rgba(21, 23, 20, 0.92);
+  border-bottom: 1px solid rgba(242, 238, 228, 0.12);
+  flex-wrap: wrap;
+}
+
+.actProgress {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actStep {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--court-radius);
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.actStepActive {
+  opacity: 1;
+  background: rgba(164, 61, 50, 0.18);
+}
+
+.actStepDone {
+  opacity: 0.7;
+}
+
+.actGlyph {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--court-paper);
+  line-height: 1;
+}
+
+.actStepActive .actGlyph {
+  color: var(--court-cinnabar);
+}
+
+.actLabel {
+  font-size: 13px;
+  color: var(--court-stone);
+  white-space: nowrap;
+}
+
+.actStepActive .actLabel {
+  color: var(--court-paper);
+}
+
+.chromeControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modeBadge,
+.networkBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid rgba(242, 238, 228, 0.2);
+  color: var(--court-stone);
+  white-space: nowrap;
+}
+
+.networkBadgeFailed {
+  border-color: var(--court-cinnabar);
+  color: var(--court-cinnabar);
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--court-touch);
+  height: var(--court-touch);
+  border: 1px solid rgba(242, 238, 228, 0.18);
+  border-radius: var(--court-radius);
+  background: transparent;
+  color: var(--court-paper);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.iconButton:hover {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.15);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
+}
+
+/* ===== Error Bar ===== */
+.errorBar {
+  padding: 8px 20px;
+  background: rgba(164, 61, 50, 0.15);
+  color: var(--court-cinnabar);
+  font-size: 13px;
+  border-bottom: 1px solid rgba(164, 61, 50, 0.3);
+}
+
+/* ===== Stage ===== */
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: calc(100dvh - 64px);
+  overflow: clip;
+  flex: 1;
+}
+
+.stageBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-height: 0;
+}
+
+/* ===== Phase Panel ===== */
+.phasePanel {
+  text-align: center;
+  max-width: 560px;
+}
+
+.phaseEyebrow {
+  font-size: 13px;
+  color: var(--court-stone);
+  margin: 0 0 8px;
+  letter-spacing: 0.1em;
+}
+
+.phaseTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--court-paper);
+  margin: 0 0 12px;
+}
+
+.phaseHint {
+  font-size: 15px;
+  color: var(--court-stone);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===== Case Intake ===== */
+.intake {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.intakeHeader {
+  text-align: center;
+}
+
+.intakeTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--court-paper);
+  margin: 0 0 6px;
+}
+
+.intakeSubtitle {
+  font-size: 14px;
+  color: var(--court-stone);
+  margin: 0;
+}
+
+.caseCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--court-radius);
+  border: 1px solid rgba(242, 238, 228, 0.15);
+  background: rgba(242, 238, 228, 0.04);
+  color: var(--court-paper);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  font: inherit;
+}
+
+.caseCard:hover {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.1);
+}
+
+.caseCardSelected {
+  border-color: var(--court-cinnabar);
+  background: rgba(164, 61, 50, 0.12);
+}
+
+.caseCardPrimary {
+  padding: 20px;
+}
+
+.caseCardCompact {
+  flex: 1;
+  padding: 12px;
+}
+
+.caseLabel {
+  font-size: 13px;
+  color: var(--court-jade);
+  font-weight: 600;
+}
+
+.caseQuestion {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--court-paper);
+}
+
+.caseQuestionCompact {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--court-paper);
+}
+
+.caseConflicts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.conflictTag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(142, 146, 140, 0.2);
+  color: var(--court-stone);
+}
+
+.alternativeRow {
+  display: flex;
+  gap: 12px;
+}
+
+.freeQuestionField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.freeQuestionLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--court-stone);
+}
+
+.freeQuestionTextarea {
+  padding: 12px;
+  border-radius: var(--court-radius);
+  border: 1px solid rgba(242, 238, 228, 0.18);
+  background: rgba(21, 23, 20, 0.6);
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.freeQuestionTextarea:focus {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 1px;
+}
+
+.freeQuestionTextarea::placeholder {
+  color: rgba(142, 146, 140, 0.6);
+}
+
+/* ===== Primary Action Button ===== */
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: var(--court-radius);
+  border: none;
+  background: var(--court-cinnabar);
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  align-self: center;
+  min-width: 200px;
+}
+
+.primaryAction:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.primaryAction:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.primaryAction:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
+}
+
+/* ===== Evidence Dock ===== */
+.evidenceDock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.evidenceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.evidenceTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--court-paper);
+  margin: 0;
+}
+
+.citationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid rgba(242, 238, 228, 0.2);
+}
+
+.statusVerified {
+  border-color: var(--court-jade);
+  color: var(--court-jade);
+}
+
+.statusPartial {
+  border-color: #c4956a;
+  color: #c4956a;
+}
+
+.statusUnavailable {
+  border-color: var(--court-cinnabar);
+  color: var(--court-cinnabar);
+}
+
+.evidenceEmpty {
+  color: var(--court-stone);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.evidenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.evidenceCard {
+  border: 1px solid rgba(242, 238, 228, 0.15);
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.evidenceCardSelected {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.08);
+}
+
+.evidenceCitationHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--court-paper);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.evidenceOriginal {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.evidenceSource {
+  font-size: 12px;
+  color: var(--court-stone);
+  white-space: nowrap;
+}
+
+.evidenceDetail {
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evidenceRow {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--court-paper);
+}
+
+.evidenceRowLabel {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--court-jade);
+  margin-right: 6px;
+}
+
+.evidenceVerify {
+  margin: 0;
+  font-size: 12px;
+  color: var(--court-stone);
+}
+
+.evidenceToggleButton {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-top: 1px solid rgba(242, 238, 228, 0.1);
+  background: transparent;
+  color: var(--court-jade);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  min-height: var(--court-touch);
+}
+
+.evidenceToggleButton:hover {
+  background: rgba(79, 118, 105, 0.1);
+}
+
+/* ===== Sage Tribunal ===== */
+.tribunal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.tribunalHeader {
+  text-align: center;
+}
+
+.tribunalTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--court-paper);
+  margin: 0 0 6px;
+}
+
+.tribunalHint {
+  font-size: 14px;
+  color: var(--court-stone);
+  margin: 0;
+}
+
+.tribunalStage {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.sageSeat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(242, 238, 228, 0.15);
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.sageSeatActive {
+  border-color: var(--court-cinnabar);
+  background: rgba(164, 61, 50, 0.1);
+  box-shadow: 0 0 0 1px rgba(164, 61, 50, 0.3), 0 8px 24px rgba(164, 61, 50, 0.15);
+}
+
+.sagePortraitWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sagePortrait {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(79, 118, 105, 0.25);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(242, 238, 228, 0.2);
+  flex-shrink: 0;
+}
+
+.sageName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--court-paper);
+}
+
+.speechRegion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.speechPosition {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--court-jade);
+  line-height: 1.5;
+}
+
+.speechScroll {
+  min-height: 96px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: rgba(21, 23, 20, 0.5);
+  border: 1px solid rgba(242, 238, 228, 0.08);
+}
+
+.speechContent {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--court-paper);
+}
+
+.speechFailed,
+.speechWaiting {
+  margin: 0;
+  font-size: 14px;
+  color: var(--court-stone);
+  font-style: italic;
+}
+
+.sageActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sageActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  min-height: var(--court-touch);
+  border: 1px solid rgba(242, 238, 228, 0.18);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.sageActionBtn:hover:not(:disabled) {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.12);
+}
+
+.sageActionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sageActionBtn:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 1px;
+}
+
+.followUpInline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 4px;
+  background: rgba(21, 23, 20, 0.5);
+  border: 1px solid rgba(242, 238, 228, 0.1);
+}
+
+.followUpTextarea {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(242, 238, 228, 0.18);
+  background: rgba(21, 23, 20, 0.6);
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 56px;
+}
+
+.followUpTextarea:focus {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 1px;
+}
+
+.followUpSubmit {
+  align-self: flex-end;
+  padding: 6px 16px;
+  min-height: var(--court-touch);
+  border: none;
+  border-radius: 4px;
+  background: var(--court-jade);
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.followUpSubmit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mutualPicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 4px;
+  background: rgba(21, 23, 20, 0.5);
+  border: 1px solid rgba(242, 238, 228, 0.1);
+}
+
+.mutualPickerLabel {
+  font-size: 13px;
+  color: var(--court-stone);
+}
+
+.mutualPickerBtn {
+  padding: 6px 14px;
+  min-height: var(--court-touch);
+  border: 1px solid rgba(242, 238, 228, 0.18);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.mutualPickerBtn:hover:not(:disabled) {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.12);
+}
+
+.mutualPickerBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.retryBtn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  min-height: var(--court-touch);
+  border: 1px solid var(--court-cinnabar);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--court-cinnabar);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.retryBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.clashList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+  border: 1px solid rgba(242, 238, 228, 0.1);
+}
+
+.clashItem {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--court-paper);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clashPair {
+  font-weight: 600;
+  color: var(--court-jade);
+}
+
+.clashSummary {
+  color: var(--court-stone);
+}
+
+.tribunalFooter {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+/* ===== Verdict Scroll ===== */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.verdictHeader {
+  text-align: center;
+}
+
+.verdictTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--court-paper);
+  margin: 0;
+}
+
+.verdictBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(242, 238, 228, 0.12);
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+}
+
+.verdictSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.verdictSectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--court-jade);
+  letter-spacing: 0.05em;
+}
+
+.verdictSectionText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--court-paper);
+}
+
+.verdictList,
+.verdictOrderedList {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.verdictListItem {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--court-paper);
+}
+
+.verdictOrderedList {
+  list-style: decimal;
+}
+
+.verdictList {
+  list-style: disc;
+}
+
+.safetyBoundary {
+  padding: 12px 16px;
+  border-radius: var(--court-radius);
+  background: rgba(164, 61, 50, 0.1);
+  border: 1px solid rgba(164, 61, 50, 0.25);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--court-cinnabar);
+}
+
+.weightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid rgba(242, 238, 228, 0.12);
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+}
+
+.weightControl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weightLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--court-paper);
+}
+
+.weightValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--court-jade);
+}
+
+.weightRange {
+  width: 100%;
+  height: var(--court-touch);
+  cursor: pointer;
+  accent-color: var(--court-cinnabar);
+}
+
+.evidenceSourceList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid rgba(242, 238, 228, 0.12);
+  border-radius: var(--court-radius);
+  background: rgba(242, 238, 228, 0.04);
+}
+
+.evidenceSourceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(242, 238, 228, 0.08);
+}
+
+.evidenceSourceItem:last-child {
+  border-bottom: none;
+}
+
+.evidenceSourceOriginal {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--court-paper);
+}
+
+.evidenceSourceText {
+  margin: 0;
+  font-size: 12px;
+  color: var(--court-stone);
+}
+
+.verdictSealLayer {
+  position: relative;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.verdictSealLayer[data-sealed="false"] {
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(164, 61, 50, 0.4),
+    transparent
+  );
+  animation: verdictSealPulse 0.9s ease-out;
+}
+
+.verdictSealLayer[data-sealed="true"] {
+  height: 0;
+  animation: none;
+}
+
+@keyframes verdictSealPulse {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scaleX(1);
+  }
+}
+
+.verdictFooter {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.verdictFooterActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 767px) {
+  .stage {
+    min-height: calc(100dvh - 56px);
+  }
+
+  .chromeBar {
+    min-height: 56px;
+    padding: 8px 12px;
+  }
+
+  .actLabel {
+    display: none;
+  }
+
+  .actGlyph {
+    font-size: 20px;
+  }
+
+  .chromeControls {
+    gap: 4px;
+  }
+
+  .modeBadge,
+  .networkBadge {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .phaseTitle {
+    font-size: 22px;
+  }
+
+  .alternativeRow {
+    flex-direction: column;
+  }
+
+  .intake,
+  .evidenceDock,
+  .tribunal,
+  .verdict {
+    padding: 16px 0;
+  }
+
+  .tribunalStage {
+    grid-template-columns: 1fr;
+  }
+
+  .tribunalTitle,
+  .verdictTitle {
+    font-size: 22px;
+  }
+
+  .verdictBody,
+  .weightPanel,
+  .evidenceSourceList {
+    padding: 14px;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .court *,
+  .court *::before,
+  .court *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+.court[data-motion="degraded"] .ambient,
+.court[data-motion="degraded"] .parallaxLayer {
+  display: none;
+}
