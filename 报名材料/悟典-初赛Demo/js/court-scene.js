@@ -5,6 +5,11 @@ const STATE_CAMERA = {
   debate: [0, 4.8, 9.4], weighting: [0, 6.2, 10.2], verdict: [0, 7.8, 7.4], epilogue: [0, 8.5, 14.5],
 };
 const SAGE_POSITIONS = { confucius: [-3.8, 0, .4], mencius: [3.8, 0, .4], laozi: [0, 0, -3.8] };
+const PORTRAIT_PATHS = {
+  confucius: "assets/confucius.png",
+  mencius: "assets/mencius.png",
+  laozi: "assets/laozi.png",
+};
 
 export function createCourtScene(canvas, { forceFallback = false, onFallback = () => {} } = {}) {
   if (forceFallback) {
@@ -60,12 +65,18 @@ export function createCourtScene(canvas, { forceFallback = false, onFallback = (
   const evidenceBooks = [createBook(0xb54836), createBook(0xc6a765), createBook(0x4f988c)];
   evidenceBooks.forEach((book, index) => { book.position.set((index - 1) * 2.2, .2, 1.7); book.rotation.y = (index - 1) * -.12; world.add(book); });
 
-  const sages = {
-    confucius: createSage("confucius", 0xb54836, "square"),
-    mencius: createSage("mencius", 0xc6a765, "crown"),
-    laozi: createSage("laozi", 0x4f988c, "topknot"),
+  const textureLoader = new THREE.TextureLoader();
+  const portraitSeats = {
+    confucius: createPortraitSeat("confucius", 0xb54836, PORTRAIT_PATHS.confucius, textureLoader),
+    mencius: createPortraitSeat("mencius", 0xc6a765, PORTRAIT_PATHS.mencius, textureLoader),
+    laozi: createPortraitSeat("laozi", 0x4f988c, PORTRAIT_PATHS.laozi, textureLoader),
   };
-  Object.entries(sages).forEach(([id, sage]) => { sage.position.set(...SAGE_POSITIONS[id]); world.add(sage); });
+  const startsMobile = canvas.clientWidth < 768;
+  Object.entries(portraitSeats).forEach(([id, seat]) => {
+    seat.position.set(...(startsMobile ? [0, 0, .6] : SAGE_POSITIONS[id]));
+    seat.visible = !startsMobile || id === activeSage;
+    world.add(seat);
+  });
 
   const relationGroup = new THREE.Group(); world.add(relationGroup);
   const particles = createDust(); world.add(particles);
@@ -97,12 +108,12 @@ export function createCourtScene(canvas, { forceFallback = false, onFallback = (
     if (nextState === "intake") setActiveSage("confucius");
   }
 
-  function setActiveSage(sageId) { activeSage = sageId in sages ? sageId : "confucius"; }
+  function setActiveSage(sageId) { activeSage = sageId in portraitSeats ? sageId : "confucius"; }
   function setWeights(values) {
     const normalized = values || { self: 34, relationship: 33, change: 33 };
-    sages.confucius.userData.weight = normalized.relationship / 100;
-    sages.mencius.userData.weight = normalized.self / 100;
-    sages.laozi.userData.weight = normalized.change / 100;
+    portraitSeats.confucius.userData.weight = normalized.relationship / 100;
+    portraitSeats.mencius.userData.weight = normalized.self / 100;
+    portraitSeats.laozi.userData.weight = normalized.change / 100;
     jadeLight.intensity = 12 + normalized.relationship * .11;
     redLight.intensity = 7 + normalized.change * .1;
   }
@@ -126,14 +137,23 @@ export function createCourtScene(canvas, { forceFallback = false, onFallback = (
     const easing = reduced ? 1 : 1 - Math.pow(.001, delta);
     camera.position.lerp(targetCamera, easing);
     camera.lookAt(lookTarget);
-    Object.entries(sages).forEach(([id, sage], index) => {
-      const base = SAGE_POSITIONS[id]; const isActive = id === activeSage && state === "debate";
-      const weightLift = state === "weighting" ? (sage.userData.weight || .33) * .7 : 0;
-      sage.position.x += (base[0] - sage.position.x) * easing;
-      sage.position.y += ((reduced ? 0 : Math.sin(time * 1.15 + index) * .035) + weightLift - sage.position.y) * easing;
-      sage.position.z += (base[2] + (isActive ? 1.05 : 0) - sage.position.z) * easing;
-      sage.rotation.y += ((isActive ? -Math.atan2(base[0], 8) : 0) - sage.rotation.y) * easing;
-      sage.userData.arm.rotation.z += ((isActive && !reduced ? -.55 : -.18) - sage.userData.arm.rotation.z) * easing;
+    const isMobile = canvas.clientWidth < 768;
+    Object.entries(portraitSeats).forEach(([id, seat], index) => {
+      const isActive = id === activeSage;
+      const isDebating = isActive && state === "debate";
+      const base = isMobile ? [0, 0, .6] : SAGE_POSITIONS[id];
+      const weightLift = state === "weighting" ? (seat.userData.weight || .33) * .7 : 0;
+      const bob = reduced ? 0 : Math.sin(time * 1.15 + index) * .035;
+      const targetOpacity = state === "debate" ? (isActive ? 1 : .38) : .92;
+      const targetGlow = state === "debate" ? (isActive ? .58 : .05) : .16;
+      seat.visible = !isMobile || isActive;
+      seat.position.x += (base[0] - seat.position.x) * easing;
+      seat.position.y += (bob + weightLift - seat.position.y) * easing;
+      seat.position.z += (base[2] + (!isMobile && isDebating ? 1.05 : 0) - seat.position.z) * easing;
+      seat.rotation.y += ((!isMobile && isDebating ? -Math.atan2(base[0], 8) : 0) - seat.rotation.y) * easing;
+      seat.userData.fadeMaterials.forEach((material) => { material.opacity += (targetOpacity - material.opacity) * easing; });
+      seat.userData.glowMaterial.opacity += (targetGlow - seat.userData.glowMaterial.opacity) * easing;
+      seat.userData.accentMaterial.emissiveIntensity += ((isDebating ? .8 : .25) - seat.userData.accentMaterial.emissiveIntensity) * easing;
     });
     if (!reduced) particles.rotation.y += delta * .018;
     dossier.rotation.y += ((sealed ? -.08 : 0) - dossier.rotation.y) * easing;
@@ -144,24 +164,53 @@ export function createCourtScene(canvas, { forceFallback = false, onFallback = (
   return { setState, setActiveSage, setWeights, setReducedMotion, resize, destroy() { destroyed = true; renderer.dispose(); } };
 }
 
-function createSage(id, robeColor, headwear) {
+function createPortraitSeat(id, accentColor, texturePath, textureLoader) {
   const group = new THREE.Group(); group.name = id;
-  const robe = new THREE.MeshStandardMaterial({ color: robeColor, roughness: .7, metalness: .08 });
-  const trim = new THREE.MeshStandardMaterial({ color: 0xd7c28c, roughness: .58, metalness: .18 });
-  const skin = new THREE.MeshStandardMaterial({ color: 0xc99575, roughness: .86 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x171d1b, roughness: .76 });
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(.82, 1.25, 2.15, 7), robe); torso.position.y = 1.1; torso.castShadow = true; group.add(torso);
-  const collar = new THREE.Mesh(new THREE.TorusGeometry(.48, .1, 6, 18, Math.PI), trim); collar.position.set(0, 2.05, .22); collar.rotation.set(Math.PI / 2, 0, 0); group.add(collar);
-  const head = new THREE.Mesh(new THREE.IcosahedronGeometry(.59, 2), skin); head.position.y = 2.55; head.scale.set(.9, 1.08, .92); head.castShadow = true; group.add(head);
-  const beard = new THREE.Mesh(new THREE.ConeGeometry(.34, .9, 7), dark); beard.position.set(0, 1.92, .48); beard.rotation.x = -.12; group.add(beard);
-  const armLeft = new THREE.Mesh(new THREE.CylinderGeometry(.15, .2, 1.45, 6), robe); armLeft.position.set(-.88, 1.15, .08); armLeft.rotation.z = .18; group.add(armLeft);
-  const armRight = new THREE.Mesh(new THREE.CylinderGeometry(.15, .2, 1.45, 6), robe); armRight.position.set(.88, 1.15, .08); armRight.rotation.z = -.18; group.add(armRight);
-  if (headwear === "square") { const hat = new THREE.Mesh(new THREE.BoxGeometry(1.15, .18, .7), dark); hat.position.y = 3.15; group.add(hat); }
-  if (headwear === "crown") { const crown = new THREE.Mesh(new THREE.CylinderGeometry(.34, .48, .58, 6), dark); crown.position.y = 3.25; group.add(crown); }
-  if (headwear === "topknot") { const knot = new THREE.Mesh(new THREE.SphereGeometry(.25, 8, 6), dark); knot.position.y = 3.22; group.add(knot); }
-  const seat = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.55, .22, 32), new THREE.MeshStandardMaterial({ color: 0x202926, metalness: .24, roughness: .62 })); seat.position.y = .02; seat.receiveShadow = true; group.add(seat);
-  const halo = new THREE.Mesh(new THREE.TorusGeometry(1.05, .025, 6, 48), new THREE.MeshBasicMaterial({ color: robeColor, transparent: true, opacity: .7 })); halo.rotation.x = Math.PI / 2; halo.position.y = .16; group.add(halo);
-  group.userData = { arm: armRight, weight: .33 }; return group;
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x111715, roughness: .58, metalness: .32, transparent: true });
+  const accentMaterial = new THREE.MeshStandardMaterial({ color: accentColor, emissive: accentColor, emissiveIntensity: .25, roughness: .42, metalness: .44, transparent: true });
+  const plinthMaterial = new THREE.MeshStandardMaterial({ color: 0x202926, roughness: .62, metalness: .3, transparent: true });
+  const portraitMaterial = new THREE.MeshBasicMaterial({ color: accentColor, transparent: true });
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: accentColor, transparent: true, opacity: .16, blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(3.35, 3.7), glowMaterial); glow.position.set(0, 2.05, -.19); group.add(glow);
+  const backPanel = new THREE.Mesh(new THREE.BoxGeometry(2.9, 3.25, .32), darkMaterial); backPanel.position.y = 2.05; backPanel.castShadow = true; group.add(backPanel);
+  const portrait = new THREE.Mesh(new THREE.PlaneGeometry(2.42, 2.42), portraitMaterial); portrait.position.set(0, 2.08, .171); group.add(portrait);
+  for (const x of [-1.52, 1.52]) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(.18, 3.4, .42), accentMaterial); post.position.set(x, 2.02, .02); post.castShadow = true; group.add(post);
+  }
+  const cap = new THREE.Mesh(new THREE.BoxGeometry(3.22, .2, .42), accentMaterial); cap.position.set(0, 3.75, .02); cap.castShadow = true; group.add(cap);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(3.55, .3, 1.25), plinthMaterial); plinth.position.y = .15; plinth.castShadow = true; plinth.receiveShadow = true; group.add(plinth);
+  const riser = new THREE.Mesh(new THREE.BoxGeometry(2.9, .42, .82), darkMaterial); riser.position.y = .43; riser.castShadow = true; group.add(riser);
+
+  const portraitTexture = textureLoader.load(
+    texturePath,
+    (texture) => {
+      const width = texture.image?.naturalWidth || texture.image?.width || 1;
+      const height = texture.image?.naturalHeight || texture.image?.height || 1;
+      const aspect = width / height;
+      portrait.scale.set(aspect > 1 ? 1 : aspect, aspect > 1 ? 1 / aspect : 1, 1);
+      portraitMaterial.color.setHex(0xffffff);
+      portraitMaterial.map = texture;
+      portraitMaterial.needsUpdate = true;
+    },
+    undefined,
+    () => {
+      portraitMaterial.map = null;
+      portraitMaterial.color.setHex(accentColor);
+      portraitMaterial.needsUpdate = true;
+    },
+  );
+  portraitTexture.colorSpace = THREE.SRGBColorSpace;
+
+  group.userData = {
+    weight: .33,
+    fadeMaterials: [darkMaterial, accentMaterial, plinthMaterial, portraitMaterial],
+    glowMaterial,
+    accentMaterial,
+  };
+  return group;
 }
 function createDossier() {
   const group = new THREE.Group();
