@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
+import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Gavel, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import type { CitationStatus, CourtEvidence, CourtMotionMode } from "@/lib/thoughtCourtTypes";
 import styles from "./ThoughtCourt.module.css";
@@ -27,12 +28,12 @@ export default function EvidenceDock({
   evidence,
   selectedIds,
   citationStatus,
-  motion,
+  motion: motionMode,
   onToggleEvidence,
   onBeginDebate,
 }: EvidenceDockProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const isDraggable = motion === "full";
+  const isDraggable = motionMode === "full";
   const statusConfig = STATUS_CONFIG[citationStatus];
   const StatusIcon = statusConfig.icon;
   const hasSelected = selectedIds.length > 0;
@@ -40,6 +41,9 @@ export default function EvidenceDock({
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
+
+  // Evidence closeup: camera-like scale on the evidence region only; reading text remains still.
+  const closeupEnabled = motionMode === "full";
 
   return (
     <section className={styles.evidenceDock} aria-label="经典依据">
@@ -59,22 +63,26 @@ export default function EvidenceDock({
         {evidence.map((item) => {
           const isSelected = selectedIds.includes(item.id);
           const isExpanded = expandedId === item.id;
+          const detailId = `evidence-detail-${item.id}`;
           return (
-            <article
+            <motion.article
               key={item.id}
-              className={`${styles.evidenceCard} ${isSelected ? styles.evidenceCardSelected : ""}`}
+              className={`${styles.evidenceCard} ${styles.evidenceCloseup} ${isSelected ? styles.evidenceCardSelected : ""}`}
               draggable={isDraggable}
               onDragStart={(e) => {
-                e.dataTransfer.setData("text/plain", item.id);
-                e.dataTransfer.effectAllowed = "move";
+                const event = e as unknown as DragEvent<HTMLDivElement>;
+                event.dataTransfer.setData("text/plain", item.id);
+                event.dataTransfer.effectAllowed = "move";
               }}
+              animate={closeupEnabled && isExpanded ? { scale: 1.015 } : { scale: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <button
                 type="button"
                 className={styles.evidenceCitationHeader}
                 onClick={() => toggleExpand(item.id)}
                 aria-expanded={isExpanded}
-                aria-controls={`evidence-detail-${item.id}`}
+                aria-controls={detailId}
               >
                 <span className={styles.evidenceOriginal}>{item.original}</span>
                 <span className={styles.evidenceSource}>{item.source}</span>
@@ -82,7 +90,7 @@ export default function EvidenceDock({
               </button>
 
               {isExpanded && (
-                <div id={`evidence-detail-${item.id}`} className={styles.evidenceDetail}>
+                <div id={detailId} className={styles.evidenceDetail}>
                   <p className={styles.evidenceRow}>
                     <span className={styles.evidenceRowLabel}>释义</span>
                     {item.interpretation}
@@ -105,7 +113,7 @@ export default function EvidenceDock({
               >
                 {isSelected ? "移出本案" : "加入本案"}
               </button>
-            </article>
+            </motion.article>
           );
         })}
       </div>

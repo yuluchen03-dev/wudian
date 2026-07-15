@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Gavel, MessageSquareText } from "lucide-react";
 import type { CourtMode, CuratedCourtCase } from "@/lib/thoughtCourtTypes";
 import styles from "./ThoughtCourt.module.css";
@@ -10,6 +11,9 @@ const CASE_QUESTIONS = [
   "稳定但不喜欢的工作，要不要离开？",
   "同事抢了我的功劳，我该争还是忍？",
 ];
+
+const NO_LOGIN_COPY = "无需登录，直接开审";
+const POSITIONING_COPY = "不是一个 AI，是一桌中国思想审你的问题";
 
 interface CaseIntakeProps {
   cases: CuratedCourtCase[];
@@ -56,16 +60,28 @@ export default function CaseIntake({
   return (
     <section className={styles.intake} aria-label="立案问询">
       <div className={styles.intakeHeader}>
-        <h2 className={styles.intakeTitle}>选择一案，击鼓开审</h2>
+        <motion.h2
+          className={styles.intakeTitle}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          选择一案，击鼓开审
+        </motion.h2>
         <p className={styles.intakeSubtitle}>三圣将依据经典，为你审理心中之困。</p>
+        <p className={styles.intakePositioning}>{POSITIONING_COPY}</p>
+        <p className={styles.intakeNoLogin}>{NO_LOGIN_COPY}</p>
       </div>
 
       {primary && (
-        <button
+        <motion.button
           type="button"
           className={`${styles.caseCard} ${styles.caseCardPrimary} ${selectedCaseId === primary.id ? styles.caseCardSelected : ""}`}
           onClick={() => onSelectCase(primary.id)}
           aria-pressed={selectedCaseId === primary.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
         >
           <span className={styles.caseLabel}>{primary.label}</span>
           <span className={styles.caseQuestion}>{primary.question}</span>
@@ -74,7 +90,7 @@ export default function CaseIntake({
               <span key={c} className={styles.conflictTag}>{c}</span>
             ))}
           </span>
-        </button>
+        </motion.button>
       )}
 
       <div className={styles.alternativeRow}>

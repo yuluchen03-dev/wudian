@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { buildVerdict, normalizeWeights } from "@/lib/thoughtCourtVerdict";
 import type {
   CitationStatus,
@@ -73,7 +74,17 @@ export default function VerdictScroll({
         <h2 className={styles.verdictTitle}>判词</h2>
       </div>
 
-      <div className={styles.verdictBody}>
+      {/* Verdict seal — one seal impact; stage tone shifts from ink to paper */}
+      <motion.div
+        className={`${styles.verdictBody} ${sealed ? styles.verdictBodySealed : ""}`}
+        initial={false}
+        animate={{
+          backgroundColor: sealed
+            ? "rgba(242, 238, 228, 0.10)"
+            : "rgba(242, 238, 228, 0.04)",
+        }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
         <div className={styles.verdictSection}>
           <h3 className={styles.verdictSectionTitle}>核心矛盾</h3>
           <p className={styles.verdictSectionText}>{verdict.conflict}</p>
@@ -120,7 +131,7 @@ export default function VerdictScroll({
         <div className={styles.safetyBoundary} role="note">
           {SAFETY_BOUNDARY}
         </div>
-      </div>
+      </motion.div>
 
       {showWeights ? (
         <div className={styles.weightPanel} aria-label="权重调节">
@@ -162,7 +173,17 @@ export default function VerdictScroll({
         className={styles.verdictSealLayer}
         data-sealed={sealed ? "true" : "false"}
         aria-hidden="true"
-      />
+      >
+        {sealed && (
+          <motion.div
+            className={styles.verdictSeal}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            aria-hidden="true"
+          />
+        )}
+      </div>
 
       <div className={styles.verdictFooter}>
         {!completed ? (

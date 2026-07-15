@@ -25,6 +25,10 @@ import type {
 
 const SAGE_ORDER = ["confucius", "mencius", "laozi"];
 
+// Runtime degradation threshold: if average frame time exceeds 28ms for 30 samples, set motion to degraded.
+const DEGRADATION_SAMPLE_COUNT = 30;
+const DEGRADATION_FRAME_THRESHOLD_MS = 28;
+
 function debateReportToCourtReport(raw: any): CourtReport {
   const recommendations: string[] = Array.isArray(raw?.recommendations)
     ? raw.recommendations
@@ -58,6 +62,9 @@ export function useThoughtCourt() {
   const liveSessionIdRef = useRef<string | null>(null);
   const bufferedSpeechesRef = useRef<CourtSpeech[]>([]);
   const revealTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const frameSamplesRef = useRef<number[]>([]);
+  const lastQuestionRef = useRef<string>("");
+  const lastSagesRef = useRef<string[]>(SAGE_ORDER);
 
   const gateway = useMemo(() => createApiCourtGateway(api), []);
 
@@ -80,6 +87,7 @@ export function useThoughtCourt() {
     setActionBusy(false);
     liveSessionIdRef.current = null;
     bufferedSpeechesRef.current = [];
+    lastQuestionRef.current = "";
     dispatch({ type: "RESET" });
   }, [clearRevealTimers]);
 
@@ -93,6 +101,7 @@ export function useThoughtCourt() {
 
   const submitCase = useCallback((question: string, curated?: CuratedCourtCase) => {
     if (!question.trim()) return;
+    lastQuestionRef.current = question.trim();
     dispatch({ type: "SUBMIT_CASE", question });
 
     if (curated) {
@@ -112,6 +121,8 @@ export function useThoughtCourt() {
   const submitLive = useCallback(
     async (question: string, sages: string[]) => {
       if (!question.trim()) return;
+      lastQuestionRef.current = question.trim();
+      lastSagesRef.current = sages;
       dispatch({ type: "SUBMIT_CASE", question });
       try {
         const result = await prepareLiveCourt(question, sages, gateway, (event) => {
@@ -252,6 +263,48 @@ export function useThoughtCourt() {
     dispatch({ type: "COMPLETE" });
   }, []);
 
+  // Switch to stable demo: load a curated case to recover from a live failure.
+  const useStableDemo = useCallback((curated: CuratedCourtCase) => {
+    dispatch({ type: "USE_STABLE_DEMO" });
+    lastQuestionRef.current = curated.question;
+    const evidenceIds = curated.evidence.map((item) => item.id);
+    setEvidence(curated.evidence);
+    setSpeeches([]);
+    setClashes(curated.clashes);
+    setReport(curated.report);
+    setSelectedEvidenceIds(evidenceIds);
+    bufferedSpeechesRef.current = curated.speeches;
+    liveSessionIdRef.current = null;
+    requestAnimationFrame(() => {
+      dispatch({ type: "RETRIEVAL_SUCCEEDED", evidenceIds, citationStatus: "verified" });
+    });
+  }, []);
+
+  // Retry the failed remote operation: repeats only the failed remote operation.
+  const retry = useCallback(() => {
+    dispatch({ type: "RETRY" });
+    const question = lastQuestionRef.current;
+    if (!question) return;
+    if (state.mode === "live") {
+      submitLive(question, lastSagesRef.current);
+    }
+  }, [state.mode, submitLive]);
+
+  // Runtime degradation sampler: accumulate frame deltas, set degraded if average exceeds threshold.
+  // Never collects or transmits timing data; only used locally to decide degraded motion.
+  const sampleFrame = useCallback((deltaMs: number) => {
+    if (state.motion !== "full") return;
+    frameSamplesRef.current.push(deltaMs);
+    if (frameSamplesRef.current.length >= DEGRADATION_SAMPLE_COUNT) {
+      const sum = frameSamplesRef.current.reduce((acc, n) => acc + n, 0);
+      const avg = sum / frameSamplesRef.current.length;
+      frameSamplesRef.current = [];
+      if (avg > DEGRADATION_FRAME_THRESHOLD_MS) {
+        dispatch({ type: "SET_MOTION", motion: "degraded" });
+      }
+    }
+  }, [state.motion]);
+
   return {
     state,
     evidence,
@@ -276,5 +329,8 @@ export function useThoughtCourt() {
     buildVerdict,
     setWeights,
     complete,
+    useStableDemo,
+    retry,
+    sampleFrame,
   };
 }

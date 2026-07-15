@@ -180,4 +180,117 @@ assert.ok(
   "ThoughtCourtExperience should render VerdictScroll in the weighting/verdict phases"
 );
 
+// ===== Task 9: Cinematic 2.5D motion, sound, and performance degradation wiring =====
+const courtComponentFiles = [
+  "components/thought-court/CourtStageChrome.tsx",
+  "components/thought-court/ThoughtCourtExperience.tsx",
+  "components/thought-court/CaseIntake.tsx",
+  "components/thought-court/EvidenceDock.tsx",
+  "components/thought-court/SageTribunal.tsx",
+  "components/thought-court/VerdictScroll.tsx",
+  "components/thought-court/useThoughtCourt.ts",
+];
+const combinedCourtSource = courtComponentFiles.map(read).join("\n");
+
+assert.ok(
+  combinedCourtSource.includes("motion"),
+  "thought court should reference motion from framer-motion"
+);
+assert.ok(
+  combinedCourtSource.includes("AnimatePresence"),
+  "thought court should reference AnimatePresence from framer-motion"
+);
+assert.ok(
+  combinedCourtSource.includes("sageVisuals"),
+  "thought court should reference sageVisuals from visualAssets"
+);
+assert.ok(
+  combinedCourtSource.includes("portraitImage") ||
+    combinedCourtSource.includes("sceneImage"),
+  "thought court should reference sage portrait or scene imagery paths"
+);
+assert.ok(
+  combinedCourtSource.includes("openingShot"),
+  "thought court should define an openingShot motion class"
+);
+assert.ok(
+  combinedCourtSource.includes("evidenceCloseup"),
+  "thought court should define an evidenceCloseup motion class"
+);
+assert.ok(
+  combinedCourtSource.includes("clashShockwave"),
+  "thought court should define a clashShockwave motion class"
+);
+assert.ok(
+  combinedCourtSource.includes("verdictSeal"),
+  "thought court should define a verdictSeal motion class"
+);
+assert.ok(
+  combinedCourtSource.includes('state.sound === "enabled"'),
+  "thought court should gate sound playback behind state.sound === enabled"
+);
+
+const courtCssTask9 = read("components/thought-court/ThoughtCourt.module.css");
+assert.ok(
+  courtCssTask9.includes("openingShot"),
+  "court css should define the openingShot motion class"
+);
+assert.ok(
+  courtCssTask9.includes("evidenceCloseup"),
+  "court css should define the evidenceCloseup motion class"
+);
+assert.ok(
+  courtCssTask9.includes("clashShockwave"),
+  "court css should define the clashShockwave motion class"
+);
+assert.ok(
+  courtCssTask9.includes("verdictSeal"),
+  "court css should define the verdictSeal motion class"
+);
+
+// ===== Task 10: Mobile, accessibility, and failure recovery wiring =====
+const combinedCourtTask10 = courtComponentFiles.map(read).join("\n");
+
+assert.ok(
+  combinedCourtTask10.includes("跳过") || combinedCourtTask10.includes("skip"),
+  "thought court should provide a skip link"
+);
+assert.ok(
+  courtCssTask9.includes(":focus-visible") || courtCssTask9.includes(":focus"),
+  "court css should have visible focus styles"
+);
+assert.ok(
+  combinedCourtTask10.includes("aria-live"),
+  "thought court should have aria-live status regions"
+);
+assert.ok(
+  courtCssTask9.includes("min-height: 44px") ||
+    courtCssTask9.includes("min-height:44px"),
+  "court css should enforce 44px minimum controls"
+);
+assert.ok(
+  combinedCourtTask10.includes("重试"),
+  "thought court should expose a retry control"
+);
+assert.ok(
+  combinedCourtTask10.includes("切换演示稳定层"),
+  "thought court should expose a switch-to-stable-demo control"
+);
+assert.ok(
+  combinedCourtTask10.includes("演示稳定层：已加载经校验案件"),
+  "thought court should show the exact stable-demo badge label"
+);
+assert.ok(
+  combinedCourtTask10.includes("无需登录"),
+  "thought court should display no-login copy"
+);
+assert.ok(
+  courtCssTask9.includes("390px") || courtCssTask9.includes("max-width: 767px"),
+  "court css should contain a 390px-safe mobile layout"
+);
+assert.ok(
+  courtCssTask9.includes("env(safe-area-inset-bottom)"),
+  "court css should contain bottom action safe-area padding"
+);
+
 console.log("thoughtCourtWiring tests passed");

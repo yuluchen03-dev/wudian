@@ -14,6 +14,30 @@
   flex-direction: column;
 }
 
+/* Skip link — visible on focus only */
+.skipLink {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 20;
+  padding: 10px 16px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--court-radius);
+  background: var(--court-cinnabar);
+  color: var(--court-paper);
+  font-size: 14px;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skipLink:focus-visible {
+  top: 12px;
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
+}
+
 /* ===== Chrome Bar ===== */
 .chromeBar {
   display: flex;
@@ -91,6 +115,18 @@
   white-space: nowrap;
 }
 
+.stableDemoBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--court-jade);
+  color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.12);
+  white-space: nowrap;
+}
+
 .networkBadgeFailed {
   border-color: var(--court-cinnabar);
   color: var(--court-cinnabar);
@@ -118,6 +154,16 @@
 .iconButton:focus-visible {
   outline: 2px solid var(--court-jade);
   outline-offset: 2px;
+}
+
+.iconButtonDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.iconButtonDisabled:hover {
+  border-color: rgba(242, 238, 228, 0.18);
+  background: transparent;
 }
 
 /* ===== Error Bar ===== */
@@ -175,6 +221,128 @@
   margin: 0;
 }
 
+.phaseNoLogin {
+  font-size: 12px;
+  color: var(--court-jade);
+  margin-top: 8px;
+}
+
+/* ===== Recovery Panel ===== */
+.recoveryPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid rgba(164, 61, 50, 0.35);
+  border-radius: var(--court-radius);
+  background: rgba(164, 61, 50, 0.08);
+}
+
+.recoveryTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--court-cinnabar);
+}
+
+.recoveryMessage {
+  margin: 0;
+  font-size: 14px;
+  color: var(--court-paper);
+  line-height: 1.6;
+}
+
+.recoveryActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recoveryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 18px;
+  min-height: 44px;
+  border: 1px solid rgba(242, 238, 228, 0.25);
+  border-radius: var(--court-radius);
+  background: transparent;
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.recoveryBtnPrimary {
+  border-color: var(--court-cinnabar);
+  background: var(--court-cinnabar);
+}
+
+.recoveryBtn:hover:not(:disabled) {
+  border-color: var(--court-jade);
+  background: rgba(79, 118, 105, 0.12);
+}
+
+.recoveryBtnPrimary:hover:not(:disabled) {
+  border-color: var(--court-cinnabar);
+  background: rgba(164, 61, 50, 0.85);
+}
+
+.recoveryBtn:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
+}
+
+/* ===== Opening Shot (cinematic 2.5D establishing shot) ===== */
+.openingShot {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(21, 23, 20, 0.0) 0%,
+    rgba(21, 23, 20, 0.92) 70%
+  );
+}
+
+.openingShotSkip {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  padding: 6px 14px;
+  min-height: 44px;
+  border: 1px solid rgba(242, 238, 228, 0.25);
+  border-radius: var(--court-radius);
+  background: rgba(21, 23, 20, 0.6);
+  color: var(--court-paper);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.openingShotSkip:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
+}
+
+.openingShotLabel {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--court-paper);
+  letter-spacing: 0.15em;
+  text-align: center;
+}
+
 /* ===== Case Intake ===== */
 .intake {
   display: flex;
@@ -203,6 +371,19 @@
   margin: 0;
 }
 
+.intakePositioning {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--court-cinnabar);
+  letter-spacing: 0.02em;
+}
+
+.intakeNoLogin {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--court-jade);
+}
+
 .caseCard {
   display: flex;
   flex-direction: column;
@@ -221,6 +402,11 @@
 .caseCard:hover {
   border-color: var(--court-jade);
   background: rgba(79, 118, 105, 0.1);
+}
+
+.caseCard:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
 }
 
 .caseCardSelected {
@@ -301,7 +487,8 @@
   min-height: 80px;
 }
 
-.freeQuestionTextarea:focus {
+.freeQuestionTextarea:focus,
+.freeQuestionTextarea:focus-visible {
   outline: 2px solid var(--court-jade);
   outline-offset: 1px;
 }
@@ -413,12 +600,18 @@
   border-radius: var(--court-radius);
   background: rgba(242, 238, 228, 0.04);
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.3s ease;
 }
 
 .evidenceCardSelected {
   border-color: var(--court-jade);
   background: rgba(79, 118, 105, 0.08);
+}
+
+/* Evidence closeup — camera-like scale on the evidence region only */
+.evidenceCloseup {
+  transform-origin: center top;
+  will-change: transform;
 }
 
 .evidenceCitationHeader {
@@ -433,6 +626,12 @@
   cursor: pointer;
   text-align: left;
   font: inherit;
+  min-height: 44px;
+}
+
+.evidenceCitationHeader:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: -2px;
 }
 
 .evidenceOriginal {
@@ -486,11 +685,16 @@
   font-size: 13px;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-height: var(--court-touch);
+  min-height: 44px;
 }
 
 .evidenceToggleButton:hover {
   background: rgba(79, 118, 105, 0.1);
+}
+
+.evidenceToggleButton:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: -2px;
 }
 
 /* ===== Sage Tribunal ===== */
@@ -544,6 +748,10 @@
   box-shadow: 0 0 0 1px rgba(164, 61, 50, 0.3), 0 8px 24px rgba(164, 61, 50, 0.15);
 }
 
+.sageSeatInactive {
+  opacity: 0.72;
+}
+
 .sagePortraitWrap {
   display: flex;
   align-items: center;
@@ -565,6 +773,11 @@
   font-size: 16px;
   font-weight: 700;
   color: var(--court-paper);
+}
+
+/* Mobile segmented sage selector — replaces three-seat stage */
+.sageSegmentBar {
+  display: none;
 }
 
 .speechRegion {
@@ -617,7 +830,7 @@
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
-  min-height: var(--court-touch);
+  min-height: 44px;
   border: 1px solid rgba(242, 238, 228, 0.18);
   border-radius: 4px;
   background: transparent;
@@ -666,7 +879,8 @@
   min-height: 56px;
 }
 
-.followUpTextarea:focus {
+.followUpTextarea:focus,
+.followUpTextarea:focus-visible {
   outline: 2px solid var(--court-jade);
   outline-offset: 1px;
 }
@@ -674,7 +888,7 @@
 .followUpSubmit {
   align-self: flex-end;
   padding: 6px 16px;
-  min-height: var(--court-touch);
+  min-height: 44px;
   border: none;
   border-radius: 4px;
   background: var(--court-jade);
@@ -688,6 +902,11 @@
 .followUpSubmit:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.followUpSubmit:focus-visible {
+  outline: 2px solid var(--court-paper);
+  outline-offset: 2px;
 }
 
 .mutualPicker {
@@ -708,7 +927,7 @@
 
 .mutualPickerBtn {
   padding: 6px 14px;
-  min-height: var(--court-touch);
+  min-height: 44px;
   border: 1px solid rgba(242, 238, 228, 0.18);
   border-radius: 4px;
   background: transparent;
@@ -729,10 +948,15 @@
   cursor: not-allowed;
 }
 
+.mutualPickerBtn:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 1px;
+}
+
 .retryBtn {
   align-self: flex-start;
   padding: 6px 14px;
-  min-height: var(--court-touch);
+  min-height: 44px;
   border: 1px solid var(--court-cinnabar);
   border-radius: 4px;
   background: transparent;
@@ -747,6 +971,25 @@
   cursor: not-allowed;
 }
 
+.retryBtn:focus-visible {
+  outline: 2px solid var(--court-cinnabar);
+  outline-offset: 1px;
+}
+
+/* Clash shockwave — one short shockwave per newly detected clash */
+.clashShockwave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  border: 2px solid var(--court-cinnabar);
+  pointer-events: none;
+  z-index: 5;
+}
+
 .clashList {
   display: flex;
   flex-direction: column;
@@ -755,6 +998,8 @@
   border-radius: var(--court-radius);
   background: rgba(242, 238, 228, 0.04);
   border: 1px solid rgba(242, 238, 228, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .clashItem {
@@ -780,6 +1025,7 @@
   display: flex;
   justify-content: center;
   padding: 8px 0 4px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 /* ===== Verdict Scroll ===== */
@@ -812,6 +1058,11 @@
   border: 1px solid rgba(242, 238, 228, 0.12);
   border-radius: var(--court-radius);
   background: rgba(242, 238, 228, 0.04);
+  transition: background 0.6s ease, color 0.6s ease;
+}
+
+.verdictBodySealed {
+  background: rgba(242, 238, 228, 0.08);
 }
 
 .verdictSection {
@@ -900,9 +1151,14 @@
 
 .weightRange {
   width: 100%;
-  height: var(--court-touch);
+  height: 44px;
   cursor: pointer;
   accent-color: var(--court-cinnabar);
+}
+
+.weightRange:focus-visible {
+  outline: 2px solid var(--court-jade);
+  outline-offset: 2px;
 }
 
 .evidenceSourceList {
@@ -940,11 +1196,29 @@
   color: var(--court-stone);
 }
 
+/* Verdict seal — one seal impact; stage tone shifts from ink to paper */
 .verdictSealLayer {
   position: relative;
   height: 0;
   overflow: visible;
   pointer-events: none;
+}
+
+.verdictSeal {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(164, 61, 50, 0.55) 0%,
+    rgba(164, 61, 50, 0.0) 70%
+  );
+  pointer-events: none;
+  z-index: 4;
 }
 
 .verdictSealLayer[data-sealed="false"] {
@@ -983,6 +1257,7 @@
   justify-content: center;
   gap: 12px;
   padding: 8px 0 4px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 .verdictFooterActions {
@@ -992,8 +1267,12 @@
   justify-content: center;
 }
 
-/* ===== Responsive ===== */
+/* ===== Mobile layout (max-width: 767px, 390px-safe) ===== */
 @media (max-width: 767px) {
+  .court {
+    overflow-x: hidden;
+  }
+
   .stage {
     min-height: calc(100dvh - 56px);
   }
@@ -1016,7 +1295,8 @@
   }
 
   .modeBadge,
-  .networkBadge {
+  .networkBadge,
+  .stableDemoBadge {
     font-size: 11px;
     padding: 3px 6px;
   }
@@ -1036,8 +1316,61 @@
     padding: 16px 0;
   }
 
+  /* One active seat + horizontal segmented sage selector (not three-seat stage) */
   .tribunalStage {
     grid-template-columns: 1fr;
+  }
+
+  .sageSeat:not(.sageSeatActive) {
+    display: none;
+  }
+
+  .sageSegmentBar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sageSegmentBtn {
+    flex: 1 0 auto;
+    min-height: 44px;
+    padding: 6px 14px;
+    border: 1px solid rgba(242, 238, 228, 0.18);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--court-paper);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .sageSegmentBtnActive {
+    border-color: var(--court-cinnabar);
+    background: rgba(164, 61, 50, 0.18);
+    color: var(--court-paper);
+  }
+
+  .sageSegmentBtn:focus-visible {
+    outline: 2px solid var(--court-jade);
+    outline-offset: 1px;
+  }
+
+  /* Evidence becomes a bottom sheet (max 70dvh) */
+  .evidenceDock {
+    position: relative;
+    max-height: 70dvh;
+    overflow-y: auto;
+    padding: 12px;
+    border-top: 1px solid rgba(242, 238, 228, 0.12);
+    background: rgba(21, 23, 20, 0.85);
+  }
+
+  .evidenceList {
+    max-height: 50dvh;
   }
 
   .tribunalTitle,
@@ -1049,6 +1382,28 @@
   .weightPanel,
   .evidenceSourceList {
     padding: 14px;
+  }
+
+  /* Prevent horizontal overflow at 390px */
+  .intake,
+  .evidenceDock,
+  .tribunal,
+  .verdict {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .primaryAction {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .verdictFooterActions {
+    width: 100%;
+  }
+
+  .verdictFooterActions .sageActionBtn {
+    flex: 1 1 auto;
   }
 }
 
@@ -1062,9 +1417,30 @@
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
+
+  /* Disable parallax, shockwaves, long camera moves, seal scaling */
+  .openingShot,
+  .clashShockwave,
+  .verdictSeal,
+  .evidenceCloseup {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 .court[data-motion="degraded"] .ambient,
-.court[data-motion="degraded"] .parallaxLayer {
+.court[data-motion="degraded"] .parallaxLayer,
+.court[data-motion="degraded"] .openingShot,
+.court[data-motion="degraded"] .evidenceCloseup,
+.court[data-motion="degraded"] .clashShockwave,
+.court[data-motion="degraded"] .verdictSeal {
   display: none;
+}
+
+.court[data-motion="reduced"] .openingShot,
+.court[data-motion="reduced"] .evidenceCloseup,
+.court[data-motion="reduced"] .clashShockwave,
+.court[data-motion="reduced"] .verdictSeal {
+  animation: none !important;
+  transform: none !important;
 }
