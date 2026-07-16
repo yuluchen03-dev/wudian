@@ -4,13 +4,21 @@
 }
 
 .experience {
+  --tw-canvas: var(--color-canvas, var(--bg-paper, #f5f1e8));
+  --tw-surface: var(--color-surface, var(--bg-paper-warm, #fbf9f3));
+  --tw-ink: var(--color-ink, var(--ink, #242421));
+  --tw-muted: var(--color-muted, var(--ink-soft, #6f6a61));
+  --tw-action: var(--color-action, #334854);
+  --tw-citation: var(--color-citation, var(--cinnabar, #9e443a));
+  --tw-line: var(--color-line, #d8d0c3);
+  --tw-highlight: var(--color-highlight, #fbf4e0);
   position: relative;
   isolation: isolate;
   min-height: clamp(620px, calc(100svh - 68px), 860px);
   overflow: hidden;
-  border-block: 1px solid var(--color-line);
-  color: var(--color-ink);
-  background: var(--color-canvas);
+  border-block: 1px solid var(--tw-line);
+  color: var(--tw-ink);
+  background: var(--tw-canvas);
 }
 
 .paperNoise {
@@ -65,7 +73,7 @@
 
 .author {
   margin: 0 0 0.7rem;
-  color: var(--color-citation);
+  color: var(--tw-citation);
   font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   font-size: 0.84rem;
   font-weight: 600;
@@ -75,7 +83,7 @@
 .titleBlock h1 {
   width: 2.05em;
   margin: 0;
-  color: var(--color-ink);
+  color: var(--tw-ink);
   font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   font-size: clamp(3.75rem, 6vw, 5.75rem);
   font-weight: 600;
@@ -92,8 +100,8 @@
   width: min(17rem, 24vw);
   margin: 0;
   padding-top: 0.8rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-action) 52%, transparent);
-  color: var(--color-muted);
+  border-top: 1px solid color-mix(in srgb, var(--tw-action) 52%, transparent);
+  color: var(--tw-muted);
   font-size: 0.75rem;
   line-height: 1.7;
   letter-spacing: 0;
@@ -105,10 +113,10 @@
   min-width: 44px;
   min-height: 44px;
   place-items: center;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--tw-line);
   border-radius: 4px;
-  color: var(--color-ink);
-  background: var(--color-surface);
+  color: var(--tw-ink);
+  background: var(--tw-surface);
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -117,9 +125,9 @@
 }
 
 .iconButton:hover {
-  border-color: var(--color-action);
-  color: var(--color-action);
-  background: var(--color-highlight);
+  border-color: var(--tw-action);
+  color: var(--tw-action);
+  background: var(--tw-highlight);
 }
 
 .settingsButton {
@@ -155,10 +163,10 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--tw-line);
   border-radius: 8px;
   padding: 1rem;
-  color: var(--color-ink);
+  color: var(--tw-ink);
   background: rgba(251, 249, 243, 0.96);
   box-shadow: 0 18px 44px rgba(36, 36, 33, 0.16);
 }
@@ -176,7 +184,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--tw-line);
 }
 
 .panelHeader > div {
@@ -185,7 +193,7 @@
 
 .panelEyebrow {
   margin: 0 0 0.2rem;
-  color: var(--color-citation);
+  color: var(--tw-citation);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -219,7 +227,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: var(--color-muted);
+  color: var(--tw-muted);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
@@ -232,7 +240,7 @@
 
 .settingMeta {
   flex: 0 0 auto;
-  color: var(--color-action);
+  color: var(--tw-action);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
@@ -246,9 +254,9 @@
   justify-content: center;
   gap: 0.5rem;
   overflow: hidden;
-  border: 1px dashed var(--color-line);
+  border: 1px dashed var(--tw-line);
   border-radius: 4px;
-  color: var(--color-action);
+  color: var(--tw-action);
   background: transparent;
   font-size: 0.8rem;
   font-weight: 650;
@@ -259,8 +267,8 @@
 }
 
 .uploadControl:hover {
-  border-color: var(--color-action);
-  background: var(--color-highlight);
+  border-color: var(--tw-action);
+  background: var(--tw-highlight);
 }
 
 .fileInput {
@@ -274,7 +282,7 @@
 
 .helpText {
   margin: 0;
-  color: var(--color-muted);
+  color: var(--tw-muted);
   font-size: 0.68rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -286,10 +294,10 @@
   min-height: 7.25rem;
   max-height: 13rem;
   resize: vertical;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--tw-line);
   border-radius: 4px;
   padding: 0.65rem 0.7rem;
-  color: var(--color-ink);
+  color: var(--tw-ink);
   background: rgba(245, 241, 232, 0.56);
   font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   font-size: 0.78rem;
@@ -302,7 +310,7 @@
   gap: 0.9rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-line);
+  border-top: 1px solid var(--tw-line);
 }
 
 .rangeSetting {
@@ -314,7 +322,7 @@
 
 .rangeSetting label,
 .rangeSetting output {
-  color: var(--color-muted);
+  color: var(--tw-muted);
   font-size: 0.75rem;
   line-height: 1.4;
 }
@@ -327,7 +335,7 @@
 
 .rangeSetting output {
   min-width: 2.25rem;
-  color: var(--color-action);
+  color: var(--tw-action);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -337,7 +345,7 @@
   width: 100%;
   height: 24px;
   margin: 0;
-  accent-color: var(--color-citation);
+  accent-color: var(--tw-citation);
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
@@ -346,33 +354,33 @@
 .range::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--color-line);
+  background: var(--tw-line);
 }
 
 .range::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   margin-top: -7px;
-  border: 2px solid var(--color-surface);
+  border: 2px solid var(--tw-surface);
   border-radius: 8px;
-  background: var(--color-citation);
-  box-shadow: 0 0 0 1px var(--color-citation);
+  background: var(--tw-citation);
+  box-shadow: 0 0 0 1px var(--tw-citation);
   -webkit-appearance: none;
 }
 
 .range::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--color-line);
+  background: var(--tw-line);
 }
 
 .range::-moz-range-thumb {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--color-surface);
+  border: 2px solid var(--tw-surface);
   border-radius: 8px;
-  background: var(--color-citation);
-  box-shadow: 0 0 0 1px var(--color-citation);
+  background: var(--tw-citation);
+  box-shadow: 0 0 0 1px var(--tw-citation);
 }
 
 .commandButton,
@@ -385,10 +393,10 @@
   justify-content: center;
   gap: 0.5rem;
   margin-top: 0.65rem;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--tw-line);
   border-radius: 4px;
   padding: 0.55rem 0.7rem;
-  color: var(--color-action);
+  color: var(--tw-action);
   background: transparent;
   font-size: 0.78rem;
   font-weight: 650;
@@ -404,14 +412,14 @@
 
 .commandButton:hover:not(:disabled),
 .restoreButton:hover {
-  border-color: var(--color-action);
-  background: var(--color-highlight);
+  border-color: var(--tw-action);
+  background: var(--tw-highlight);
 }
 
 .commandButtonActive {
-  border-color: var(--color-action);
+  border-color: var(--tw-action);
   color: #fffdf8;
-  background: var(--color-action);
+  background: var(--tw-action);
 }
 
 .commandButtonActive:hover:not(:disabled) {
@@ -420,7 +428,7 @@
 }
 
 .commandButton:disabled {
-  color: var(--color-muted);
+  color: var(--tw-muted);
   background: rgba(216, 208, 195, 0.28);
   cursor: not-allowed;
   opacity: 0.72;
@@ -429,18 +437,18 @@
 .panelActions {
   margin-top: 1rem;
   padding-top: 0.35rem;
-  border-top: 1px solid var(--color-line);
+  border-top: 1px solid var(--tw-line);
 }
 
 .restoreButton {
-  color: var(--color-citation);
+  color: var(--tw-citation);
 }
 
 .canvasNotice {
   margin: 1rem 0 0;
-  border-left: 2px solid var(--color-citation);
+  border-left: 2px solid var(--tw-citation);
   padding: 0.15rem 0 0.15rem 0.65rem;
-  color: var(--color-muted);
+  color: var(--tw-muted);
   font-size: 0.72rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -452,7 +460,7 @@
 .settingsPanel:focus-visible,
 .settingsButton:focus-visible,
 .uploadControl:focus-within {
-  outline: 2px solid var(--color-citation);
+  outline: 2px solid var(--tw-citation);
   outline-offset: 2px;
 }
 
@@ -465,10 +473,10 @@
   max-width: min(34rem, calc(100% - 2rem));
   margin: 0;
   transform: translateX(-50%);
-  border: 1px solid color-mix(in srgb, var(--color-citation) 38%, var(--color-line));
+  border: 1px solid color-mix(in srgb, var(--tw-citation) 38%, var(--tw-line));
   border-radius: 4px;
   padding: 0.45rem 0.65rem;
-  color: var(--color-citation);
+  color: var(--tw-citation);
   background: rgba(251, 249, 243, 0.92);
   font-size: 0.72rem;
   line-height: 1.45;

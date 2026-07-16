@@ -346,7 +346,7 @@ export default function TengwangExperience() {
       <p className={styles.srOnly}>{TENGWANG_GE_XU_TEXT}</p>
 
       {imageError && (
-        <p className={styles.status} role="alert" aria-live="assertive">
+        <p className={styles.status} role="status" aria-live="polite">
           {imageError}
         </p>
       )}
