@@ -747,6 +747,7 @@ export default function CurtainCanvas({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     canvas.addEventListener("pointerenter", handlePointerEnter);
+    canvas.addEventListener("pointerdown", handlePointerEnter);
     canvas.addEventListener("pointermove", handlePointerMove);
     canvas.addEventListener("pointerleave", handlePointerLeave);
     canvas.addEventListener("pointercancel", handlePointerLeave);
@@ -763,6 +764,7 @@ export default function CurtainCanvas({
         handleVisibilityChange
       );
       canvas.removeEventListener("pointerenter", handlePointerEnter);
+      canvas.removeEventListener("pointerdown", handlePointerEnter);
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("pointerleave", handlePointerLeave);
       canvas.removeEventListener("pointercancel", handlePointerLeave);
