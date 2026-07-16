@@ -134,4 +134,11 @@ assert(contentPage.includes("pageBackgrounds.content"), "content page should use
 assert(theaterPlayer.includes("theater.coverImage"), "theater player should use theater cover images");
 assert(theaterPlayer.includes("role.portraitImage"), "theater player should use role portraits");
 
+const tengwangPavilionPath = "/agens/content/tengwang-ge-xu/pavilion.png";
+assert(
+  visualAssets.includes(`export const tengwangPavilion = "${tengwangPavilionPath}";`),
+  "visualAssets should export the Tengwang Pavilion image"
+);
+assertPngAsset(tengwangPavilionPath);
+
 console.log("visualAssetsWiring tests passed");
