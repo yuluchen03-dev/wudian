@@ -90,8 +90,8 @@ assertMatches(
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /className\s*=\s*\{styles\.srOnly\}[^>]*>\s*\{effectiveCurtainText\}\s*<\/p>/,
-  "expose the effective text to screen readers"
+  /\{\s*!canvasUnavailable\s*&&\s*\(\s*<p\b[^>]*className\s*=\s*\{styles\.srOnly\}[^>]*>\s*\{effectiveCurtainText\}\s*<\/p>\s*\)\s*\}/,
+  "expose the screen-reader-only passage only in the dynamic canvas branch"
 );
 assertMatches(
   experience,

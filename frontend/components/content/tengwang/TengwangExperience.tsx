@@ -490,7 +490,9 @@ export default function TengwangExperience() {
       <p className={styles.caption}>
         《滕王阁序》作于唐上元二年，写洪州胜景、宾主盛会与人生际遇。
       </p>
-      <p className={styles.srOnly}>{effectiveCurtainText}</p>
+      {!canvasUnavailable && (
+        <p className={styles.srOnly}>{effectiveCurtainText}</p>
+      )}
 
       {statusMessage && (
         <p className={styles.status} role="status" aria-live="polite">
