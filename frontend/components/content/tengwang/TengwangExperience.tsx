@@ -18,6 +18,7 @@ import styles from "./TengwangExperience.module.css";
 const ACCEPTED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 8192;
+const MAX_IMAGE_PIXELS = 8_000_000;
 const DEFAULT_SETTINGS = {
   strength: 72,
   reach: 34,
@@ -39,7 +40,7 @@ type Settings = {
   soundEnabled: boolean;
 };
 
-type WebAudioWindow = Window & {
+type WebAudioWindow = typeof window & {
   webkitAudioContext?: typeof AudioContext;
 };
 
@@ -58,6 +59,8 @@ export default function TengwangExperience() {
   const pavilionRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const ignoreDialogCloseRef = useRef<HTMLDialogElement | null>(null);
   const settingsPanelRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -130,11 +133,46 @@ export default function TengwangExperience() {
     setPanelOpen(true);
   }, []);
 
-  useEffect(() => {
-    if (!panelOpen || !settingsPanelRef.current) return;
+  const handleDialogCancel = useCallback(
+    (event: React.SyntheticEvent<HTMLDialogElement>) => {
+      event.preventDefault();
+      closeSettings();
+    },
+    [closeSettings]
+  );
 
+  const handleDialogClose = useCallback(
+    (event: React.SyntheticEvent<HTMLDialogElement>) => {
+      if (ignoreDialogCloseRef.current === event.currentTarget) {
+        ignoreDialogCloseRef.current = null;
+        return;
+      }
+
+      setPanelOpen(false);
+    },
+    []
+  );
+
+  const handleDialogBackdropClick = useCallback(
+    (event: React.MouseEvent<HTMLDialogElement>) => {
+      if (event.currentTarget === event.target) closeSettings();
+    },
+    [closeSettings]
+  );
+
+  useEffect(() => {
+    if (
+      !panelOpen ||
+      !dialogRef.current ||
+      !settingsPanelRef.current
+    ) {
+      return;
+    }
+
+    const dialog = dialogRef.current;
     const panel = settingsPanelRef.current;
     const previousOverflow = document.body.style.overflow;
+    if (!dialog.open) dialog.showModal();
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
 
@@ -142,12 +180,6 @@ export default function TengwangExperience() {
       Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeSettings();
-        return;
-      }
-
       if (event.key !== "Tab") return;
 
       const focusable = getFocusableElements();
@@ -176,6 +208,10 @@ export default function TengwangExperience() {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
+      if (dialog.open) {
+        ignoreDialogCloseRef.current = dialog;
+        dialog.close();
+      }
 
       const focusTarget = restoreFocusRef.current;
       restoreFocusRef.current = null;
@@ -185,7 +221,7 @@ export default function TengwangExperience() {
         settingsButtonRef.current?.focus();
       }
     };
-  }, [closeSettings, panelOpen]);
+  }, [panelOpen]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0] ?? null;
@@ -213,37 +249,121 @@ export default function TengwangExperience() {
     }
 
     const attempt = uploadAttemptRef.current;
-    const candidateImage = new Image();
+    let candidateImage: HTMLImageElement;
+    try {
+      candidateImage = new Image();
+    } catch {
+      URL.revokeObjectURL(candidateUrl);
+      setImageError("无法读取所选图片，请重新选择。");
+      return;
+    }
     pendingObjectUrlRef.current = candidateUrl;
     pendingImageRef.current = candidateImage;
     candidateImage.decoding = "async";
+
+    const revokeCandidateUrl = () => {
+      if (pendingObjectUrlRef.current !== candidateUrl) return;
+      pendingObjectUrlRef.current = null;
+      URL.revokeObjectURL(candidateUrl);
+    };
 
     candidateImage.onload = () => {
       if (attempt !== uploadAttemptRef.current) return;
 
       candidateImage.onload = null;
       candidateImage.onerror = null;
-      pendingImageRef.current = null;
-      pendingObjectUrlRef.current = null;
+      if (pendingImageRef.current === candidateImage) {
+        pendingImageRef.current = null;
+      }
 
-      const validDimensions =
+      const validEdges =
         candidateImage.naturalWidth > 0 &&
         candidateImage.naturalHeight > 0 &&
         candidateImage.naturalWidth <= MAX_IMAGE_EDGE &&
         candidateImage.naturalHeight <= MAX_IMAGE_EDGE;
+      const validPixelCount =
+        candidateImage.naturalWidth * candidateImage.naturalHeight <=
+        MAX_IMAGE_PIXELS;
 
-      if (!validDimensions) {
-        URL.revokeObjectURL(candidateUrl);
-        setImageError("图片宽高均需在 8192 像素以内。");
+      if (!validEdges || !validPixelCount) {
+        revokeCandidateUrl();
+        candidateImage.removeAttribute("src");
+        setImageError(
+          "图片宽高需在 8192 像素以内，且总像素不超过 800 万。"
+        );
         return;
       }
 
-      imageRequestVersionRef.current += 1;
-      revokeAcceptedObjectUrl();
-      objectUrlRef.current = candidateUrl;
-      setImageReady(false);
-      setImageError(null);
-      setImageSrc(candidateUrl);
+      let preparedCanvas: HTMLCanvasElement | null = null;
+      try {
+        preparedCanvas = document.createElement("canvas");
+        preparedCanvas.width = candidateImage.naturalWidth;
+        preparedCanvas.height = candidateImage.naturalHeight;
+        const context = preparedCanvas.getContext("2d");
+        if (!context) throw new Error("Canvas 2D is unavailable");
+        context.drawImage(
+          candidateImage,
+          0,
+          0,
+          preparedCanvas.width,
+          preparedCanvas.height
+        );
+      } catch {
+        if (preparedCanvas) {
+          preparedCanvas.width = 0;
+          preparedCanvas.height = 0;
+        }
+        revokeCandidateUrl();
+        candidateImage.removeAttribute("src");
+        setImageError("无法生成静态 PNG，已保留当前主图。");
+        return;
+      }
+
+      const staticCanvas = preparedCanvas;
+      revokeCandidateUrl();
+      candidateImage.removeAttribute("src");
+
+      try {
+        staticCanvas.toBlob(
+          (staticBlob) => {
+            staticCanvas.width = 0;
+            staticCanvas.height = 0;
+
+            if (attempt !== uploadAttemptRef.current) return;
+            if (!staticBlob || staticBlob.size === 0) {
+              setImageError("无法生成静态 PNG，已保留当前主图。");
+              return;
+            }
+
+            let staticImageUrl: string;
+            try {
+              staticImageUrl = URL.createObjectURL(staticBlob);
+            } catch {
+              setImageError("无法读取静态 PNG，已保留当前主图。");
+              return;
+            }
+
+            if (attempt !== uploadAttemptRef.current) {
+              URL.revokeObjectURL(staticImageUrl);
+              return;
+            }
+
+            imageRequestVersionRef.current += 1;
+            revokeAcceptedObjectUrl();
+            objectUrlRef.current = staticImageUrl;
+            setImageReady(false);
+            setImageError(null);
+            setImageSrc(staticImageUrl);
+          },
+          "image/png"
+        );
+      } catch {
+        staticCanvas.width = 0;
+        staticCanvas.height = 0;
+        if (attempt === uploadAttemptRef.current) {
+          setImageError("无法生成静态 PNG，已保留当前主图。");
+        }
+      }
     };
 
     candidateImage.onerror = () => {
@@ -251,13 +371,25 @@ export default function TengwangExperience() {
 
       candidateImage.onload = null;
       candidateImage.onerror = null;
-      pendingImageRef.current = null;
-      pendingObjectUrlRef.current = null;
-      URL.revokeObjectURL(candidateUrl);
+      if (pendingImageRef.current === candidateImage) {
+        pendingImageRef.current = null;
+      }
+      revokeCandidateUrl();
+      candidateImage.removeAttribute("src");
       setImageError("图片无法解码，已保留当前主图。");
     };
 
-    candidateImage.src = candidateUrl;
+    try {
+      candidateImage.src = candidateUrl;
+    } catch {
+      candidateImage.onload = null;
+      candidateImage.onerror = null;
+      if (pendingImageRef.current === candidateImage) {
+        pendingImageRef.current = null;
+      }
+      revokeCandidateUrl();
+      setImageError("无法读取所选图片，请重新选择。");
+    }
   };
 
   const handleRestoreDefaults = useCallback(() => {
@@ -294,6 +426,15 @@ export default function TengwangExperience() {
   };
 
   const imageRequestVersion = imageRequestVersionRef.current;
+  const effectiveCurtainText = curtainText.trim()
+    ? curtainText
+    : TENGWANG_GE_XU_TEXT;
+  const statusMessage = [
+    imageError,
+    canvasUnavailable ? "当前浏览器仅展示静态文境。" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <section className={styles.experience} data-tengwang-experience>
@@ -327,12 +468,18 @@ export default function TengwangExperience() {
       {!canvasUnavailable && imageReady && (
         <CurtainCanvas
           buildingRef={pavilionRef}
-          text={curtainText || TENGWANG_GE_XU_TEXT}
+          text={effectiveCurtainText}
           settings={settings}
           resetVersion={resetVersion}
           reducedMotion={Boolean(reduceMotion)}
           onUnavailable={handleCanvasUnavailable}
         />
+      )}
+
+      {canvasUnavailable && (
+        <div className={styles.staticExcerpt} aria-label="静态帘幕文字">
+          <p>{effectiveCurtainText}</p>
+        </div>
       )}
 
       <header className={styles.titleBlock}>
@@ -343,16 +490,11 @@ export default function TengwangExperience() {
       <p className={styles.caption}>
         《滕王阁序》作于唐上元二年，写洪州胜景、宾主盛会与人生际遇。
       </p>
-      <p className={styles.srOnly}>{TENGWANG_GE_XU_TEXT}</p>
+      <p className={styles.srOnly}>{effectiveCurtainText}</p>
 
-      {imageError && (
+      {statusMessage && (
         <p className={styles.status} role="status" aria-live="polite">
-          {imageError}
-        </p>
-      )}
-      {!imageError && canvasUnavailable && (
-        <p className={styles.status} role="status" aria-live="polite">
-          当前浏览器仅展示静态文境。
+          {statusMessage}
         </p>
       )}
 
@@ -370,14 +512,14 @@ export default function TengwangExperience() {
       </button>
 
       {panelOpen && (
-        <>
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="关闭文境设置"
-            tabIndex={-1}
-            onClick={closeSettings}
-          />
+        <dialog
+          ref={dialogRef}
+          className={styles.settingsDialog}
+          aria-labelledby="tengwang-settings-title"
+          onClick={handleDialogBackdropClick}
+          onCancel={handleDialogCancel}
+          onClose={handleDialogClose}
+        >
           <aside
             id="tengwang-settings"
             ref={settingsPanelRef}
@@ -422,7 +564,8 @@ export default function TengwangExperience() {
                 />
               </label>
               <p id="tengwang-image-help" className={styles.helpText}>
-                PNG、JPEG 或 WebP，宽高不超过 8192 像素
+                PNG、JPEG 或 WebP；最大 8 MiB，宽高不超过 8192
+                像素且总像素不超过 800 万，导入后转为静态 PNG
               </p>
             </div>
 
@@ -430,7 +573,9 @@ export default function TengwangExperience() {
               <label className={styles.settingLabel} htmlFor="tengwang-text">
                 <span>珠帘文字</span>
                 <span className={styles.settingMeta}>
-                  {curtainText.length}/3000
+                  {curtainText.trim()
+                    ? `${curtainText.length}/3000`
+                    : "使用默认文本"}
                 </span>
               </label>
               <textarea
@@ -566,7 +711,7 @@ export default function TengwangExperience() {
               </button>
             </div>
           </aside>
-        </>
+        </dialog>
       )}
     </section>
   );

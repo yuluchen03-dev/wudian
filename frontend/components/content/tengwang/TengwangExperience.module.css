@@ -63,6 +63,33 @@
   touch-action: pan-y;
 }
 
+.staticExcerpt {
+  position: absolute;
+  z-index: 3;
+  top: clamp(6rem, 15vh, 9rem);
+  left: 50%;
+  width: min(30rem, calc(100% - 12rem));
+  height: min(48vh, 27rem);
+  max-height: 27rem;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  overflow: hidden;
+  transform: translateX(-50%);
+  border-block: 1px solid color-mix(in srgb, var(--tw-line) 78%, transparent);
+  padding: 1rem 1.25rem;
+  color: var(--tw-ink);
+  background: color-mix(in srgb, var(--tw-surface) 84%, transparent);
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  font-size: 0.94rem;
+  line-height: 2;
+  pointer-events: none;
+}
+
+.staticExcerpt p {
+  height: 100%;
+  margin: 0;
+}
+
 .titleBlock {
   position: absolute;
   z-index: 5;
@@ -140,21 +167,29 @@
   box-shadow: 0 7px 22px rgba(36, 36, 33, 0.08);
 }
 
-.backdrop {
-  position: absolute;
+.settingsDialog {
+  position: fixed;
   inset: 0;
-  z-index: 15;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 0;
-  background: rgba(36, 36, 33, 0.22);
+  overflow: visible;
+  color: inherit;
+  background: transparent;
   cursor: default;
 }
 
+.settingsDialog::backdrop {
+  background: rgba(36, 36, 33, 0.22);
+}
+
 .settingsPanel {
-  position: absolute;
+  position: fixed;
   z-index: 20;
   top: 4.75rem;
   right: 1.25rem;
@@ -535,6 +570,15 @@
     filter: drop-shadow(14px 20px 18px rgba(36, 36, 33, 0.15));
   }
 
+  .staticExcerpt {
+    top: 5.25rem;
+    width: calc(100% - 5rem);
+    height: min(54vh, 27rem);
+    padding: 0.85rem 1rem;
+    font-size: 0.84rem;
+    line-height: 1.85;
+  }
+
   .titleBlock {
     left: 1.25rem;
     bottom: 1.75rem;
@@ -551,12 +595,6 @@
   .settingsButton {
     top: 0.75rem;
     right: 0.75rem;
-  }
-
-  .backdrop {
-    position: fixed;
-    width: auto;
-    height: auto;
   }
 
   .settingsPanel {

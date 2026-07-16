@@ -20,10 +20,7 @@ const assertMatches = (source, sourceName, pattern, requirement) => {
 
 const packageJson = JSON.parse(read("package.json"));
 const experience = read("components/content/tengwang/TengwangExperience.tsx");
-const canvas = read("components/content/tengwang/CurtainCanvas.tsx");
 const styles = read("components/content/tengwang/TengwangExperience.module.css");
-const route = read("app/content/tengwang-ge-xu/page.tsx");
-const content = read("app/content/page.tsx");
 
 assertIncludes(experience, "TengwangExperience.tsx", [
   "data-tengwang-experience",
@@ -39,6 +36,15 @@ assertIncludes(experience, "TengwangExperience.tsx", [
   "soundEnabled: false",
   "audioSupported",
   "TENGWANG_GE_XU_TEXT",
+  "MAX_IMAGE_PIXELS",
+  "effectiveCurtainText",
+  "dialogRef",
+  "ignoreDialogCloseRef",
+  "showModal()",
+  "drawImage(",
+  "toBlob(",
+  "styles.staticExcerpt",
+  "使用默认文本",
   "SlidersHorizontal",
   "VolumeX",
   "URL.revokeObjectURL",
@@ -47,9 +53,115 @@ assertIncludes(experience, "TengwangExperience.tsx", [
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /<aside\b[^>]*\brole\s*=\s*"dialog"[^>]*\baria-modal\s*=\s*"true"[^>]*>/,
-  "render its settings surface as an aside with dialog and modal semantics"
+  /<dialog\b[^>]*\bref\s*=\s*\{dialogRef\}[^>]*\bonCancel\s*=\s*\{handleDialogCancel\}[^>]*\bonClose\s*=\s*\{handleDialogClose\}[^>]*>(?:(?!<\/dialog>)[\s\S])*?<aside\b[^>]*\bid\s*=\s*"tengwang-settings"[^>]*\brole\s*=\s*"dialog"[^>]*\baria-modal\s*=\s*"true"[^>]*>/,
+  "wrap its required settings aside in a native dialog with cancel and close handlers"
 );
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /dialog\s*\.\s*showModal\s*\(\s*\)/,
+  "open the native dialog in the top layer"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /dialog\s*\.\s*close\s*\(\s*\)/,
+  "close the native dialog during panel cleanup"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /event\s*\.\s*currentTarget\s*===\s*event\s*\.\s*target/,
+  "close only clicks that land on the native dialog backdrop"
+);
+
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /const\s+effectiveCurtainText\s*=\s*curtainText\s*\.\s*trim\s*\(\s*\)\s*\?\s*curtainText\s*:\s*TENGWANG_GE_XU_TEXT/,
+  "derive one effective curtain text value that treats whitespace as empty"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /<CurtainCanvas\b(?:(?!\/>)[\s\S])*?\btext\s*=\s*\{effectiveCurtainText\}/,
+  "pass the effective text to CurtainCanvas"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /className\s*=\s*\{styles\.srOnly\}[^>]*>\s*\{effectiveCurtainText\}\s*<\/p>/,
+  "expose the effective text to screen readers"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /canvasUnavailable\s*&&\s*\([\s\S]*?className\s*=\s*\{styles\.staticExcerpt\}[\s\S]*?\{effectiveCurtainText\}/,
+  "render the effective text in the static fallback excerpt"
+);
+assert.equal(
+  (experience.match(/\brole\s*=\s*"status"/g) ?? []).length,
+  1,
+  "TengwangExperience.tsx should expose one combined live status region"
+);
+
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /const\s+MAX_IMAGE_PIXELS\s*=\s*(?:8_000_000|8000000)\s*;/,
+  "cap decoded uploads at no more than eight million pixels"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /naturalWidth\s*\*\s*candidateImage\s*\.\s*naturalHeight\s*<=\s*MAX_IMAGE_PIXELS/,
+  "validate the decoded image pixel count"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /\.\s*drawImage\s*\(\s*candidateImage\s*,/,
+  "draw the decoded first frame into an offscreen canvas"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /\.\s*toBlob\s*\([\s\S]*?["']image\/png["']/,
+  "encode the accepted image as a static PNG blob"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /URL\s*\.\s*createObjectURL\s*\(\s*staticBlob\s*\)/,
+  "make the accepted object URL own the static PNG blob"
+);
+
+assertMatches(
+  styles,
+  "TengwangExperience.module.css",
+  /\.settingsDialog\s*\{[^}]*position\s*:\s*fixed[^}]*inset\s*:\s*0[^}]*background\s*:\s*transparent[^}]*\}/,
+  "make the native dialog a transparent full-viewport layer"
+);
+assertMatches(
+  styles,
+  "TengwangExperience.module.css",
+  /\.settingsDialog::backdrop\s*\{/,
+  "style the native dialog backdrop"
+);
+assertMatches(
+  styles,
+  "TengwangExperience.module.css",
+  /\.settingsPanel\s*\{[^}]*position\s*:\s*fixed/,
+  "fix the settings panel within the native top layer"
+);
+assertMatches(
+  styles,
+  "TengwangExperience.module.css",
+  /\.staticExcerpt\s*\{[^}]*writing-mode\s*:\s*vertical-rl[^}]*overflow\s*:\s*hidden/,
+  "bound the vertical-writing static text fallback"
+);
+
+const canvas = read("components/content/tengwang/CurtainCanvas.tsx");
 
 assertIncludes(canvas, "CurtainCanvas.tsx", [
   "data-curtain-canvas",
@@ -125,6 +237,9 @@ assertMatches(
   /audioContext\s*\?\.\s*close\s*\(\s*\)\s*\.\s*catch\s*\(/,
   "close its AudioContext and handle the close promise during cleanup"
 );
+
+const route = read("app/content/tengwang-ge-xu/page.tsx");
+const content = read("app/content/page.tsx");
 
 assertMatches(
   route,
