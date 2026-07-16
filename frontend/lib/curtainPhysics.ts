@@ -116,6 +116,8 @@ export function integrateCurtain(chains: CurtainChain[], friction: number, gravi
 export function constrainCurtain(chains: CurtainChain[], passes = 6): void {
   for (let pass = 0; pass < passes; pass += 1) {
     for (const chain of chains) {
+      if (chain.length === 0) continue;
+
       const anchor = chain[0];
       anchor.x = anchor.anchorX;
       anchor.y = anchor.anchorY;
@@ -125,7 +127,21 @@ export function constrainCurtain(chains: CurtainChain[], passes = 6): void {
         const point = chain[index];
         const dx = point.x - previous.x;
         const dy = point.y - previous.y;
-        const distance = Math.max(0.0001, Math.hypot(dx, dy));
+        const measuredDistance = Math.hypot(dx, dy);
+
+        if (measuredDistance === 0) {
+          if (previous.pinned) {
+            point.x = previous.x;
+            point.y = previous.y + point.restLength;
+          } else {
+            const halfRestLength = point.restLength * 0.5;
+            previous.y -= halfRestLength;
+            point.y += halfRestLength;
+          }
+          continue;
+        }
+
+        const distance = Math.max(0.0001, measuredDistance);
         const difference = (distance - point.restLength) / distance;
 
         if (previous.pinned) {

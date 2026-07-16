@@ -82,6 +82,11 @@ const tiny = buildCurtain({
 assert.ok(tiny.length >= 2);
 assert.ok(tiny.flat().every((point) => Number.isFinite(point.x) && Number.isFinite(point.y)));
 assert.equal(isCurtainSettled(tiny, 0.03), true);
+const settledProbe = tiny.at(-1)[1];
+settledProbe.oldX = settledProbe.x - 0.05;
+assert.equal(isCurtainSettled(tiny, 0.03), false, "motion above the threshold is not settled");
+assert.equal(isCurtainSettled(tiny, 0.06), true, "motion below the threshold is settled");
+settledProbe.oldX = settledProbe.x;
 
 const guardedPoint = tiny.at(-1)[1];
 const guardedBefore = { x: guardedPoint.x, y: guardedPoint.y };
@@ -106,5 +111,48 @@ assert.deepEqual(
   "implausibly fast pointer movement should not inject an impulse"
 );
 assert.deepEqual({ x: guardedPoint.x, y: guardedPoint.y }, guardedBefore);
+
+assert.doesNotThrow(() => constrainCurtain([[]]), "empty chains should be ignored");
+
+const makePoint = ({ x, y, pinned = false, restLength = 10 }) => ({
+  x,
+  y,
+  oldX: x,
+  oldY: y,
+  anchorX: x,
+  anchorY: y,
+  pinned,
+  restLength,
+  char: "",
+});
+
+const freePairAnchor = makePoint({ x: 20, y: 10, pinned: true, restLength: 0 });
+const upperFree = makePoint({ x: 20, y: 20 });
+const lowerFree = makePoint({ x: 20, y: 20 });
+constrainCurtain([[freePairAnchor, upperFree, lowerFree]], 1);
+assert.deepEqual(
+  { x: upperFree.x, y: upperFree.y },
+  { x: 20, y: 15 },
+  "coincident free points should split the correction equally upward"
+);
+assert.deepEqual(
+  { x: lowerFree.x, y: lowerFree.y },
+  { x: 20, y: 25 },
+  "coincident free points should split the correction equally downward"
+);
+
+const pinnedCoincident = makePoint({ x: 24, y: 32, pinned: true, restLength: 0 });
+const freeCoincident = makePoint({ x: 24, y: 32 });
+constrainCurtain([[pinnedCoincident, freeCoincident]], 6);
+assert.deepEqual(
+  { x: freeCoincident.x, y: freeCoincident.y },
+  { x: 24, y: 42 },
+  "a free point should recover vertically below its coincident pinned point"
+);
+assert.equal(
+  Math.hypot(freeCoincident.x - pinnedCoincident.x, freeCoincident.y - pinnedCoincident.y),
+  10,
+  "coincident pinned and free points should recover their rest length"
+);
 
 console.log("curtainPhysics tests passed");
