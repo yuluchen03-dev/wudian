@@ -268,6 +268,17 @@ assertMatches(
   "render one Link to /content/tengwang-ge-xu containing the 文境 label"
 );
 
+const tabsMapIndex = content.indexOf("{tabs.map");
+const tengwangLinkIndex = content.indexOf('href="/content/tengwang-ge-xu"');
+const contentSectionIndex = content.indexOf("{/* 内容区 */}");
+
+assert.ok(tabsMapIndex >= 0, "content page should render the existing tab map");
+assert.ok(contentSectionIndex > tabsMapIndex, "content section should follow the tab map");
+assert.ok(
+  tengwangLinkIndex > tabsMapIndex && tengwangLinkIndex < contentSectionIndex,
+  "render the 文境 Link beside the existing tabs before the content section"
+);
+
 assertMatches(
   styles,
   "TengwangExperience.module.css",

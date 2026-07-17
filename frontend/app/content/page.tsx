@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Image, Theater as TheaterIcon, BookOpen } from "lucide-react";
+import { Image, Theater as TheaterIcon, BookOpen, Landmark } from "lucide-react";
 import clsx from "clsx";
 import { QuoteCardList, QuoteCardDetailModal } from "@/components/content/QuoteCard";
 import { TheaterCard, TheaterPlayer } from "@/components/content/TheaterPlayer";
@@ -148,6 +149,13 @@ export default function ContentPage() {
             </button>
           );
         })}
+        <Link
+          href="/content/tengwang-ge-xu"
+          className="mx-auto flex h-11 w-fit items-center gap-2 rounded border border-ink-200 bg-rice-50/90 px-4 font-serif text-sm font-medium text-ink-700 shadow-scroll transition-colors hover:border-ink-400 hover:bg-ink-800 hover:text-rice-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar-600 focus-visible:ring-offset-2 dark:border-rice-300/30 dark:bg-ink-800/90 dark:text-rice-100"
+        >
+          <Landmark size={18} aria-hidden="true" />
+          <span>滕王阁序 · 文境</span>
+        </Link>
       </div>
 
       {/* 内容区 */}
