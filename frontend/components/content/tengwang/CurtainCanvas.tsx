@@ -246,7 +246,7 @@ export default function CurtainCanvas({
 
     const suspendAudio = () => {
       try {
-        if (audioContext?.state === "running") {
+        if (audioContext && audioContext.state !== "closed") {
           audioContext.suspend().catch(() => {});
         }
       } catch {

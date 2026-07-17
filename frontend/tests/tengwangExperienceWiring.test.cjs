@@ -214,9 +214,16 @@ assertMatches(
   /document\s*\.\s*removeEventListener\s*\(\s*["']visibilitychange["']\s*,\s*handleVisibilityChange\s*\)/,
   "remove its visibilitychange listener during cleanup"
 );
+assertMatches(
+  canvas,
+  "CurtainCanvas.tsx",
+  /canvas\s*\.\s*addEventListener\s*\(\s*["']pointerdown["']\s*,\s*handlePointerEnter\s*\)/,
+  "initialize audio from an explicit pointerdown gesture"
+);
 
 [
   ["pointerenter", "handlePointerEnter"],
+  ["pointerdown", "handlePointerEnter"],
   ["pointermove", "handlePointerMove"],
   ["pointerleave", "handlePointerLeave"],
   ["pointercancel", "handlePointerLeave"],
@@ -229,6 +236,13 @@ assertMatches(
     ),
     `remove its ${eventName} listener during cleanup`
   )
+);
+
+assertMatches(
+  canvas,
+  "CurtainCanvas.tsx",
+  /const\s+suspendAudio\s*=\s*\(\s*\)\s*=>\s*\{\s*try\s*\{\s*if\s*\(\s*audioContext\s*&&\s*audioContext\s*\.\s*state\s*!==\s*["']closed["']\s*\)\s*\{\s*audioContext\s*\.\s*suspend\s*\(\s*\)\s*\.\s*catch\s*\(/,
+  "suspend every existing AudioContext that is not closed"
 );
 
 assertMatches(
