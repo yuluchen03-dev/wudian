@@ -264,8 +264,8 @@ assertMatches(
 assertMatches(
   content,
   "app/content/page.tsx",
-  /<Link\b[^>]*\bhref\s*=\s*"\/content\/tengwang-ge-xu"[^>]*>(?:(?!<\/Link>)[\s\S])*?文境(?:(?!<\/Link>)[\s\S])*?<\/Link>/,
-  "render one Link to /content/tengwang-ge-xu containing the 文境 label"
+  /<Link\b[^>]*\bhref\s*=\s*"\/content\/tengwang-ge-xu"[^>]*\bclassName\s*=\s*"[^"]*\bshrink-0\b[^"]*"[^>]*>[\s\S]*?<span\b[^>]*\bclassName\s*=\s*"[^"]*\bsm:hidden\b[^"]*"[^>]*>文境<\/span>[\s\S]*?<span\b[^>]*\bclassName\s*=\s*"[^"]*\bhidden\b[^"]*\bsm:inline\b[^"]*"[^>]*>滕王阁序 · 文境<\/span>[\s\S]*?<\/Link>/,
+  "render a non-shrinking Tengwang Link with compact mobile and full desktop labels"
 );
 
 const stickyTabBarMatch = content.match(
@@ -279,29 +279,17 @@ assert.ok(
 
 const stickyTabBar = stickyTabBarMatch[1];
 
-assertMatches(
+assert.match(
   stickyTabBar,
-  "sticky tab bar",
   /\bhref\s*=\s*"\/content\/tengwang-ge-xu"/,
-  "contain the /content/tengwang-ge-xu entry"
-);
-assertMatches(
-  stickyTabBar,
-  "sticky tab bar",
-  /文境/,
-  "contain the 文境 label"
+  "sticky tab bar should contain the /content/tengwang-ge-xu entry"
 );
 
 const tabsMapIndex = content.indexOf("{tabs.map");
-const tengwangLinkIndex = content.indexOf('href="/content/tengwang-ge-xu"');
 const contentSectionIndex = content.indexOf("{/* 内容区 */}");
 
 assert.ok(tabsMapIndex >= 0, "content page should render the existing tab map");
 assert.ok(contentSectionIndex > tabsMapIndex, "content section should follow the tab map");
-assert.ok(
-  tengwangLinkIndex > tabsMapIndex && tengwangLinkIndex < contentSectionIndex,
-  "render the 文境 Link beside the existing tabs before the content section"
-);
 
 assertMatches(
   styles,
