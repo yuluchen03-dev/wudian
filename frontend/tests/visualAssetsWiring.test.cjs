@@ -134,11 +134,16 @@ assert(contentPage.includes("pageBackgrounds.content"), "content page should use
 assert(theaterPlayer.includes("theater.coverImage"), "theater player should use theater cover images");
 assert(theaterPlayer.includes("role.portraitImage"), "theater player should use role portraits");
 
-const tengwangPavilionPath = "/agens/content/tengwang-ge-xu/pavilion.png";
+const tengwangPavilionPath = "/agens/content/tengwang-ge-xu/pavilion-corrected.png";
 assert(
   visualAssets.includes(`export const tengwangPavilion = "${tengwangPavilionPath}";`),
-  "visualAssets should export the Tengwang Pavilion image"
+  "visualAssets should export the corrected Tengwang Pavilion image"
 );
 assertPngAsset(tengwangPavilionPath);
+
+const tengwangPlaqueRenderer = read("scripts", "correct_tengwang_plaques.py");
+assert(tengwangPlaqueRenderer.includes('"滕王阁"'), "renderer should use exact main plaque text");
+assert(tengwangPlaqueRenderer.includes('"瑰伟绝特"'), "renderer should use exact lower plaque text");
+assert(tengwangPlaqueRenderer.includes("PngInfo"), "renderer should write plaque metadata");
 
 console.log("visualAssetsWiring tests passed");

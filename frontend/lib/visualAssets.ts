@@ -66,7 +66,7 @@ export const pageBackgrounds = {
   auth: "/agens/page-backgrounds/auth.svg",
 } as const;
 
-export const tengwangPavilion = "/agens/content/tengwang-ge-xu/pavilion.png";
+export const tengwangPavilion = "/agens/content/tengwang-ge-xu/pavilion-corrected.png";
 
 export const featuredBookCoverImages: Record<string, string> = {};
 
