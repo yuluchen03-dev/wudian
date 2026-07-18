@@ -49,6 +49,7 @@ export default function TengwangExperience() {
   const [curtainText, setCurtainText] = useState(TENGWANG_GE_XU_TEXT);
   const [imageSrc, setImageSrc] = useState(tengwangPavilion);
   const [imageReady, setImageReady] = useState(false);
+  const [imageUnavailable, setImageUnavailable] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [canvasUnavailable, setCanvasUnavailable] = useState(false);
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS });
@@ -400,6 +401,7 @@ export default function TengwangExperience() {
     setCurtainText(TENGWANG_GE_XU_TEXT);
     setImageSrc(tengwangPavilion);
     setImageReady(false);
+    setImageUnavailable(false);
     setImageError(null);
     setCanvasUnavailable(false);
     setSettings({ ...DEFAULT_SETTINGS });
@@ -429,6 +431,7 @@ export default function TengwangExperience() {
   const effectiveCurtainText = curtainText.trim()
     ? curtainText
     : TENGWANG_GE_XU_TEXT;
+  const sceneUnavailable = canvasUnavailable || imageUnavailable;
   const statusMessage = [
     imageError,
     canvasUnavailable ? "当前浏览器仅展示静态文境。" : null,
@@ -456,16 +459,18 @@ export default function TengwangExperience() {
           onLoad={() => {
             if (imageRequestVersion !== imageRequestVersionRef.current) return;
             setImageReady(true);
+            setImageUnavailable(false);
           }}
           onError={() => {
             if (imageRequestVersion !== imageRequestVersionRef.current) return;
             setImageReady(false);
+            setImageUnavailable(true);
             setImageError("主图加载失败，已保留文字内容。");
           }}
         />
       </div>
 
-      {!canvasUnavailable && imageReady && (
+      {!sceneUnavailable && imageReady && (
         <CurtainCanvas
           buildingRef={pavilionRef}
           text={effectiveCurtainText}
@@ -476,7 +481,7 @@ export default function TengwangExperience() {
         />
       )}
 
-      {canvasUnavailable && (
+      {sceneUnavailable && (
         <div className={styles.staticExcerpt} aria-label="静态帘幕文字">
           <p>{effectiveCurtainText}</p>
         </div>
@@ -490,7 +495,7 @@ export default function TengwangExperience() {
       <p className={styles.caption}>
         《滕王阁序》作于唐上元二年，写洪州胜景、宾主盛会与人生际遇。
       </p>
-      {!canvasUnavailable && (
+      {!sceneUnavailable && (
         <p className={styles.srOnly}>{effectiveCurtainText}</p>
       )}
 
@@ -518,6 +523,7 @@ export default function TengwangExperience() {
           ref={dialogRef}
           className={styles.settingsDialog}
           aria-labelledby="tengwang-settings-title"
+          aria-modal="true"
           onClick={handleDialogBackdropClick}
           onCancel={handleDialogCancel}
           onClose={handleDialogClose}
@@ -526,8 +532,6 @@ export default function TengwangExperience() {
             id="tengwang-settings"
             ref={settingsPanelRef}
             className={styles.settingsPanel}
-            role="dialog"
-            aria-modal="true"
             aria-labelledby="tengwang-settings-title"
             tabIndex={-1}
           >
@@ -590,7 +594,7 @@ export default function TengwangExperience() {
               />
             </div>
 
-            {canvasUnavailable ? (
+            {sceneUnavailable ? (
               <p className={styles.canvasNotice}>
                 静态模式下，珠帘参数暂不可用。
               </p>

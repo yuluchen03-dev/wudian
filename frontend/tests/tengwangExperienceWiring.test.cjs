@@ -38,6 +38,8 @@ assertIncludes(experience, "TengwangExperience.tsx", [
   "TENGWANG_GE_XU_TEXT",
   "MAX_IMAGE_PIXELS",
   "effectiveCurtainText",
+  "imageUnavailable",
+  "sceneUnavailable",
   "dialogRef",
   "ignoreDialogCloseRef",
   "showModal()",
@@ -53,8 +55,18 @@ assertIncludes(experience, "TengwangExperience.tsx", [
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /<dialog\b[^>]*\bref\s*=\s*\{dialogRef\}[^>]*\bonCancel\s*=\s*\{handleDialogCancel\}[^>]*\bonClose\s*=\s*\{handleDialogClose\}[^>]*>(?:(?!<\/dialog>)[\s\S])*?<aside\b[^>]*\bid\s*=\s*"tengwang-settings"[^>]*\brole\s*=\s*"dialog"[^>]*\baria-modal\s*=\s*"true"[^>]*>/,
-  "wrap its required settings aside in a native dialog with cancel and close handlers"
+  /<dialog\b[^>]*\bref\s*=\s*\{dialogRef\}[^>]*\baria-modal\s*=\s*"true"[^>]*\bonCancel\s*=\s*\{handleDialogCancel\}[^>]*\bonClose\s*=\s*\{handleDialogClose\}[^>]*>(?:(?!<\/dialog>)[\s\S])*?<aside\b[^>]*\bid\s*=\s*"tengwang-settings"[^>]*>/,
+  "expose one native modal dialog around the settings layout"
+);
+assert.equal(
+  (experience.match(/\baria-modal\s*=\s*"true"/g) ?? []).length,
+  1,
+  "TengwangExperience.tsx should declare one modal surface"
+);
+assert.doesNotMatch(
+  experience,
+  /<aside\b[^>]*(?:\brole\s*=\s*"dialog"|\baria-modal\s*=\s*"true")[^>]*>/,
+  "the settings aside should not duplicate the native dialog semantics"
 );
 assertMatches(
   experience,
@@ -90,14 +102,37 @@ assertMatches(
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /\{\s*!canvasUnavailable\s*&&\s*\(\s*<p\b[^>]*className\s*=\s*\{styles\.srOnly\}[^>]*>\s*\{effectiveCurtainText\}\s*<\/p>\s*\)\s*\}/,
+  /\{\s*!sceneUnavailable\s*&&\s*\(\s*<p\b[^>]*className\s*=\s*\{styles\.srOnly\}[^>]*>\s*\{effectiveCurtainText\}\s*<\/p>\s*\)\s*\}/,
   "expose the screen-reader-only passage only in the dynamic canvas branch"
 );
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /canvasUnavailable\s*&&\s*\([\s\S]*?className\s*=\s*\{styles\.staticExcerpt\}[\s\S]*?\{effectiveCurtainText\}/,
-  "render the effective text in the static fallback excerpt"
+  /sceneUnavailable\s*&&\s*\([\s\S]*?className\s*=\s*\{styles\.staticExcerpt\}[\s\S]*?\{effectiveCurtainText\}/,
+  "render the effective text when either the image or Canvas is unavailable"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /const\s+sceneUnavailable\s*=\s*canvasUnavailable\s*\|\|\s*imageUnavailable/,
+  "derive one scene fallback state from image and Canvas availability"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /onLoad\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?setImageUnavailable\(false\)[\s\S]*?onError\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?setImageUnavailable\(true\)/,
+  "clear image failure on load and enter fallback on a main image error"
+);
+assert.equal(
+  (experience.match(/setImageUnavailable\(true\)/g) ?? []).length,
+  1,
+  "only a failed current main image should mark the scene unavailable"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /\{\s*sceneUnavailable\s*\?\s*\(\s*<p\b[^>]*className\s*=\s*\{styles\.canvasNotice\}/,
+  "hide no-op physics and audio controls throughout static mode"
 );
 assert.equal(
   (experience.match(/\brole\s*=\s*"status"/g) ?? []).length,
