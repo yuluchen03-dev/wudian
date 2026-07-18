@@ -76,6 +76,18 @@ export default function TengwangExperience() {
     []
   );
 
+  const handleMainImageLoad = useCallback(() => {
+    setImageReady(true);
+    setImageUnavailable(false);
+    setImageError(null);
+  }, []);
+
+  const handleMainImageError = useCallback(() => {
+    setImageReady(false);
+    setImageUnavailable(true);
+    setImageError("主图加载失败，已保留文字内容。");
+  }, []);
+
   const revokeAcceptedObjectUrl = useCallback(() => {
     if (!objectUrlRef.current) return;
     URL.revokeObjectURL(objectUrlRef.current);
@@ -428,6 +440,22 @@ export default function TengwangExperience() {
   };
 
   const imageRequestVersion = imageRequestVersionRef.current;
+  useEffect(() => {
+    const image = pavilionRef.current;
+    if (!image?.complete) return;
+
+    if (image.naturalWidth > 0) {
+      handleMainImageLoad();
+    } else {
+      handleMainImageError();
+    }
+  }, [
+    handleMainImageError,
+    handleMainImageLoad,
+    imageRequestVersion,
+    imageSrc,
+  ]);
+
   const effectiveCurtainText = curtainText.trim()
     ? curtainText
     : TENGWANG_GE_XU_TEXT;
@@ -458,14 +486,11 @@ export default function TengwangExperience() {
           }
           onLoad={() => {
             if (imageRequestVersion !== imageRequestVersionRef.current) return;
-            setImageReady(true);
-            setImageUnavailable(false);
+            handleMainImageLoad();
           }}
           onError={() => {
             if (imageRequestVersion !== imageRequestVersionRef.current) return;
-            setImageReady(false);
-            setImageUnavailable(true);
-            setImageError("主图加载失败，已保留文字内容。");
+            handleMainImageError();
           }}
         />
       </div>

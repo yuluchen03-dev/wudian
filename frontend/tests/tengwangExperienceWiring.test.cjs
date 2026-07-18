@@ -120,8 +120,14 @@ assertMatches(
 assertMatches(
   experience,
   "TengwangExperience.tsx",
-  /onLoad\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?setImageUnavailable\(false\)[\s\S]*?onError\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?setImageUnavailable\(true\)/,
-  "clear image failure on load and enter fallback on a main image error"
+  /onLoad\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?handleMainImageLoad\(\)[\s\S]*?onError\s*=\s*\{\s*\(\s*\)\s*=>\s*\{[\s\S]*?handleMainImageError\(\)/,
+  "route main image load and error events through shared state handlers"
+);
+assertMatches(
+  experience,
+  "TengwangExperience.tsx",
+  /useEffect\(\(\)\s*=>\s*\{\s*const\s+image\s*=\s*pavilionRef\.current;\s*if\s*\(!image\?\.complete\)\s*return;\s*if\s*\(image\.naturalWidth\s*>\s*0\)\s*\{\s*handleMainImageLoad\(\);\s*\}\s*else\s*\{\s*handleMainImageError\(\);\s*\}\s*\},\s*\[[^\]]*imageRequestVersion[^\]]*imageSrc[^\]]*\]\s*\)/,
+  "synchronize cached image completion after hydration"
 );
 assert.equal(
   (experience.match(/setImageUnavailable\(true\)/g) ?? []).length,
