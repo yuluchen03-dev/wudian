@@ -1,0 +1,84 @@
+{
+  "$schema_version": "1.0",
+  "description": "悟典可信知识库 - 底本来源注册表（PHASE 1 / P1-02）",
+  "provenance_policy": {
+    "no_fabrication": "严禁编造 provider / url / edition / license。真实未知一律写哨兵字符串 \"unknown\"，不得留空、不得填占位假值。",
+    "authorization": "authorization_status=\"authorized\" 必须附 verified_at + evidence_ref + 已知 license，否则 SourceRegistry 校验失败。",
+    "level_ceiling": "passage.verification_level 不得超过其来源允许的最高等级（见 SourceRecord.max_verification_level）。来源未知时上限为 C。",
+    "current_corpus_state": "现有 11 个语料文件（data/processed/*.json 与 backend/data/commentaries/lunyu_zhuxi.json）全部缺少 source_provider/source_url/source_edition/license/verification_level/proofread_status 字段，且零人工复核记录。因此现有语料一律登记为 src_unknown，verification_level 只能为 C 或 D。"
+  },
+  "verified_at": null,
+  "registry_status": "initialized_without_verified_sources",
+  "sources": [
+    {
+      "source_id": "src_unknown",
+      "provider": "unknown",
+      "url": "unknown",
+      "edition": "unknown",
+      "license": "unknown",
+      "authorization_status": "unverified",
+      "verified_at": null,
+      "verification_method": null,
+      "evidence_ref": null,
+      "notes": "显式未知来源。用于登记当前所有无溯源字段的既有语料（lunyu.json 107 章、debate_classics.json 21 条、lunyu_zhuxi.json 15 条注疏等）。依据 docs/kb-v1/audit/classical-knowledge.md §3：11 个语料文件全部无来源字段，故无法追溯底本；不得为这些条目补造任何 provider/edition/license。此来源允许的最高质量等级为 C（来源可靠但尚未复核）——但因其 provider/url/edition 均为 unknown，实际连 B 也不可达。"
+    },
+    {
+      "source_id": "src_ctext_catalog_reference",
+      "provider": "中国哲学书电子化计划 (Chinese Text Project)",
+      "url": "https://ctext.org/zhs",
+      "edition": "unknown",
+      "license": "unknown",
+      "authorization_status": "unverified",
+      "verified_at": null,
+      "verification_method": null,
+      "evidence_ref": "data/processed/classics_catalog.json#sources[0]",
+      "notes": "仅作为 classics_catalog.json 的【书目编目参考】登记，该 URL 确实存在于 data/processed/classics_catalog.json 的 sources 数组。**这不等同于任何 passage 的正文来源**：审计已证实 build_lunyu.py 无任何网络导入（classical-knowledge.md §4.1），故不能据此声称正文取自 ctext.org。edition/license 均未核验：PHASE 0 审计期间对 ctext.org 的网络访问被拒（hostname resolves to a non-public IP address），故未做任何授权核验。不得据此将任何 passage 标为 A 或 B。"
+    },
+    {
+      "source_id": "src_wikisource_catalog_reference",
+      "provider": "维基文库 (Wikisource)",
+      "url": "https://zh.wikisource.org/wiki/Portal:%E4%B8%AD%E5%9C%8B",
+      "edition": "unknown",
+      "license": "unknown",
+      "authorization_status": "unverified",
+      "verified_at": null,
+      "verification_method": null,
+      "evidence_ref": "data/processed/classics_catalog.json#sources[2]",
+      "notes": "仅作为 classics_catalog.json 的【书目编目参考】登记，该 URL 确实存在于 data/processed/classics_catalog.json 的 sources 数组。**这不等同于任何 passage 的正文来源**（同 src_ctext_catalog_reference）。PHASE 0 审计期间对 zh.wikisource.org 的网络访问同样被拒，edition/license 未核验。不得据此将任何 passage 标为 A 或 B。"
+    }
+  ],
+  "pending_verification": [
+    {
+      "item": "朱熹《论语集注》所据底本与点校版权",
+      "current_claim": "backend/data/commentaries/lunyu_zhuxi.json 的 description 散文称「《四书章句集注》为元明清科举定本，公版已过版权期」",
+      "status": "unverified",
+      "why_blocked": "该陈述为非结构化散文，且未记录所据底本、点校者、出版信息。现代点校本的标点与校勘可能仍受版权保护。PHASE 0 审计无法外部核验（网络受限）。",
+      "action_required": "需人工核验后补充 source_edition 与 license，并提供 evidence_ref；在此之前不得把注疏标为 A 或 B。",
+      "evidence_ref": "docs/kb-v1/audit/classical-knowledge.md#3.5"
+    },
+    {
+      "item": "「言必信，行必果」的归属",
+      "current_claim": "仓库内自相矛盾：data/processed/idioms.json 归《论语·子路》13.20；data/processed/debate_classics.json[mozi] 归《墨子·兼爱下》",
+      "status": "unverified",
+      "why_blocked": "PHASE 0 审计无法访问权威库裁决（ctext.org / zh.wikisource.org 均被拒）。",
+      "action_required": "必须进入强制人工复核队列，裁决后才能登记为 L1 passage。",
+      "evidence_ref": "docs/kb-v1/audit/classical-knowledge.md#6.2"
+    },
+    {
+      "item": "lunyu.json 4.5 是否应作「不以其道去之」",
+      "current_claim": "存储文本为「贫与贱，是人之所恶也；不以其道得之，不去也」",
+      "status": "unverified",
+      "why_blocked": "通行本此处多作「不以其道去之」；本机无法外部核验。",
+      "action_required": "外部核验后走独立变更流程留痕，不得就地静默改写 original。",
+      "evidence_ref": "docs/kb-v1/audit/classical-knowledge.md#4.2"
+    },
+    {
+      "item": "韩非子「赏罚者，邦之利器也」的篇目出处",
+      "current_claim": "data/processed/debate_classics.json[hanfeizi] 声称《韩非子·二柄》",
+      "status": "unverified",
+      "why_blocked": "《韩非子·二柄》确有「二柄者，刑德也」；「邦之利器」更近《喻老》/《老子》「国之利器不可以示人」语境。本机无法外部核验。",
+      "action_required": "人工复核后方可作为 L1 入库。",
+      "evidence_ref": "docs/kb-v1/audit/classical-knowledge.md#4.2"
+    }
+  ]
+}
