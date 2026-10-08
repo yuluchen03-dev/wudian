@@ -48,3 +48,7 @@ backend/data/debates/
 _qa_*.json
 _qa_*.txt
 nul
+
+# eval/ 下的评测脚本属交付物，需纳入版本控制（上面的 scripts/ 规则会误伤）
+!eval/scripts/
+!eval/scripts/**
