@@ -52,3 +52,7 @@ nul
 # eval/ 下的评测脚本属交付物，需纳入版本控制（上面的 scripts/ 规则会误伤）
 !eval/scripts/
 !eval/scripts/**
+
+# Python 字节码缓存（不应入库）
+__pycache__/
+*.pyc
