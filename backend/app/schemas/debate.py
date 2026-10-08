@@ -97,18 +97,27 @@ class Citation(BaseModel):
     id: str = Field(..., description="引用标记，如 引1")
     source: str = Field(..., alias="出处", description="出处，如《论语·学而》")
     original: str = Field(..., alias="原文", description="经典原文")
-    verifiable: bool = Field(True, description="是否通过引用校验")
+    # PHASE 5 / P5-07：原为 Field(True)，使「缺省即通过」。改为**必填**，
+    # 与 schemas/ai.py 的 Citation 统一（消除两处相反的默认值）。
+    verifiable: bool = Field(..., description="是否通过引用校验（必须显式给出）")
 
     model_config = ConfigDict(populate_by_name=True)
 
 
 class SentenceEvidence(BaseModel):
-    """单句发言的经典检索证据"""
+    """单句发言的经典检索证据。
+
+    ``verifiable`` 语义（PHASE 5 收紧）：**该句是否被检索到的原典真正支持**。
+    原实现由 ``debate_engine._bind_sentence_evidence`` 仅按"检索是否返回结果"
+    赋值，导致与《论语》无关的现代句子也被标为可验证
+    （``audit/trust.md`` T-06）。此处保留字段与默认值 ``False``
+    （**缺省即不可验证**），实际判定由 PHASE 6 的 P6-02 接入 Evidence Pack。
+    """
     sentence: str = Field(..., description="发言中的单句")
     source: str = Field("无", description="该句命中的经典出处")
     original: str = Field("无", description="该句命中的经典原文")
     similarity: float = Field(0.0, description="检索相似度")
-    verifiable: bool = Field(False, description="是否有可核验原文")
+    verifiable: bool = Field(False, description="该句是否被原典支持（缺省为否）")
 
 
 class SageSpeech(BaseModel):

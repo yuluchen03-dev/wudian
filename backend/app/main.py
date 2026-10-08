@@ -227,6 +227,10 @@ app.include_router(classics.router)
 from app.api import debate
 app.include_router(debate.router)
 
+# 可信知识库路由（PHASE 5 / P5-09；router 内部已设 prefix="/api/knowledge"）
+from app.api import knowledge
+app.include_router(knowledge.router)
+
 
 if __name__ == "__main__":
     import uvicorn
