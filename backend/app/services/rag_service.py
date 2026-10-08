@@ -1084,32 +1084,51 @@ class RAGService:
 
         # 孔子沿用现有《论语》学习索引；其他圣贤必须使用专属语料。
         #
-        # P0R-02 / C3：原实现无条件 `return await self.retrieve_for_sage_chat(...)`，
-        # 而该方法内部是无相关性下限的 vector_search，会把任何查询都返回若干条
-        # 近似度极低的条目 —— 这正是「垃圾查询 confucius 仍返回 3 条」的来源。
-        # 现增加与 `_debate_vector_search` 一致的**相关性下限**过滤：
-        # 只有达到 DEBATE_MIN_SIMILARITY 的条目才保留，否则返回空，
-        # 使 insufficient_evidence 在孔子路径同样可达。
-        # 注意：这不会破坏「现代问题→古典思想」的可达性 —— 实测合法现代问题
-        # （如「我该不该躺平」）在该路径的相似度为 0.165/0.143，高于下限。
+        # P0R-02 / C3 + C2：原实现无条件 `return await self.retrieve_for_sage_chat(...)`，
+        # 而该路径是**无学派过滤**的全局检索（实测「如何面对失败」在孔子路径
+        # 把《韩非子·外储说左上》排到第一位，相似度 0.115，属跨派泄露，
+        # 违反 GATE-6 School Leakage < 1%）。现做两层过滤：
+        #   1) 相关性下限 DEBATE_MIN_SIMILARITY（使 insufficient_evidence 可达）
+        #   2) **学派白名单**：source 必须属于 SAGE_CLASSICS[sage_key]，
+        #      与 citation_validator 的既有白名单保持同一真值来源。
+        # 注意：这不会破坏「现代问题→古典思想」的可达性 —— 合法现代问题
+        # （如「我该不该躺平」）命中的是《论语》，仍在白名单内。
         if not results and sage_key == "confucius":
             fallback = await self.retrieve_for_sage_chat(query, top_k=top_k)
-            filtered_verses = [
-                v for v in fallback.get("verses", [])
-                if v.get("similarity", 0.0) >= self.DEBATE_MIN_SIMILARITY
-            ]
-            filtered_commentaries = [
-                c for c in fallback.get("commentaries", [])
-                if c.get("similarity", 0.0) >= self.DEBATE_MIN_SIMILARITY
-            ]
+            allowed_books = self._allowed_books_for(sage_key)
+
+            def _keep(item: Dict[str, Any]) -> bool:
+                if item.get("similarity", 0.0) < self.DEBATE_MIN_SIMILARITY:
+                    return False
+                src = str(item.get("source", ""))
+                # 白名单为空（未登记的 sage）时不做学派过滤，避免误伤
+                return (not allowed_books) or any(b in src for b in allowed_books)
+
+            filtered_verses = [v for v in fallback.get("verses", []) if _keep(v)]
+            filtered_commentaries = [c for c in fallback.get("commentaries", []) if _keep(c)]
             if not filtered_verses and not filtered_commentaries:
                 logger.debug(
-                    "孔子路径回退检索无达到相关性下限的条目（query=%r），返回空",
+                    "孔子路径回退检索无通过相关性+学派白名单的条目（query=%r），返回空",
                     query[:30],
                 )
             return {"verses": filtered_verses, "commentaries": filtered_commentaries}
 
         return self._format_debate_results(results)
+
+    @staticmethod
+    def _allowed_books_for(sage_key: str) -> List[str]:
+        """返回该圣贤/学派允许的典籍名（用于跨派泄露防护）。
+
+        单一真值来源：复用 ``citation_validator.SAGE_CLASSICS``，
+        避免在 RAG 层再维护一份会与校验层分叉的白名单。
+        未登记的 sage 返回空列表（调用方据此跳过学派过滤）。
+        """
+        try:
+            from app.services.citation_validator import SAGE_CLASSICS
+
+            return list(SAGE_CLASSICS.get(sage_key, []))
+        except Exception:  # 导入失败不应使检索整体失败
+            return []
 
     def build_context_text(self, refs: List[RAGReference]) -> str:
         """把检索结果格式化为可注入 prompt 的上下文文本"""
