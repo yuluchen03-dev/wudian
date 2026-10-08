@@ -59,6 +59,9 @@ def test_chat_with_sage_stream_hides_structured_json_wrapper(monkeypatch):
 
     monkeypatch.setattr(ai_service_module.sage_cache, "match_safe_qa", lambda question: None)
     monkeypatch.setattr(ai_service_module, "get_rag_service", lambda: FakeRag())
+    # client 置为非 None 以保证 is_available 为 True，避免全套运行时
+    # 共享单例被其他测试改脏而走到缓存兜底分支
+    monkeypatch.setattr(ai_service_module.llm_client, "client", object())
     monkeypatch.setattr(ai_service_module.llm_client, "stream", fake_stream)
 
     async def collect_reply():

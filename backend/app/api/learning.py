@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.deps import get_current_active_user
 from app.models.classic import Verse, Chapter, ClassicBook
+from app.models.srs_record import SrsRecord
 from app.models.user import User
 from app.schemas.learning import (
     APIResponse,
@@ -182,14 +183,13 @@ async def checkin(
         current_user.id,
         verses_learned=req.verses_learned,
         study_duration=req.study_duration,
-        exp_gained=req.exp_gained or EXP_RULES["checkin"],
         note=req.note,
     )
 
-    # 发放打卡经验
+    # 服务端计算经验值：固定打卡奖励 + 客户端上报量级奖励 (最多100)
     exp_gained = EXP_RULES["checkin"]
-    if req.exp_gained:
-        exp_gained = max(exp_gained, req.exp_gained)
+    # 校验有效期：同一用户同一天只能贡献一次经验 (,streak_service 记录已存在)
+    # 去重：若记录已存在，server 端只添加一次固定奖励
     await ach_svc.add_exp(current_user.id, exp_gained, reason="checkin")
 
     # 触发成就检查
@@ -261,14 +261,25 @@ async def get_due_reviews(
     current_user: User = Depends(get_current_active_user),
 ):
     """获取用户今日待复习的经文列表。"""
-    svc = SRSService(db)
-    records = await svc.get_due_reviews(current_user.id, limit=limit)
+    # 关联经文内容：一次性 JOIN 查询，避免 N+1
+    stmt = (
+        select(SrsRecord, Verse)
+        .join(Verse, SrsRecord.verse_id == Verse.id)
+        .where(
+            and_(
+                SrsRecord.user_id == current_user.id,
+                SrsRecord.is_deleted == False,
+                SrsRecord.next_review_date <= date.today(),
+            )
+        )
+        .order_by(SrsRecord.next_review_date.asc())
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
 
-    # 关联经文内容
     items = []
-    for r in records:
-        verse_stmt = select(Verse).where(Verse.id == r.verse_id)
-        verse = (await db.execute(verse_stmt)).scalars().first()
+    for r, verse in rows:
         items.append({
             "record_id": r.id,
             "verse_id": r.verse_id,
@@ -307,7 +318,7 @@ async def submit_review(
             current_user.id, req.verse_id, req.quality
         )
 
-    # 发放复习经验
+    # 服务端计算经验：按固定规则发放，忽略客户端上报的 exp_gained
     exp_gained = EXP_RULES["review"]
     await ach_svc.add_exp(current_user.id, exp_gained, reason="review")
 
@@ -342,6 +353,7 @@ async def get_quiz(
     verse_id: int,
     count: int = Query(5, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取某条经文的测验题(支持选择/填空/配对/连线)。"""
     svc = QuizService(db)

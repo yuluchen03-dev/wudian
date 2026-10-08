@@ -26,12 +26,26 @@ def _build_engine():
 
     if is_sqlite:
         # SQLite 不支持 pool_size / max_overflow / pool_recycle 等参数
-        return create_async_engine(
+        engine = create_async_engine(
             url,
             echo=settings.APP_DEBUG,
             # SQLite 需要允许在同一线程外使用连接（FastAPI 异步场景）
-            connect_args={"check_same_thread": False},
+            connect_args={
+                "check_same_thread": False,
+                "timeout": 30,
+            },
         )
+        # 注册连接事件监听器，设置 WAL 模式和 busy_timeout 防止多并发写锁死
+        from sqlalchemy import event
+
+        @event.listens_for(engine.sync_engine, "connect")
+        def set_sqlite_pragmas(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL;")
+            cursor.execute("PRAGMA busy_timeout=30000;")
+            cursor.close()
+
+        return engine
 
     # PostgreSQL
     return create_async_engine(

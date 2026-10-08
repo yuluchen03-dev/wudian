@@ -26,8 +26,22 @@ __pycache__/
 *.sqlite
 *.sqlite3
 backend/chroma_db/
+data/debates/
+data/processed/
+data/raw/
+scripts/
+backup/
+quarantine/
 dist/
 site-release.tar.gz
 
 .worktrees/
 worktrees/
+
+# Local caches and test output
+frontend/.next.bak/
+backend/data/debates/
+.workbuddy/
+_qa_*.json
+_qa_*.txt
+nul

@@ -48,5 +48,10 @@ assert.doesNotMatch(
   /extractKeywords\(citation\.text\)/,
   "CitationSidebar should not call string helpers directly on possibly missing citation.text"
 );
+assert.match(
+  source,
+  /aria-label="发送问题"/,
+  "the icon-only sage send button should have an accessible name"
+);
 
 console.log("sageChatWiring tests passed");

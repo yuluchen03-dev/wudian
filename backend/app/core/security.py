@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
 
 from app.core.config import settings
 
@@ -94,5 +94,6 @@ def decode_token(token: str) -> Optional[dict]:
             algorithms=[settings.JWT_ALGORITHM],
         )
         return payload
-    except JWTError:
+    except jwt.InvalidTokenError:
+        # 覆盖过期、签名无效、格式损坏等所有 JWT 校验失败场景
         return None

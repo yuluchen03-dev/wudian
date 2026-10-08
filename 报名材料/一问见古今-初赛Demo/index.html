@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d1413">
+  <title>一问见古今｜初赛 3D Demo</title>
+  <link rel="stylesheet" href="css/app.css">
+  <style>[hidden]{display:none!important}</style>
+</head>
+<body data-state="intake">
+  <canvas id="court-canvas" aria-hidden="true"></canvas>
+  <div class="fallback-stage" aria-hidden="true">
+    <figure><img src="assets/confucius.png" alt=""><figcaption>孔子</figcaption></figure>
+    <figure><img src="assets/mencius.png" alt=""><figcaption>孟子</figcaption></figure>
+    <figure><img src="assets/laozi.png" alt=""><figcaption>老子</figcaption></figure>
+  </div>
+
+  <a class="skip-link" href="#experience">跳到会审内容</a>
+  <header class="topbar">
+    <a class="brand" href="#experience" aria-label="一问见古今首页"><b>问</b><span>一问见古今</span></a>
+    <div class="truth-status"><i></i>初赛稳定体验 · 本地策展数据</div>
+    <button id="motion-toggle" class="icon-button" type="button" aria-pressed="false" title="切换减少动态">动</button>
+  </header>
+
+  <nav class="act-rail" aria-label="会审进度">
+    <button type="button" data-progress="intake" class="active"><span>01</span>问</button>
+    <button type="button" data-progress="evidence"><span>02</span>证</button>
+    <button type="button" data-progress="debate"><span>03</span>辩</button>
+    <button type="button" data-progress="verdict"><span>04</span>判</button>
+  </nav>
+
+  <main id="experience" class="experience" tabindex="-1">
+    <section class="panel panel-intake" data-panel="intake">
+      <p class="kicker">CASE INTAKE / 问题落案</p>
+      <h1>让三种中国思想，<br>会审一个真实职场困境。</h1>
+      <p class="lede">不是让 AI 替你回答，而是让有出处的中国思想帮助你判断。</p>
+      <div id="case-list" class="case-list" aria-label="选择职场案件"></div>
+      <div class="command-row"><span>60–90 秒完成首案 · 无需登录</span><button id="open-court" class="primary" type="button">击鼓开审</button></div>
+    </section>
+
+    <section class="panel panel-opening" data-panel="opening" hidden aria-live="polite">
+      <p class="kicker">COURT OPEN / 开审</p>
+      <h2 id="opening-question"></h2>
+      <div id="opening-conflicts" class="conflict-line"></div>
+      <p class="system-line"><i></i>案卷落案 · 典籍校验 · 三席入场</p>
+    </section>
+
+    <section class="panel panel-evidence" data-panel="evidence" hidden>
+      <header class="panel-heading"><div><p class="kicker">EVIDENCE / 经典举证</p><h2>哪些依据，应当进入本案？</h2></div><output id="evidence-count">3 条已选</output></header>
+      <div id="evidence-list" class="evidence-list"></div>
+      <div class="command-row"><button class="secondary" data-back="intake" type="button">重新选案</button><button id="enter-debate" class="primary" type="button">请贤入席</button></div>
+    </section>
+
+    <section class="panel panel-debate" data-panel="debate" hidden>
+      <header class="panel-heading"><div><p class="kicker">TRIBUNAL / 百家交锋</p><h2>三种立场，不替你做决定。</h2></div><span>点击肖像切换立场</span></header>
+      <div id="sage-tabs" class="sage-tabs" role="tablist" aria-label="三位先贤"></div>
+      <article id="speech-focus" class="speech-focus" aria-live="polite"></article>
+      <div id="relation-summary" class="relation-summary"></div>
+      <div class="command-row"><button class="secondary" data-back="evidence" type="button">返回举证</button><button id="enter-weighting" class="primary" type="button">陈明你的取舍</button></div>
+    </section>
+
+    <section class="panel panel-weighting" data-panel="weighting" hidden>
+      <header class="panel-heading"><div><p class="kicker">WEIGHT / 价值调权</p><h2>你真正看重的是什么？</h2></div><span>权重不改写经典证据</span></header>
+      <div class="weight-layout">
+        <div class="weight-controls">
+          <label><span>坚持自我</span><input id="weight-self" type="range" min="0" max="100" value="34"><output id="weight-self-output">34%</output></label>
+          <label><span>改善关系</span><input id="weight-relationship" type="range" min="0" max="100" value="33"><output id="weight-relationship-output">33%</output></label>
+          <label><span>主动改变</span><input id="weight-change" type="range" min="0" max="100" value="33"><output id="weight-change-output">33%</output></label>
+        </div>
+        <ol id="weighted-actions" class="weighted-actions"></ol>
+      </div>
+      <div class="command-row"><button class="secondary" data-back="debate" type="button">返回交锋</button><button id="build-verdict" class="primary" type="button">生成思想判牒</button></div>
+    </section>
+
+    <section class="panel panel-verdict" data-panel="verdict" hidden>
+      <article id="verdict-scroll" class="verdict-scroll"></article>
+      <aside class="seal-zone"><p>经典证据与行动建议已收束</p><button id="seal-verdict" class="seal-button" type="button">落判</button><button id="show-epilogue" class="secondary" type="button" hidden>查看可信链路</button></aside>
+    </section>
+
+    <section class="panel panel-epilogue" data-panel="epilogue" hidden>
+      <p class="kicker">PROOF & PILOT / 可信与试点终章</p>
+      <h2>从一场会审，到一条可复核的产品闭环。</h2>
+      <ol id="trust-chain" class="trust-chain"></ol>
+      <div class="pilot-layout">
+        <article><span>第一使用者</span><h3>22–35 岁年轻职场人</h3><p>处理认可、去留、协作冲突与内耗。</p></article>
+        <article><span>第一付费方</span><h3>企业 HR 与学习发展部门</h3><p>30–100 人、持续 4 周的青年员工成长试点。</p></article>
+        <article class="privacy"><span>隐私边界</span><h3>企业不能查看个人原始提问</h3><p>只提供参与人数、完成率、主题分布和引用展开率等汇总指标。</p></article>
+      </div>
+      <div class="metrics" id="pilot-metrics"></div>
+      <div class="command-row"><button id="restart" class="secondary" type="button">新开一案</button><a class="primary" href="mailto:pilot@example.invalid?subject=一问见古今企业青年员工试点">申请企业青年员工试点</a></div>
+    </section>
+  </main>
+
+  <footer>一问见古今提供思想启发，不替代心理、医疗、法律、投资或职业决策。</footer>
+  <noscript><div class="no-script"><h1>一问见古今</h1><p>请选择启用 JavaScript 以进入离线互动体验。三个精选案件与安全边界已随 ZIP 本地保存。</p></div></noscript>
+  <script src="js/app.bundle.js"></script>
+</body>
+</html>

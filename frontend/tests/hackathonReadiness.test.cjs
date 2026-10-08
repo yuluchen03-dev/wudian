@@ -61,8 +61,8 @@ const navbar = read("components", "Navbar.tsx");
 const primaryNavMatch = navbar.match(/const primaryNav = \[[\s\S]*?\];/);
 assert.ok(primaryNavMatch, "Navbar should define primaryNav");
 assert.ok(
-  primaryNavMatch[0].includes('href: "/demo"'),
-  "Hackathon demo route should be visible in primary desktop navigation"
+  !primaryNavMatch[0].includes('href: "/demo"'),
+  "Formal product navigation should not foreground the retired demo route"
 );
 
 const sageChat = read("components", "sage", "SageChat.tsx");

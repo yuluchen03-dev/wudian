@@ -149,7 +149,7 @@ async def _stream_next_round(session_id: str, phase: str) -> AsyncGenerator[str,
             yield _sse({"type": "error", "detail": f"未知阶段: {phase}"})
     except Exception as e:
         logger.error("流式 next-round 异常: %s", e)
-        yield _sse({"type": "error", "detail": str(e)})
+        yield _sse({"type": "error", "detail": "内部服务错误"})
 
     if transition:
         debate_state_graph.record_transition(session_id, transition, ok=True)
@@ -195,7 +195,7 @@ async def _stream_intervene(session_id: str, req: UserInterventionRequest) -> As
             yield _sse_raw(chunk)
     except Exception as e:
         logger.error("流式 intervene 异常: %s", e)
-        yield _sse({"type": "error", "detail": str(e)})
+        yield _sse({"type": "error", "detail": "内部服务错误"})
     yield "data: [DONE]\n\n"
 
 

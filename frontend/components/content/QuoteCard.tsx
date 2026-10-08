@@ -57,17 +57,28 @@ export function QuoteCardList({ cards, onCardClick }: QuoteCardListProps) {
             />
 
             <div className="relative flex h-full flex-col items-center justify-center p-5 text-center">
+              <div
+                data-quote-text-shield="true"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-3 inset-y-[18%] rounded-[45%]"
+                style={{
+                  background:
+                    card.style === "moonlight"
+                      ? "radial-gradient(ellipse at center, rgba(16,20,38,0.94) 0%, rgba(16,20,38,0.9) 58%, rgba(16,20,38,0) 100%)"
+                      : "radial-gradient(ellipse at center, rgba(250,246,237,0.96) 0%, rgba(250,246,237,0.92) 58%, rgba(250,246,237,0) 100%)",
+                }}
+              />
               <p
-                className="font-serif text-xl leading-relaxed drop-shadow-[0_1px_8px_rgba(255,255,255,0.45)]"
+                className="relative z-10 font-serif text-xl leading-relaxed drop-shadow-[0_1px_8px_rgba(255,255,255,0.45)]"
                 style={{ color: theme.text }}
               >
                 {card.quote}
               </p>
               <div
-                className="mt-4 h-px w-12"
+                className="relative z-10 mt-4 h-px w-12"
                 style={{ backgroundColor: theme.accent + "70" }}
               />
-              <p className="mt-3 text-xs" style={{ color: theme.accent }}>
+              <p className="relative z-10 mt-3 text-xs" style={{ color: theme.accent }}>
                 {card.source}
               </p>
             </div>
@@ -180,6 +191,18 @@ export function QuoteCardDetailModal({ card, onClose, onLike }: QuoteCardDetailP
             />
 
             <div className="relative px-8 py-12 text-center">
+              <div
+                data-quote-text-shield="true"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-4 inset-y-4 rounded-[38%]"
+                style={{
+                  background:
+                    card.style === "moonlight"
+                      ? "radial-gradient(ellipse at center, rgba(16,20,38,0.94) 0%, rgba(16,20,38,0.9) 68%, rgba(16,20,38,0) 100%)"
+                      : "radial-gradient(ellipse at center, rgba(250,246,237,0.96) 0%, rgba(250,246,237,0.92) 68%, rgba(250,246,237,0) 100%)",
+                }}
+              />
+              <div className="relative z-10">
               <div className="mb-6 flex items-center justify-center gap-2 text-xs" style={{ color: card.accentColor }}>
                 <Sparkles size={12} />
                 {theme.label}风 · 金句卡片
@@ -251,6 +274,7 @@ export function QuoteCardDetailModal({ card, onClose, onLike }: QuoteCardDetailP
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </div>
 

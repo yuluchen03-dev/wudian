@@ -1,60 +1,70 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
-  Moon,
-  Sun,
-  Type,
+  AlertCircle,
+  BookOpen,
+  Check,
   ChevronLeft,
   ChevronRight,
-  BookOpen,
+  Moon,
+  RefreshCw,
   Sparkles,
+  Sun,
+  Type,
 } from "lucide-react";
 import clsx from "clsx";
-import type { Chapter, Entity, Annotation } from "@/lib/types";
-import AnnotationPopup from "./AnnotationPopup";
-import EntityCard from "./EntityCard";
-import ChapterSelector from "./ChapterSelector";
-import ImageSourceLink from "./ImageSourceLink";
+import type { Annotation, Chapter, Entity } from "@/lib/types";
 import AIExplainPanel from "./AIExplainPanel";
+import AnnotationPopup from "./AnnotationPopup";
+import ChapterSelector from "./ChapterSelector";
+import EntityCard from "./EntityCard";
+import ImageSourceLink from "./ImageSourceLink";
 
 interface ReadingViewProps {
-  chapter: Chapter;
+  chapter: Chapter | null;
+  chapterLoading: boolean;
+  chapterError: string | null;
+  bookTitle: string;
   chapters: Chapter[];
   entities: Entity[];
   readChapters: number[];
   onChapterChange: (chapterId: string) => void;
   onChapterRead?: (chapterOrder: number) => void;
+  onRetry?: () => void;
 }
 
 type FontSize = "sm" | "base" | "lg" | "xl";
 
-const fontSizeMap: Record<FontSize, { original: string; translation: string }> =
-  {
-    sm: { original: "text-base", translation: "text-sm" },
-    base: { original: "text-lg", translation: "text-base" },
-    lg: { original: "text-xl", translation: "text-lg" },
-    xl: { original: "text-2xl", translation: "text-xl" },
-  };
+const fontSizeMap: Record<FontSize, { original: string; translation: string }> = {
+  sm: { original: "text-lg", translation: "text-base" },
+  base: { original: "text-xl", translation: "text-base" },
+  lg: { original: "text-2xl", translation: "text-lg" },
+  xl: { original: "text-[1.75rem]", translation: "text-xl" },
+};
+
+const fontSizeLabel: Record<FontSize, string> = {
+  sm: "小字号",
+  base: "中字号",
+  lg: "大字号",
+  xl: "特大字号",
+};
 
 export default function ReadingView({
   chapter,
+  chapterLoading,
+  chapterError,
+  bookTitle,
   chapters,
   entities,
   readChapters,
   onChapterChange,
   onChapterRead,
+  onRetry,
 }: ReadingViewProps) {
   const [fontSize, setFontSize] = useState<FontSize>("base");
   const [isDark, setIsDark] = useState(false);
-
-  // 从 localStorage 恢复暗色偏好
-  useEffect(() => {
-    const saved = localStorage.getItem("wudian_dark") === "true";
-    setIsDark(saved);
-    document.documentElement.classList.toggle("dark", saved);
-  }, []);
   const [showChapterSelector, setShowChapterSelector] = useState(false);
   const [activeAnnotation, setActiveAnnotation] = useState<{
     data: Annotation;
@@ -71,50 +81,68 @@ export default function ReadingView({
     translation?: string;
   }>({ open: false, verseId: "", original: "" });
   const containerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("wudian_dark") === "true";
+    setIsDark(saved);
+    document.documentElement.classList.toggle("dark", saved);
+  }, []);
+
+  useEffect(() => {
+    if (!chapter?.id) return;
+    containerRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }, [chapter?.id, reduceMotion]);
 
   const entityMap = useMemo(() => {
     const map = new Map<string, Entity>();
-    entities.forEach((e) => map.set(e.id, e));
+    entities.forEach((entity) => map.set(entity.id, entity));
     return map;
   }, [entities]);
 
-  const currentIndex = chapters.findIndex((c) => c.id === chapter.id);
-  const prevChapter = chapters[currentIndex - 1];
-  const nextChapter = chapters[currentIndex + 1];
-
-  const handleCharClick = (e: React.MouseEvent, annotation: Annotation) => {
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    setActiveAnnotation({
-      data: annotation,
-      pos: { x: rect.left, y: rect.top },
-    });
+  const activeChapterId = chapter?.id ?? chapters[0]?.id ?? "";
+  const currentIndex = chapters.findIndex((item) => item.id === activeChapterId);
+  const prevChapter = currentIndex > 0 ? chapters[currentIndex - 1] : undefined;
+  const nextChapter = currentIndex >= 0 ? chapters[currentIndex + 1] : undefined;
+  const isRead = chapter ? readChapters.includes(chapter.order) : false;
+  const progressPercent = chapters.length
+    ? Math.round((readChapters.length / chapters.length) * 100)
+    : 0;
+  const handleCharClick = (event: React.MouseEvent, annotation: Annotation) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setActiveAnnotation({ data: annotation, pos: { x: rect.left, y: rect.top } });
     setActiveEntity(null);
   };
 
-  const handleEntityClick = (e: React.MouseEvent, entityId: string) => {
+  const handleEntityClick = (event: React.MouseEvent, entityId: string) => {
     const entity = entityMap.get(entityId);
     if (!entity) return;
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    setActiveEntity({
-      data: entity,
-      pos: { x: rect.left, y: rect.top },
-    });
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setActiveEntity({ data: entity, pos: { x: rect.left, y: rect.top } });
     setActiveAnnotation(null);
   };
 
-  /** 渲染原文，生僻字与实体名加可点击标记 */
-  const renderOriginal = (text: string, annotations?: Annotation[], entityIds?: string[]) => {
+  const renderOriginal = (
+    text: string,
+    annotations?: Annotation[],
+    entityIds?: string[]
+  ) => {
     if (!annotations?.length && !entityIds?.length) return text;
 
-    // 收集需要标记的片段
-    const marks: { char: string; type: "annotation" | "entity"; data?: Annotation; entityId?: string }[] = [];
-    annotations?.forEach((a) => marks.push({ char: a.char, type: "annotation", data: a }));
-    entityIds?.forEach((eid) => {
-      const ent = entityMap.get(eid);
-      if (ent) marks.push({ char: ent.name, type: "entity", entityId: eid });
+    const marks: {
+      char: string;
+      type: "annotation" | "entity";
+      data?: Annotation;
+      entityId?: string;
+    }[] = [];
+    annotations?.forEach((annotation) =>
+      marks.push({ char: annotation.char, type: "annotation", data: annotation })
+    );
+    entityIds?.forEach((entityId) => {
+      const entity = entityMap.get(entityId);
+      if (entity) marks.push({ char: entity.name, type: "entity", entityId });
     });
 
-    // 按长度降序排序，避免短名先匹配
     const sorted = [...marks].sort((a, b) => b.char.length - a.char.length);
     const segments: React.ReactNode[] = [];
     let remaining = text;
@@ -123,33 +151,35 @@ export default function ReadingView({
     while (remaining.length > 0) {
       let found = false;
       for (const mark of sorted) {
-        const idx = remaining.indexOf(mark.char);
-        if (idx === 0) {
-          if (mark.type === "annotation" && mark.data) {
-            segments.push(
-              <span
-                key={`a-${key++}`}
-                className="rare-char"
-                onClick={(e) => handleCharClick(e, mark.data!)}
-              >
-                {mark.char}
-              </span>
-            );
-          } else if (mark.type === "entity") {
-            segments.push(
-              <span
-                key={`e-${key++}`}
-                className="cursor-pointer border-b border-bronze-400/50 text-cinnabar-700 hover:text-cinnabar-600 dark:text-bronze-400"
-                onClick={(e) => handleEntityClick(e, mark.entityId!)}
-              >
-                {mark.char}
-              </span>
-            );
-          }
-          remaining = remaining.slice(mark.char.length);
-          found = true;
-          break;
+        if (!remaining.startsWith(mark.char)) continue;
+        if (mark.type === "annotation" && mark.data) {
+          segments.push(
+            <button
+              type="button"
+              key={`annotation-${key++}`}
+              className="rare-char cursor-pointer font-inherit"
+              onClick={(event) => handleCharClick(event, mark.data!)}
+              aria-label={`查看“${mark.char}”的注释`}
+            >
+              {mark.char}
+            </button>
+          );
+        } else if (mark.type === "entity") {
+          segments.push(
+            <button
+              type="button"
+              key={`entity-${key++}`}
+              className="cursor-pointer border-b border-cinnabar-600/40 font-inherit text-cinnabar-700 transition-colors hover:text-cinnabar-600 dark:text-cinnabar-300"
+              onClick={(event) => handleEntityClick(event, mark.entityId!)}
+              aria-label={`查看“${mark.char}”`}
+            >
+              {mark.char}
+            </button>
+          );
         }
+        remaining = remaining.slice(mark.char.length);
+        found = true;
+        break;
       }
       if (!found) {
         segments.push(remaining[0]);
@@ -163,107 +193,198 @@ export default function ReadingView({
     const next = !isDark;
     setIsDark(next);
     document.documentElement.classList.toggle("dark", next);
-    try { localStorage.setItem("wudian_dark", String(next)); } catch {}
+    try {
+      localStorage.setItem("wudian_dark", String(next));
+    } catch {}
   };
 
   return (
-    <div ref={containerRef}>
-      <div className="min-h-screen bg-rice-50 dark:bg-ink-800">
-        {/* 工具栏 */}
-        <div className="sticky top-16 z-30 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 bg-rice-50/80 px-4 py-3 backdrop-blur-md dark:border-ink-600 dark:bg-ink-800/80">
-          <div className="flex items-center gap-2">
-            <ChapterSelector
-              chapters={chapters}
-              currentChapterId={chapter.id}
-              readChapters={readChapters}
-              open={showChapterSelector}
-              onToggle={() => setShowChapterSelector(!showChapterSelector)}
-              onSelect={onChapterChange}
-            />
-          </div>
+    <div
+      ref={containerRef}
+      data-reader-shell
+      className="scroll-mt-28 overflow-clip rounded-lg border border-ink-100 bg-rice-50 shadow-scroll dark:border-ink-600 dark:bg-ink-800"
+    >
+      <div className="sticky top-16 z-30 border-b border-ink-100 bg-rice-50/95 backdrop-blur-md dark:border-ink-600 dark:bg-ink-800/95">
+        <div className="flex min-h-16 flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-5">
+          <ChapterSelector
+            chapters={chapters}
+            bookTitle={bookTitle}
+            currentChapterId={activeChapterId}
+            readChapters={readChapters}
+            open={showChapterSelector}
+            onToggle={() => setShowChapterSelector((open) => !open)}
+            onSelect={onChapterChange}
+          />
 
           <div className="flex items-center gap-2">
-            {/* 字体大小 */}
-            <div className="flex items-center gap-1 rounded-md border border-ink-200 bg-rice-50 px-1 py-1 dark:border-ink-500 dark:bg-ink-700">
-              <Type size={14} className="ml-1 text-ink-400" />
-              {(["sm", "base", "lg", "xl"] as FontSize[]).map((s) => (
+            <div
+              className="flex min-h-11 items-center rounded-md border border-ink-200 bg-white/70 dark:border-ink-500 dark:bg-ink-700"
+              role="group"
+              aria-label="正文字号"
+            >
+              <Type size={16} className="mx-2 hidden shrink-0 text-ink-400 sm:block" />
+              {(["sm", "base", "lg", "xl"] as FontSize[]).map((size) => (
                 <button
-                  key={s}
-                  onClick={() => setFontSize(s)}
+                  type="button"
+                  key={size}
+                  onClick={() => setFontSize(size)}
                   className={clsx(
-                    "rounded px-2 py-0.5 text-xs transition-colors",
-                    fontSize === s
-                      ? "bg-cinnabar-600 text-rice-50"
-                      : "text-ink-500 hover:bg-ink-100 dark:hover:bg-ink-600"
+                    "flex h-11 min-w-11 cursor-pointer items-center justify-center rounded px-2 text-sm transition-colors",
+                    fontSize === size
+                      ? "bg-cinnabar-600 text-white"
+                      : "text-ink-500 hover:bg-ink-100 dark:text-rice-300 dark:hover:bg-ink-600"
                   )}
+                  aria-label={fontSizeLabel[size]}
+                  aria-pressed={fontSize === size}
                 >
-                  {s === "sm" ? "小" : s === "base" ? "中" : s === "lg" ? "大" : "特"}
+                  {size === "sm" ? "小" : size === "base" ? "中" : size === "lg" ? "大" : "特"}
                 </button>
               ))}
             </div>
 
-            {/* 影像底本外链 */}
             <ImageSourceLink variant="toolbar" label="影像" />
 
-            {/* 夜间模式 */}
             <button
+              type="button"
               onClick={toggleDark}
-              className="flex items-center gap-1.5 rounded-md border border-ink-200 bg-rice-50 px-3 py-2 text-sm text-ink-700 transition-colors hover:bg-ink-100 dark:border-ink-500 dark:bg-ink-700 dark:text-rice-200"
+              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border border-ink-200 bg-white/70 text-ink-700 transition-colors hover:bg-ink-100 dark:border-ink-500 dark:bg-ink-700 dark:text-rice-200 dark:hover:bg-ink-600"
+              aria-label={isDark ? "切换到日间模式" : "切换到夜间模式"}
+              title={isDark ? "日间模式" : "夜间模式"}
             >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* 章节标题 */}
-        <div className="px-4 pt-8 text-center">
-          <motion.h2
-            key={chapter.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-serif text-3xl font-bold tracking-widest text-ink-800 dark:text-rice-50"
-          >
-            {chapter.title}
-          </motion.h2>
-          <div className="classical-divider mx-auto mt-4 w-32" />
-        </div>
+      <main className="reader-paper">
+        <section className="mx-auto max-w-3xl px-5 pb-8 pt-10 sm:px-10 sm:pb-12 sm:pt-14">
+          <div className="mb-8 flex items-center gap-3 text-sm text-ink-500 dark:text-rice-300">
+            <span className="font-serif text-base font-semibold text-cinnabar-700 dark:text-cinnabar-300">
+              {bookTitle}
+            </span>
+            <span className="h-px flex-1 bg-ink-200 dark:bg-ink-600" />
+            <span className="tabular-nums">
+              {currentIndex >= 0 ? currentIndex + 1 : 0} / {chapters.length || 0} 章
+            </span>
+          </div>
 
-        {/* 文白对照阅读区 */}
-        <div className="mx-auto max-w-4xl px-4 py-8">
-          <div className="space-y-6">
-            {chapter.sentences.map((pair, idx) => (
-              <motion.div
-                key={pair.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="grid grid-cols-1 gap-4 border-b border-ink-100 pb-6 last:border-0 dark:border-ink-600 md:grid-cols-2"
-              >
-                {/* 原文 */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-xs text-bronze-500">
-                    <BookOpen size={12} /> 原文
+          {chapter && (
+            <motion.header
+              key={chapter.id}
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.24 }}
+              className="border-l-2 border-cinnabar-600 pl-5 sm:pl-7"
+            >
+              <p className="mb-2 text-sm text-bronze-600 dark:text-bronze-400">
+                第 {chapter.order} 章 · {chapter.sentences.length} 则
+              </p>
+              <h1 className="font-serif text-3xl font-bold leading-tight text-ink-900 dark:text-rice-50 sm:text-4xl">
+                {chapter.title}
+              </h1>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-ink-500 dark:text-rice-300">
+                以学习为始，以修身为本。原文、译意与逐句精讲，在同一条阅读脉络中展开。
+              </p>
+            </motion.header>
+          )}
+
+          <div className="mt-9" data-reader-progress>
+            <div className="mb-2 flex items-center justify-between text-xs text-ink-500 dark:text-rice-300">
+              <span>{readChapters.length} 章已读</span>
+              <span className="tabular-nums">{progressPercent}%</span>
+            </div>
+            <div
+              className="h-1.5 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-600"
+              role="progressbar"
+              aria-label="全书阅读进度"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+            >
+              <div
+                className="h-full rounded-full bg-bamboo-600 transition-[width] duration-300 dark:bg-bamboo-400"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <div className="reader-rule h-px" />
+
+        <section className="mx-auto max-w-3xl px-5 py-4 sm:px-10">
+          {chapterLoading && <ReadingSkeleton />}
+
+          {!chapterLoading && chapterError && (
+            <div className="my-10 flex flex-col items-center border-y border-ink-100 py-10 text-center dark:border-ink-600" role="alert">
+              <AlertCircle size={24} className="mb-3 text-cinnabar-600" />
+              <p className="font-serif text-lg text-ink-800 dark:text-rice-100">{chapterError}</p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="mt-5 flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-ink-200 px-4 text-sm text-ink-700 transition-colors hover:border-cinnabar-400 hover:text-cinnabar-700 dark:border-ink-500 dark:text-rice-200"
+                >
+                  <RefreshCw size={16} /> 重新加载
+                </button>
+              )}
+            </div>
+          )}
+
+          {!chapterLoading && !chapterError && !chapter && chapters.length === 0 && (
+            <div className="my-10 border-y border-ink-100 py-10 text-center dark:border-ink-600">
+              <BookOpen size={24} className="mx-auto mb-3 text-bronze-500" />
+              <p className="font-serif text-lg text-ink-700 dark:text-rice-200">本典正文尚未收录</p>
+              <p className="mt-2 text-sm text-ink-400 dark:text-rice-400">可先返回典籍书库，选择已有正文的经典继续阅读。</p>
+            </div>
+          )}
+
+          {!chapterLoading && !chapterError && chapter?.sentences.length === 0 && (
+            <div className="my-10 border-y border-ink-100 py-10 text-center dark:border-ink-600">
+              <BookOpen size={24} className="mx-auto mb-3 text-bronze-500" />
+              <p className="font-serif text-lg text-ink-700 dark:text-rice-200">本章正文尚未收录</p>
+            </div>
+          )}
+
+          {!chapterLoading && !chapterError && chapter && chapter.sentences.length > 0 && (
+            <div className="divide-y divide-ink-100 dark:divide-ink-600">
+              {chapter.sentences.map((pair, index) => (
+                <motion.article
+                  data-reader-passage
+                  key={pair.id}
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(index * 0.035, 0.18), duration: 0.22 }}
+                  className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-8 sm:grid-cols-[2.5rem_minmax(0,1fr)] sm:gap-5 sm:py-10"
+                >
+                  <div className="pt-1 font-serif text-sm tabular-nums text-bronze-500">
+                    {String(index + 1).padStart(2, "0")}
                   </div>
-                  <p
-                    className={clsx(
-                      "font-serif leading-loose text-ink-800 dark:text-rice-50",
-                      fontSizeMap[fontSize].original
-                    )}
-                  >
-                    {renderOriginal(
-                      pair.original,
-                      pair.annotations,
-                      pair.entityIds
-                    )}
-                  </p>
-                </div>
 
-                {/* 译文 */}
-                <div className="space-y-1 md:border-l md:border-ink-100 md:pl-6 dark:md:border-ink-600">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-ink-400">白话译文</div>
-                    {/* 问AI按钮 */}
+                  <div className="min-w-0">
+                    <p
+                      className={clsx(
+                        "font-serif leading-[2] text-ink-900 dark:text-rice-50",
+                        fontSizeMap[fontSize].original
+                      )}
+                    >
+                      {renderOriginal(pair.original, pair.annotations, pair.entityIds)}
+                    </p>
+
+                    <div className="mt-5 border-l border-bronze-400/60 pl-4 sm:pl-5">
+                      <p className="mb-1 text-xs font-medium text-bronze-600 dark:text-bronze-400">今译</p>
+                      <p
+                        className={clsx(
+                          "leading-8 text-ink-600 dark:text-rice-200",
+                          fontSizeMap[fontSize].translation
+                        )}
+                      >
+                        {pair.translation}
+                      </p>
+                    </div>
+
                     <button
+                      type="button"
                       onClick={() =>
                         setAiPanel({
                           open: true,
@@ -272,65 +393,52 @@ export default function ReadingView({
                           translation: pair.translation,
                         })
                       }
-                      className="flex items-center gap-1 rounded-full border border-cinnabar-300 bg-cinnabar-50 px-2.5 py-1 text-[11px] text-cinnabar-600 transition-all hover:border-cinnabar-500 hover:bg-cinnabar-100 hover:shadow-sm dark:border-cinnabar-500/40 dark:bg-cinnabar-900/20 dark:text-cinnabar-400 dark:hover:bg-cinnabar-900/30"
-                      title="问AI逐句精讲"
+                      className="mt-5 flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-3 text-sm font-medium text-cinnabar-700 transition-colors hover:bg-cinnabar-50 dark:text-cinnabar-300 dark:hover:bg-cinnabar-900/20"
+                      aria-label={`精讲第 ${index + 1} 则`}
                     >
-                      <Sparkles size={12} />
-                      问AI
+                      <Sparkles size={16} />
+                      逐句精讲
+                      <ChevronRight size={15} />
                     </button>
                   </div>
-                  <p
-                    className={clsx(
-                      "leading-relaxed text-ink-500 dark:text-rice-300",
-                      fontSizeMap[fontSize].translation
-                    )}
-                  >
-                    {pair.translation}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                </motion.article>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
 
-        {/* 翻页 */}
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 pb-12">
+      <footer className="border-t border-ink-100 bg-rice-100/65 px-4 py-5 dark:border-ink-600 dark:bg-ink-700/40 sm:px-6">
+        <div className="mx-auto grid max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
+          <ChapterNavButton
+            direction="previous"
+            chapter={prevChapter}
+            onSelect={onChapterChange}
+          />
+
           <button
-            disabled={!prevChapter}
-            onClick={() => prevChapter && onChapterChange(prevChapter.id)}
+            type="button"
+            disabled={!chapter || isRead}
+            onClick={() => chapter && onChapterRead?.(chapter.order)}
             className={clsx(
-              "flex items-center gap-1 rounded-md px-4 py-2 text-sm transition-colors",
-              prevChapter
-                ? "border border-ink-200 text-ink-700 hover:bg-ink-100 dark:border-ink-500 dark:text-rice-200 dark:hover:bg-ink-700"
-                : "cursor-not-allowed border border-ink-100 text-ink-300 dark:border-ink-600"
+              "flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors sm:px-5",
+              isRead
+                ? "cursor-default border border-bamboo-300 bg-bamboo-50 text-bamboo-700 dark:border-bamboo-700 dark:bg-bamboo-900/30 dark:text-bamboo-300"
+                : "bg-cinnabar-600 text-white hover:bg-cinnabar-700 disabled:cursor-not-allowed disabled:opacity-50"
             )}
           >
-            <ChevronLeft size={16} /> 上一章
+            {isRead && <Check size={17} />}
+            <span>{isRead ? "本章已读" : "标记已读"}</span>
           </button>
 
-          <button
-            onClick={() => onChapterRead?.(chapter.order)}
-            className="seal-btn"
-          >
-            标记本章已读
-          </button>
-
-          <button
-            disabled={!nextChapter}
-            onClick={() => nextChapter && onChapterChange(nextChapter.id)}
-            className={clsx(
-              "flex items-center gap-1 rounded-md px-4 py-2 text-sm transition-colors",
-              nextChapter
-                ? "border border-ink-200 text-ink-700 hover:bg-ink-100 dark:border-ink-500 dark:text-rice-200 dark:hover:bg-ink-700"
-                : "cursor-not-allowed border border-ink-100 text-ink-300 dark:border-ink-600"
-            )}
-          >
-            下一章 <ChevronRight size={16} />
-          </button>
+          <ChapterNavButton
+            direction="next"
+            chapter={nextChapter}
+            onSelect={onChapterChange}
+          />
         </div>
-      </div>
+      </footer>
 
-      {/* 弹窗 */}
       <AnnotationPopup
         annotation={activeAnnotation?.data ?? null}
         position={activeAnnotation?.pos ?? null}
@@ -341,15 +449,63 @@ export default function ReadingView({
         position={activeEntity?.pos ?? null}
         onClose={() => setActiveEntity(null)}
       />
-
-      {/* AI 逐句精讲面板 */}
       <AIExplainPanel
         open={aiPanel.open}
         verseId={aiPanel.verseId}
         original={aiPanel.original}
         translation={aiPanel.translation}
-        onClose={() => setAiPanel((prev) => ({ ...prev, open: false }))}
+        onClose={() => setAiPanel((current) => ({ ...current, open: false }))}
       />
     </div>
+  );
+}
+
+function ReadingSkeleton() {
+  return (
+    <div className="divide-y divide-ink-100 dark:divide-ink-600" aria-label="正在加载正文" aria-busy="true">
+      {[0, 1, 2].map((item) => (
+        <div key={item} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-9 sm:grid-cols-[2.5rem_minmax(0,1fr)] sm:gap-5">
+          <div className="h-4 w-5 animate-pulse rounded bg-ink-100 dark:bg-ink-600" />
+          <div>
+            <div className="h-6 w-full animate-pulse rounded bg-ink-100 dark:bg-ink-600" />
+            <div className="mt-3 h-6 w-3/4 animate-pulse rounded bg-ink-100 dark:bg-ink-600" />
+            <div className="mt-6 h-4 w-5/6 animate-pulse rounded bg-rice-200 dark:bg-ink-600" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChapterNavButton({
+  direction,
+  chapter,
+  onSelect,
+}: {
+  direction: "previous" | "next";
+  chapter?: Chapter;
+  onSelect: (chapterId: string) => void;
+}) {
+  const isPrevious = direction === "previous";
+  return (
+    <button
+      type="button"
+      disabled={!chapter}
+      onClick={() => chapter && onSelect(chapter.id)}
+      className={clsx(
+        "flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 text-left text-ink-700 transition-colors hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-30 dark:text-rice-200 dark:hover:bg-ink-600",
+        !isPrevious && "justify-end text-right"
+      )}
+      aria-label={chapter ? `${isPrevious ? "上一章" : "下一章"}：${chapter.title}` : isPrevious ? "没有上一章" : "没有下一章"}
+    >
+      {isPrevious && <ChevronLeft size={18} className="shrink-0" />}
+      <span className="min-w-0">
+        <span className="block text-xs text-ink-400 dark:text-rice-400">
+          {isPrevious ? "上一章" : "下一章"}
+        </span>
+        {chapter && <span className="hidden truncate font-serif text-sm sm:block">{chapter.title}</span>}
+      </span>
+      {!isPrevious && <ChevronRight size={18} className="shrink-0" />}
+    </button>
   );
 }

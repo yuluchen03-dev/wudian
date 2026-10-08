@@ -1,250 +1,162 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Flame, ChevronRight, Sparkles, MessagesSquare, ArrowRight, Zap, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, BookMarked, BookOpen, Library, MessagesSquare, Quote, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
 import { api } from "@/lib/api";
-import type { Book, DailyQuote, LearningProgress } from "@/lib/types";
-import { InkDivider, SectionTitle, CTAButton } from "@/components/ui/ChineseDecor";
+import type { Book, LearningProgress } from "@/lib/types";
 import DailyQuoteCard from "@/components/home/DailyQuoteCard";
 import QuickQuiz from "@/components/quiz/QuickQuiz";
 import { getBookCoverImage, pageBackgrounds } from "@/lib/visualAssets";
 
+const trustItems = [
+  { icon: BookMarked, label: "原文引用" },
+  { icon: ShieldCheck, label: "出处校验" },
+  { icon: Sparkles, label: "白话点睛" },
+];
+
 export default function HomePage() {
+  const reduceMotion = useReducedMotion();
   const [books, setBooks] = useState<Book[]>([]);
-  const [dailyQuote, setDailyQuote] = useState<DailyQuote | null>(null);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
+  const quizDialogRef = useRef<HTMLDivElement>(null);
+  const quizCloseRef = useRef<HTMLButtonElement>(null);
+  const quizTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     api.getBooks().then(setBooks);
-    api.getDailyQuote().then(setDailyQuote);
     api.getProgress("lunyu").then(setProgress).catch(() => {});
   }, []);
 
-  return (
-    <div
-      className="breathing-space relative -mx-4 -my-8 px-4 py-8"
-      style={{
-        backgroundImage: `linear-gradient(180deg, rgba(248,245,238,0.84), rgba(248,245,238,0.96)), url(${pageBackgrounds.home})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-      }}
-    >
-      {/* Hero - 大留白 + 大字标题 */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="hero-spacing text-center"
-      >
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-rice-50/60 px-4 py-1.5 text-xs text-ink-500 dark:border-ink-600 dark:bg-ink-700/60 dark:text-rice-300">
-          <Sparkles size={12} className="text-cinnabar-600" />
-          四书五经 · 文白对照 · 沉浸阅读
-        </div>
-        <h1 className="hero-title text-5xl text-ink-800 dark:text-rice-50 md:text-7xl lg:text-8xl">
-          悟典
-        </h1>
-        <p className="mt-6 font-serif text-lg text-ink-500 dark:text-rice-300 md:text-xl">
-          与千年圣贤对话，悟经典之大义
-        </p>
-        <InkDivider className="mx-auto mt-8" withSeal />
-        
-        {/* CTA - 与孔子对话 */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/sage-chat">
-            <CTAButton size="lg" className="group">
-              <MessagesSquare size={20} />
-              与孔子对话
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </CTAButton>
-          </Link>
-          <Link
-            href="/reader?book=lunyu"
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-ink-200 bg-white/60 px-8 py-3.5 font-serif text-lg font-medium tracking-wider text-ink-700 shadow-scroll-soft transition-all duration-300 hover:border-bamboo-400 hover:text-bamboo-600 hover:shadow-scroll dark:border-ink-600 dark:bg-ink-700/60 dark:text-rice-200"
-          >
-            <BookOpen size={20} />
-            开始阅读
-          </Link>
-        </div>
-      </motion.section>
+  useEffect(() => {
+    if (!showQuiz) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    quizCloseRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      quizTriggerRef.current?.focus();
+    };
+  }, [showQuiz]);
 
-      {/* 每日一句 - 精美中式卡片（支持左右滑动、与孔子对话） */}
-      <section className="module-gap">
-        <DailyQuoteCard />
+  const handleQuizKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setShowQuiz(false);
+      return;
+    }
+    if (event.key !== "Tab" || !quizDialogRef.current) return;
+    const focusable = Array.from(quizDialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
+      <section data-ui="editorial-hero" className="relative isolate min-h-[560px] overflow-hidden border-b border-[var(--color-line)] lg:min-h-[590px]" style={{ backgroundImage: `url(${pageBackgrounds.home})`, backgroundSize: "cover" }}>
+        <div className="absolute inset-0 bg-[var(--color-canvas)]" />
+        <div className="absolute inset-y-0 right-0 w-full lg:w-[58%]">
+          <div className="absolute inset-0 bg-[url('/agens/sages/scenes/confucius.png')] bg-cover bg-[center_28%]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-canvas)] via-[rgba(245,241,232,0.48)] to-[rgba(36,36,33,0.08)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(36,36,33,0.28)] via-transparent to-transparent lg:hidden" />
+        </div>
+
+        <motion.div initial={reduceMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.7 }} className="relative z-10 flex min-h-[560px] items-end px-5 pb-10 pt-16 sm:px-8 lg:min-h-[590px] lg:items-center lg:px-14 lg:py-16 xl:px-20">
+          <div className="max-w-2xl bg-[rgba(245,241,232,0.84)] p-5 backdrop-blur-[2px] sm:p-7 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+            <div className="mb-5 flex items-center gap-3 text-xs tracking-[0.18em] text-[var(--color-citation)]">
+              <span className="h-px w-10 bg-[var(--color-citation)]" />
+              基于经典原文的思想问答
+            </div>
+            <h1 className="display-serif text-6xl font-semibold leading-none text-[var(--color-ink)] sm:text-7xl lg:text-8xl">悟典</h1>
+            <p className="display-serif mt-6 max-w-xl text-2xl leading-snug text-[var(--color-ink)] sm:text-3xl">千年经典，不止于阅读</p>
+            <p className="mt-4 max-w-lg text-base leading-8 text-[var(--color-muted)] sm:text-lg">向圣贤请教，让每一次回答，都有典可循。原文、译文与思想依据随时可查。</p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link href="/sage-chat" className="wudian-action px-6 text-sm font-medium"><MessagesSquare size={18} />向孔子请教<ArrowRight size={17} /></Link>
+              <Link href="/reader?book=lunyu" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[4px] border border-[var(--color-action)] bg-[rgba(251,249,243,0.7)] px-6 text-sm font-medium text-[var(--color-action)] transition-colors hover:bg-white"><BookOpen size={18} />漫游经典</Link>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
-      {/* 快速答题入口 - 今日5题挑战 */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-        className="module-gap"
-      >
-        <div className="relative overflow-hidden rounded-2xl border-2 border-cinnabar-200 bg-gradient-to-br from-cinnabar-50 to-rice-50 p-8 text-center shadow-scroll-soft dark:border-cinnabar-900 dark:from-ink-700 dark:to-ink-800 md:p-10">
-          {/* 装饰 */}
-          <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-cinnabar-600/5 blur-2xl" />
-
-          <div className="relative">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-cinnabar-600/10 px-4 py-1.5 text-sm font-medium text-cinnabar-600">
-              <Zap size={15} />
-              游戏化挑战
-            </div>
-            <h2 className="font-serif text-3xl font-bold text-ink-800 dark:text-rice-50 md:text-4xl">
-              今日 5 题挑战
-            </h2>
-            <p className="mt-3 text-ink-500 dark:text-rice-300 md:text-lg">
-              1 分钟速答《论语》经典名句 · 答对有鼓励，答错有讲解
-            </p>
-            <button
-              onClick={() => setShowQuiz(true)}
-              className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-cinnabar-600 px-8 py-4 font-serif text-xl text-rice-50 shadow-popup transition-all hover:bg-cinnabar-700 hover:shadow-lg active:scale-95"
-            >
-              <Zap size={22} className="transition-transform group-hover:scale-110" />
-              开始答题
-              <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-            </button>
-          </div>
+      <section data-ui="trust-strip" className="w-full max-w-full overflow-hidden border-b border-[var(--color-line)] bg-[var(--color-action)] text-white">
+        <div className="grid w-full min-w-0 divide-x divide-white/15" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+          {trustItems.map(({ icon: Icon, label }) => (
+            <div key={label} className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-0.5 text-[10px] sm:flex-row sm:gap-2 sm:px-2 sm:text-sm"><Icon size={16} className="shrink-0 text-[#d9c39d]" /><span className="min-w-0 whitespace-nowrap">{label}</span></div>
+          ))}
         </div>
-      </motion.section>
+      </section>
 
-      {/* 快速答题弹窗 */}
+      <section className="grid gap-0 border-b border-[var(--color-line)] lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
+        <div className="px-5 py-14 sm:px-8 lg:px-14 xl:px-20">
+          <div className="mb-7 flex items-end justify-between gap-4">
+            <div><div className="text-xs tracking-[0.16em] text-[var(--color-citation)]">今日章句</div><h2 className="display-serif mt-2 text-3xl font-semibold">从一句原文开始</h2></div>
+            <Quote className="text-[var(--color-line)]" size={36} />
+          </div>
+          <DailyQuoteCard />
+        </div>
+        <div className="flex flex-col justify-center border-t border-[var(--color-line)] bg-[var(--color-highlight)] px-5 py-12 sm:px-8 lg:border-l lg:border-t-0 lg:px-10">
+          <span className="mb-5 grid h-11 w-11 place-items-center rounded-[4px] bg-[var(--color-citation)] text-white"><Zap size={20} /></span>
+          <h2 className="display-serif text-2xl font-semibold">今日五题</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">用一分钟检验对经典章句的理解，答错即可查看出处与讲解。</p>
+          <button ref={quizTriggerRef} onClick={() => setShowQuiz(true)} className="mt-6 flex min-h-11 items-center justify-between border-y border-[var(--color-line)] py-3 text-left text-sm font-medium text-[var(--color-action)]">开始答题 <ArrowRight size={18} /></button>
+        </div>
+      </section>
+
+      <section className="px-5 py-16 sm:px-8 lg:px-14 xl:px-20">
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div><div className="text-xs tracking-[0.16em] text-[var(--color-citation)]">经典书库</div><h2 className="display-serif mt-2 text-3xl font-semibold">循书入道</h2></div>
+          <Link href="/reader" className="flex min-h-11 items-center gap-2 text-sm text-[var(--color-action)]">查看全部典籍 <ArrowRight size={16} /></Link>
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 lg:gap-6">
+          {(books.length ? books.slice(0, 4) : Array.from({ length: 4 })).map((item, index) => {
+            if (!item) return <div key={index} className="aspect-[3/4] animate-pulse rounded-[4px] bg-[var(--color-line)]/50" />;
+            const book = item as Book;
+            return (
+              <motion.div key={book.id} initial={reduceMotion ? false : { opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: reduceMotion ? 0 : index * 0.06 }}>
+                <Link href={`/reader?book=${book.id}`} className="group block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-[4px] border border-[var(--color-line)] bg-[var(--color-action)]">
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]" style={{ backgroundImage: `linear-gradient(180deg, rgba(36,36,33,0.04), rgba(36,36,33,0.5)), url(${book.coverImage || getBookCoverImage(book.id)})` }} />
+                    <span className="display-serif absolute bottom-3 left-3 text-2xl font-semibold text-white">{book.title}</span>
+                  </div>
+                  <div className="mt-3 text-xs text-[var(--color-citation)]">{book.category}</div>
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-[var(--color-muted)]">{book.description}</p>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {progress && (
+        <section className="border-y border-[var(--color-line)] bg-[var(--color-sage)] px-5 py-10 sm:px-8 lg:px-14 xl:px-20">
+          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+            <div><div className="flex items-center gap-2 text-xs tracking-[0.16em] text-[var(--color-action)]"><Library size={15} />你的阅读进度</div><h2 className="display-serif mt-3 text-2xl font-semibold">《论语》第 {progress.currentChapterOrder} 章</h2><p className="mt-2 text-sm text-[var(--color-muted)]">已读 {progress.readChapters.length} / {progress.totalChapters} 章 · 连续 {progress.streakDays} 天</p></div>
+            <Link href="/reader?book=lunyu" className="wudian-action px-6 text-sm">继续阅读 <ArrowRight size={17} /></Link>
+          </div>
+        </section>
+      )}
+
       <AnimatePresence>
         {showQuiz && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/60 p-4 backdrop-blur-sm"
-            onClick={() => setShowQuiz(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-rice-50 p-6 shadow-popup dark:bg-ink-800 md:p-8"
-            >
-              {/* 关闭按钮 */}
-              <button
-                onClick={() => setShowQuiz(false)}
-                className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-ink-400 transition-colors hover:bg-ink-200 hover:text-ink-600 dark:bg-ink-600 dark:text-rice-400 dark:hover:bg-ink-500"
-                aria-label="关闭"
-              >
-                <X size={18} />
-              </button>
-
-              {/* 标题 */}
-              <div className="mb-6 text-center">
-                <h3 className="font-serif text-2xl font-bold text-ink-800 dark:text-rice-50">
-                  今日 5 题挑战
-                </h3>
-                <p className="mt-1 text-sm text-bronze-500">《论语》经典名句速答</p>
-              </div>
-
+          <motion.div initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 grid place-items-center bg-black/55 p-4 backdrop-blur-sm" onClick={() => setShowQuiz(false)}>
+            <motion.div ref={quizDialogRef} role="dialog" aria-modal="true" aria-labelledby="quiz-dialog-title" tabIndex={-1} onKeyDown={handleQuizKeyDown} initial={reduceMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 18 }} onClick={(event) => event.stopPropagation()} className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[6px] bg-[var(--color-surface)] p-6 shadow-popup outline-none md:p-8">
+              <button ref={quizCloseRef} onClick={() => setShowQuiz(false)} className="absolute right-4 top-4 grid h-11 w-11 place-items-center" aria-label="关闭答题"><X size={19} /></button>
+              <div className="mb-6 pr-12"><div className="text-xs text-[var(--color-citation)]">经典自测</div><h3 id="quiz-dialog-title" className="display-serif mt-1 text-2xl font-semibold">今日五题</h3></div>
               <QuickQuiz onClose={() => setShowQuiz(false)} />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 经典书库 */}
-      <section className="module-gap">
-        <SectionTitle className="mb-8" withDivider>
-          经典书库
-        </SectionTitle>
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
-          {books.length === 0
-            ? // 骨架屏
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="paper-card h-full animate-pulse p-6">
-                  <div className="mb-5 h-28 rounded-md bg-ink-100 dark:bg-ink-600" />
-                  <div className="h-5 w-2/3 rounded bg-ink-100 dark:bg-ink-600" />
-                  <div className="mt-2 h-3 w-1/3 rounded bg-ink-100 dark:bg-ink-600" />
-                  <div className="mt-3 space-y-1.5">
-                    <div className="h-3 rounded bg-ink-100 dark:bg-ink-600" />
-                    <div className="h-3 w-4/5 rounded bg-ink-100 dark:bg-ink-600" />
-                  </div>
-                </div>
-              ))
-            : books.map((book, i) => (
-                <motion.div
-                  key={book.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.08 * i, duration: 0.5 }}
-                >
-                  <Link href={`/reader?book=${book.id}`}>
-                    <div className="paper-card group h-full cursor-pointer p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-popup">
-                      <div
-                        className="mb-5 flex h-28 items-center justify-center rounded-md font-serif text-4xl font-bold text-rice-50 shadow-md transition-transform duration-300 group-hover:scale-105"
-                        style={{
-                          backgroundColor: book.coverColor,
-                          backgroundImage: `linear-gradient(180deg, rgba(28,25,23,0.08), rgba(28,25,23,0.52)), url(${book.coverImage || getBookCoverImage(book.id)})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }}
-                      >
-                        <span className="drop-shadow">{book.title[0]}</span>
-                      </div>
-                      <h3 className="font-serif text-xl font-semibold text-ink-800 dark:text-rice-50">
-                        {book.title}
-                      </h3>
-                      <p className="mt-1.5 text-xs text-bronze-500 dark:text-rice-400">{book.category}</p>
-                      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-400 dark:text-rice-400">
-                        {book.description}
-                      </p>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-        </div>
-      </section>
-
-      {/* 学习进度概览 */}
-      {progress && (
-        <section className="paper-card module-gap p-8 md:p-10">
-          <SectionTitle className="mb-6">
-            <span className="flex items-center gap-2.5">
-              <BookOpen size={24} className="text-cinnabar-600" />
-              学习进度
-            </span>
-          </SectionTitle>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="font-serif text-4xl font-bold text-cinnabar-600 md:text-5xl">
-                {progress.readChapters.length}
-                <span className="text-lg text-ink-400 md:text-xl">/{progress.totalChapters}</span>
-              </div>
-              <div className="mt-2 text-xs text-ink-400 dark:text-rice-400 md:text-sm">已读章数</div>
-            </div>
-            <div className="border-x border-ink-100 dark:border-ink-600">
-              <div className="font-serif text-4xl font-bold text-bronze-500 md:text-5xl">
-                {Math.round(
-                  (progress.readChapters.length / progress.totalChapters) * 100
-                )}
-                %
-              </div>
-              <div className="mt-2 text-xs text-ink-400 dark:text-rice-400 md:text-sm">完成度</div>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1.5 font-serif text-4xl font-bold text-cinnabar-600 md:text-5xl">
-                <Flame size={28} /> {progress.streakDays}
-              </div>
-              <div className="mt-2 text-xs text-ink-400 dark:text-rice-400 md:text-sm">连续天数</div>
-            </div>
-          </div>
-          <Link
-            href={`/reader?book=lunyu`}
-            className="group mt-8 flex items-center justify-center gap-1.5 rounded-md border border-cinnabar-200 bg-cinnabar-50/50 py-3 font-serif text-base text-cinnabar-600 transition-all hover:bg-cinnabar-50 hover:shadow-scroll-soft dark:border-cinnabar-900 dark:bg-cinnabar-900/20 dark:text-cinnabar-400"
-          >
-            继续阅读《论语》第 {progress.currentChapterOrder} 章
-            <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
-          </Link>
-        </section>
-      )}
     </div>
   );
 }

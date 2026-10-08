@@ -20,11 +20,49 @@ from app.core.config import settings
 from app.core.database import init_db, close_db
 
 
+def _validate_config() -> None:
+    """校验关键配置项，缺失或异常时打印警告但不中断启动"""
+    if not settings.JWT_SECRET_KEY:
+        print("⚠️ JWT_SECRET_KEY 未设置，认证功能将不可用")
+
+    if settings.is_sqlite:
+        db_path = settings.resolved_database_path
+        if not db_path:
+            print("⚠️ 数据库路径解析失败，使用默认路径")
+        else:
+            from pathlib import Path
+            db_file = Path(db_path)
+            if not db_file.parent.exists():
+                db_file.parent.mkdir(parents=True, exist_ok=True)
+                print(f"📁 创建数据库目录: {db_file.parent}")
+
+    chroma_dir = Path(settings.resolved_chroma_persist_dir)
+    if not chroma_dir.exists():
+        chroma_dir.mkdir(parents=True, exist_ok=True)
+        print(f"📁 创建 ChromaDB 目录: {chroma_dir}")
+
+    debate_dir = Path(settings.resolved_debate_storage_dir)
+    if not debate_dir.exists():
+        debate_dir.mkdir(parents=True, exist_ok=True)
+        print(f"📁 创建辩论数据目录: {debate_dir}")
+
+    try:
+        llm_cfg = settings.llm_config
+        if not llm_cfg.get("api_key"):
+            print("⚠️ LLM API_KEY 未配置，AI 接口将返回降级回复")
+    except Exception:
+        print("⚠️ LLM 配置校验失败")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     # 启动
     print(f"🚀 {settings.APP_NAME} 启动中...")
+
+    # 配置校验
+    _validate_config()
+
     if settings.is_development:
         await init_db()
         print("📦 数据库表已初始化")
@@ -93,7 +131,20 @@ async def root():
 
 @app.get("/health", tags=["健康检查"])
 async def health_check():
-    """健康检查端点"""
+    """健康检查端点
+
+    返回演示就绪信号（LLM/RAG 状态）与存储位置的相对路径，
+    不暴露服务器绝对路径等敏感信息。
+    """
+    llm_available = False
+    llm_model = settings.llm_config.get("model", "unknown")
+    try:
+        from app.services.llm_client import llm_client
+        llm_available = bool(llm_client.is_available)
+        llm_model = llm_client.model
+    except Exception:
+        pass
+
     rag_available = False
     rag_count = 0
     try:
@@ -103,32 +154,32 @@ async def health_check():
         if getattr(rag, "collection", None) is not None:
             rag_count = rag.collection.count()
         else:
-            rag_count = len(getattr(rag, "_file_index", [])) + len(
-                getattr(rag, "_commentary_index", [])
+            rag_count = len(getattr(rag, "_file_index", []) or []) + len(
+                getattr(rag, "_commentary_index", []) or []
             )
     except Exception:
-        rag_available = False
-        rag_count = 0
+        pass
 
-    try:
-        from app.services.llm_client import llm_client
-        llm_available = bool(llm_client.is_available)
-        llm_model = llm_client.model
-    except Exception:
-        llm_available = False
-        llm_model = settings.llm_config.get("model", "unknown")
+    healthy = llm_available and rag_available
+
+    # 脱敏：只返回配置中的相对路径/文件名，不返回服务器绝对路径
+    if settings.is_sqlite:
+        database_path = settings.DATABASE_URL.rsplit("/", 1)[-1]
+    else:
+        database_path = "postgresql"
 
     return {
-        "status": "healthy",
+        "status": "healthy" if healthy else "unhealthy",
+        "healthy": healthy,
         "env": settings.APP_ENV,
         "llm_available": llm_available,
         "llm_provider": settings.LLM_PROVIDER,
         "llm_model": llm_model,
         "rag_available": rag_available,
         "rag_count": rag_count,
-        "database_path": settings.resolved_database_path,
-        "chroma_persist_dir": settings.resolved_chroma_persist_dir,
-        "debate_storage_dir": settings.resolved_debate_storage_dir,
+        "database_path": database_path,
+        "chroma_persist_dir": settings.CHROMA_PERSIST_DIR,
+        "debate_storage_dir": settings.DEBATE_STORAGE_DIR,
     }
 
 

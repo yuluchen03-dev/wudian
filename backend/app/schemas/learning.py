@@ -78,7 +78,7 @@ class DailyQuoteResponse(BaseModel):
 class CheckinRequest(BaseModel):
     verses_learned: int = 0
     study_duration: int = 0
-    exp_gained: int = 0
+    exp_gained: int = Field(default=0, ge=0, le=100, description="经验值上限100")
     note: Optional[str] = None
 
 

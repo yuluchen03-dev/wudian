@@ -3,7 +3,7 @@
  * 基于 axios + SWR，支持 Mock 模式独立运行
  */
 import axios, { AxiosInstance } from "axios";
-import { getRefreshToken, setToken, logout } from "./auth";
+import { getRefreshToken, setToken, logout, getToken } from "./auth";
 import type {
   Book,
   Chapter,
@@ -1049,11 +1049,13 @@ export const api = {
     }
 
     // 真实模式：fetch + SSE
+    const token = getToken();
     const response = await fetch(`${API_BASE}/ai/chat-sage`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: JSON.stringify({
         sage: sageId,
@@ -1090,26 +1092,29 @@ export const api = {
         if (payload === "[DONE]") {
           return fullText;
         }
-        try {
-          const parsed = JSON.parse(payload);
-          if (parsed.error) {
-            throw new Error(parsed.error);
+        if (payload.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+            // 检索篇章事件
+            if (parsed.type === "chapters" && Array.isArray(parsed.chapters)) {
+              onChapters?.(parsed.chapters);
+            }
+            // 思想依据引用事件
+            if (parsed.type === "citations" && Array.isArray(parsed.citations)) {
+              onCitations?.(parsed.citations);
+            }
+            // 流式文本内容
+            if (parsed.content) {
+              fullText += parsed.content;
+              onChunk?.(parsed.content);
+            }
+          } catch (e) {
+            // 解析错误，确保错误不会被静默吞掉
+            throw e instanceof Error ? e : new Error(`SSE 解析错误: ${payload}`);
           }
-          // 检索篇章事件
-          if (parsed.type === "chapters" && Array.isArray(parsed.chapters)) {
-            onChapters?.(parsed.chapters);
-          }
-          // 思想依据引用事件
-          if (parsed.type === "citations" && Array.isArray(parsed.citations)) {
-            onCitations?.(parsed.citations);
-          }
-          // 流式文本内容
-          if (parsed.content) {
-            fullText += parsed.content;
-            onChunk?.(parsed.content);
-          }
-        } catch {
-          // 非 JSON 行，跳过
         }
       }
     }

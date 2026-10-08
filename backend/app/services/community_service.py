@@ -243,6 +243,19 @@ class CommunityService:
         if not group:
             raise ValueError(f"小组 {group_id} 不存在")
 
+        # 私有小组需校验用户是否是小组成员
+        if group.is_private and current_user_id is not None:
+            member_stmt = select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == current_user_id,
+                    GroupMember.is_deleted == False,
+                )
+            )
+            member = (await self.db.execute(member_stmt)).scalars().first()
+            if not member:
+                raise ValueError("你不在该小组中，无法查看私有小组详情")
+
         # 查询成员（关联用户表）
         member_stmt = (
             select(GroupMember, User)
@@ -432,13 +445,26 @@ class CommunityService:
             user.last_study_at = _utcnow()
 
         await self.db.commit()
-        return await self.get_group_checkin_stat(group_id)
+        return await self.get_group_checkin_stat(group_id, current_user_id=user_id)
 
-    async def get_group_checkin_stat(self, group_id: int) -> GroupCheckinStat:
+    async def get_group_checkin_stat(self, group_id: int, current_user_id: Optional[int] = None) -> GroupCheckinStat:
         """小组打卡统计"""
         group = await self._get_group(group_id)
         if not group:
             raise ValueError(f"小组 {group_id} 不存在")
+
+        # 校验用户是否是小组成员（如果提供了用户ID）
+        if current_user_id is not None:
+            member_stmt = select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == current_user_id,
+                    GroupMember.is_deleted == False,
+                )
+            )
+            member = (await self.db.execute(member_stmt)).scalars().first()
+            if not member:
+                raise ValueError("你不在该小组中")
 
         # 查询成员
         member_stmt = (
@@ -1062,8 +1088,8 @@ class CommunityService:
         session["my_score"] = my_score
         session["opponent_score"] = opponent_score
 
-        # 清理会话（保留一段时间供查询，简单起见保留）
-        # del _pk_sessions[req.pk_id]
+        # 清理会话
+        _pk_sessions.pop(req.pk_id, None)
 
         return PKSettlement(
             pk_id=req.pk_id,

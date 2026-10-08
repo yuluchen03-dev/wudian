@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,9 +16,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // 已登录则跳转
-  if (typeof window !== "undefined" && isLoggedIn()) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (isLoggedIn()) {
+      router.replace("/");
+    }
+  }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

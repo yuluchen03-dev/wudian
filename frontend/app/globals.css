@@ -11,6 +11,15 @@
   --bamboo: #5b8c5a;
   --bamboo-soft: #7ba87b;
   --bronze: #8a8050;
+  --color-canvas: #f5f1e8;
+  --color-surface: #fbf9f3;
+  --color-ink: #242421;
+  --color-muted: #6f6a61;
+  --color-action: #334854;
+  --color-citation: #9e443a;
+  --color-sage: #e8efe6;
+  --color-highlight: #fbf4e0;
+  --color-line: #d8d0c3;
 }
 
 html {
@@ -20,9 +29,9 @@ html {
 body {
   padding: 0;
   margin: 0;
-  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
-  background-color: var(--bg-paper);
-  color: var(--ink);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -174,6 +183,70 @@ body {
   letter-spacing: 0.02em;
 }
 
+::selection {
+  background: rgba(158, 68, 58, 0.16);
+  color: var(--color-ink);
+}
+
+.display-serif {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+}
+
+.wudian-surface {
+  background: rgba(251, 249, 243, 0.92);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+
+.wudian-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+  background: var(--color-action);
+  color: #fffdf8;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.wudian-action:hover {
+  background: #243943;
+  transform: translateY(-1px);
+}
+
+.paper-grain {
+  background-image: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.08)), url("/agens/page-backgrounds/home.svg");
+  background-position: center;
+  background-size: cover;
+}
+
+.reader-paper {
+  background-color: rgba(253, 251, 247, 0.96);
+  background-image:
+    linear-gradient(to right, rgba(138, 128, 80, 0.025), transparent 24%, transparent 76%, rgba(138, 128, 80, 0.025)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(138, 128, 80, 0.035) 32px);
+}
+
+.dark .reader-paper {
+  background-color: rgba(28, 25, 23, 0.98);
+  background-image:
+    linear-gradient(to right, rgba(168, 160, 107, 0.025), transparent 24%, transparent 76%, rgba(168, 160, 107, 0.025)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(168, 160, 107, 0.035) 32px);
+}
+
+.reader-rule {
+  background: linear-gradient(to right, transparent, rgba(138, 128, 80, 0.45), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reader-paper * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .hero-title {
   @apply font-serif font-bold tracking-widest;
   letter-spacing: 0.15em;
@@ -193,4 +266,15 @@ body {
 .nav-link-bamboo:hover::after,
 .nav-link-bamboo.active::after {
   @apply w-full;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

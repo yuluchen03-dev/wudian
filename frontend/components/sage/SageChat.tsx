@@ -18,9 +18,11 @@ interface SageChatProps {
   presetQuestions?: string[];
   /** 初始预填消息：挂载后自动发送此消息（用于从每日一句等入口跳转） */
   initialMessage?: string;
+  onCitationsChange?: (citations: Citation[]) => void;
+  onSearchChaptersChange?: (chapters: { name: string; source: string }[]) => void;
 }
 
-export default function SageChat({ sage, onReset, demoMode = false, presetQuestions, initialMessage }: SageChatProps) {
+export default function SageChat({ sage, onReset, demoMode = false, presetQuestions, initialMessage, onCitationsChange, onSearchChaptersChange }: SageChatProps) {
   const [messages, setMessages] = useState<SageMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -40,6 +42,13 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
 
   // 初始化欢迎语
   useEffect(() => {
+    abortRef.current = true;
+    setIsStreaming(false);
+    setIsSearching(false);
+    setSearchChapters([]);
+    setStreamError("");
+    onCitationsChange?.([]);
+    onSearchChaptersChange?.([]);
     setMessages([
       {
         id: "welcome",
@@ -48,7 +57,7 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
         timestamp: new Date().toISOString(),
       },
     ]);
-  }, [sage]);
+  }, [sage, onCitationsChange, onSearchChaptersChange]);
 
   // 自动滚动到底部
   useEffect(() => {
@@ -95,6 +104,8 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
     setStreamError("");
     setIsSearching(true);
     setSearchChapters([]);
+    onCitationsChange?.([]);
+    onSearchChaptersChange?.([]);
 
     // 初始化空的 sage 消息
     setMessages((prev) => [
@@ -140,10 +151,12 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
         (chapters) => {
           if (abortRef.current) return;
           setSearchChapters(chapters);
+          onSearchChaptersChange?.(chapters);
         },
         // 思想依据回调：接收 RAG 检索到的引用
         (citations) => {
           if (abortRef.current) return;
+          onCitationsChange?.(citations);
           setMessages((prev) =>
             prev.map((m) =>
               m.id === sageMsgId ? { ...m, citations } : m
@@ -158,6 +171,7 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
       if (abortRef.current === false) {
         const fallback = generateSageReply(sage.id, content);
         const fallbackCitations = getLocalSageCitations(sage.id);
+        onCitationsChange?.(fallbackCitations);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === sageMsgId
@@ -177,6 +191,9 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
     setTimeout(() => (abortRef.current = false), 100);
     setIsStreaming(false);
     setStreamError("");
+    setSearchChapters([]);
+    onCitationsChange?.([]);
+    onSearchChaptersChange?.([]);
     setMessages([
       {
         id: "welcome",
@@ -197,14 +214,17 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
 
   return (
     <div
+      data-ui="sage-composer"
       className={clsx(
-        "flex flex-col overflow-hidden rounded-xl border border-ink-200 bg-rice-50 shadow-scroll dark:border-ink-600 dark:bg-ink-800",
-        demoMode ? "h-[680px] max-h-[calc(100dvh-7rem)]" : "h-[600px]"
+        "flex min-w-0 flex-col overflow-hidden rounded-[6px] border border-[var(--color-line)] bg-[var(--color-surface)] shadow-scroll dark:border-ink-600 dark:bg-ink-800",
+        demoMode
+          ? "h-[calc(100dvh-266px)] max-h-[calc(100dvh-266px)] sm:h-[calc(100dvh-246px)] sm:max-h-[calc(100dvh-246px)] lg:h-[calc(100dvh-198px)] lg:max-h-[calc(100dvh-198px)]"
+          : "h-[600px]"
       )}
     >
       {/* 圣贤头部 - 印章风格头像 */}
-      <div className="flex items-center justify-between border-b border-ink-100 bg-rice-100/60 px-5 py-3.5 dark:border-ink-600 dark:bg-ink-700/60">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between border-b border-[var(--color-line)] bg-[var(--color-sage)] px-5 py-3.5 dark:border-ink-600 dark:bg-ink-700/60">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <div
             className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md bg-cover bg-center font-serif text-xl font-bold text-rice-50 shadow-md"
             style={{
@@ -214,20 +234,21 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
           >
             <span className={sage.portraitImage ? "sr-only" : ""}>{sage.name[0]}</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="font-serif text-lg font-bold text-ink-800 dark:text-rice-50">
               {sage.name}
             </div>
-            <div className="text-xs text-ink-400 dark:text-rice-400">{sage.speaking_style}</div>
+            <div className="truncate text-xs text-ink-400 dark:text-rice-400">{sage.speaking_style}</div>
           </div>
         </div>
         <button
           onClick={handleReset}
           disabled={isStreaming}
-          className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs text-ink-500 transition-colors hover:bg-ink-100 disabled:opacity-40 dark:text-rice-300 dark:hover:bg-ink-600"
+          className="flex h-11 w-11 shrink-0 items-center justify-center gap-1 rounded-md text-xs text-ink-500 transition-colors hover:bg-ink-100 disabled:opacity-40 dark:text-rice-300 dark:hover:bg-ink-600 sm:w-auto sm:px-2.5"
+          aria-label="重新对话"
         >
           <RotateCcw size={13} />
-          重新对话
+          <span className="hidden sm:inline">重新对话</span>
         </button>
       </div>
 
@@ -393,6 +414,7 @@ export default function SageChat({ sage, onReset, demoMode = false, presetQuesti
         <button
           onClick={() => handleSend()}
           disabled={!input.trim() || isStreaming}
+          aria-label="发送问题"
           className={clsx(
             "flex flex-shrink-0 items-center justify-center rounded-full bg-cinnabar-600 text-rice-50 shadow-scroll-soft transition-all hover:bg-cinnabar-700 hover:shadow-scroll disabled:cursor-not-allowed disabled:opacity-40",
             demoMode ? "h-11 w-11" : "h-10 w-10"

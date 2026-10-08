@@ -1,10 +1,7 @@
-"""
-悟典 - 应用核心配置模块
-使用 pydantic-settings 进行环境变量管理
-"""
 from pathlib import Path
 from typing import List
-from pydantic import field_validator
+
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,8 +17,8 @@ class Settings(BaseSettings):
 
     # --- 应用配置 ---
     APP_NAME: str = "悟典"
-    APP_ENV: str = "development"
-    APP_DEBUG: bool = True
+    APP_ENV: str = "production"
+    APP_DEBUG: bool = False
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
 
@@ -43,7 +40,9 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str = ""
 
     # --- JWT 配置 ---
-    JWT_SECRET_KEY: str = "change-me-in-production"
+    # 必须设置 JWT_SECRET_KEY 环境变量，否则启动失败
+    # 生成安全密钥: python -c "import secrets; print(secrets.token_urlsafe(48))"
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
@@ -93,6 +92,7 @@ class Settings(BaseSettings):
     # --- CORS ---
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3001",
         "http://localhost:5173",
@@ -130,6 +130,22 @@ class Settings(BaseSettings):
                 return [origin.strip() for origin in v.split(",")]
         return v
 
+    @field_validator("APP_ENV", mode="before")
+    @classmethod
+    def validate_app_env(cls, v):
+        """校验 APP_ENV 必须是合法值"""
+        valid_envs = {"development", "staging", "production"}
+        if v.lower() not in valid_envs:
+            raise ValueError(f"APP_ENV 必须是以下值之一: {', '.join(sorted(valid_envs))}")
+        return v.lower()
+
+    @model_validator(mode="after")
+    def validate_app_debug(self) -> "Settings":
+        """生产环境禁止开启 DEBUG"""
+        if self.APP_DEBUG and self.APP_ENV == "production":
+            raise ValueError("生产环境下不允许开启 APP_DEBUG，请设置为 False")
+        return self
+
     @property
     def backend_root(self) -> Path:
         """Backend project root used to resolve demo-local data paths."""
@@ -165,7 +181,9 @@ class Settings(BaseSettings):
         else:
             scheme = "sqlite"
 
-        return f"{scheme}:///{Path(self.resolved_database_path).as_posix()}"
+        # 将数据库文件路径解析为绝对路径
+        db_path = Path(self.resolved_database_path)
+        return f"{scheme}:///{db_path.as_posix()}"
 
     @property
     def resolved_chroma_persist_dir(self) -> str:
@@ -241,5 +259,19 @@ class Settings(BaseSettings):
         return self.APP_ENV == "production"
 
 
-# 全局配置单例
-settings = Settings()
+# ============================================================
+# 单例模式
+# ============================================================
+
+_settings = None
+
+
+def get_settings() -> Settings:
+    """获取配置实例"""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+
+settings = get_settings()

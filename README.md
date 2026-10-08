@@ -2,6 +2,79 @@
 
 一句话定位：悟典是一个**可追溯的中国思想问答入口**，把经典原文、代表章节和注疏材料转成现代人能直接提问、能看到出处、能理解边界的思想启发服务。
 
+## AI 配置
+
+AI 调用通过 `LLM_PROVIDER` 切换后端，所有 provider 均使用 OpenAI 兼容协议：
+
+| Provider | 必填变量 | 说明 |
+|----------|----------|------|
+| `openai`（默认） | `OPENAI_API_KEY` | OpenAI 模型（默认 `gpt-4o-mini`） |
+| `agnes` | `AGNES_API_KEY` | Agnes AI（默认 `agnes-2.0-flash`） |
+| `deepseek` | `DEEPSEEK_API_KEY` | DeepSeek（默认 `deepseek-chat`） |
+| `qwen` | `QWEN_API_KEY` | 阿里 Qwen（默认 `qwen-plus`） |
+| `local` | 无需密钥 | 本地 LLM（默认 `qwen2.5:7b`，需运行 Ollama） |
+
+LLM 调用温度、最大 token 数、超时与重试可通过 `LLM_TEMPERATURE` / `LLM_MAX_TOKENS` / `LLM_TIMEOUT` / `LLM_MAX_RETRIES` 调节。
+
+完整 AI 配置变量列表见 `docs/ENVIRONMENT.md`。
+
+## 环境变量配置
+
+悟典后端使用 `.env` 文件加载环境变量。复制示例并填写：
+
+```powershell
+cd backend
+copy .env.example .env
+notepad .env
+```
+
+**必填项**：`JWT_SECRET_KEY`（使用 `python -c "import secrets; print(secrets.token_urlsafe(48))"` 生成）。
+
+**数据库**：默认使用 SQLite（`DATABASE_URL=sqlite+aiosqlite:///./wudian.db`），无需额外安装。生产环境通过 `DATABASE_URL=postgresql+asyncpg://...` 切换到 PostgreSQL 15+。
+
+完整变量列表与生成方式见 `docs/ENVIRONMENT.md`。
+
+## 快速开始
+
+### 1. 启动后端
+
+```powershell
+cd backend
+.venv\Scripts\activate
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 2. 启动前端
+
+```powershell
+cd frontend
+npm run dev
+```
+
+### 3. 健康检查
+
+```powershell
+curl http://localhost:8000/
+# 预期：{"app":"悟典","version":"0.1.0","status":"running","docs":"/docs"}
+
+curl http://localhost:8000/health
+# 预期：{"status":"healthy","healthy":true}
+```
+
+`/docs` 可查看 Swagger API 文档（仅 `APP_ENV=development` 时启用）。
+
+### 4. 冒烟测试
+
+详见 `docs/DEPLOYMENT.md`，核心路径：
+1. `/api/classics/books` → 经典书目列表
+2. `/api/classics/daily-quote` → 每日一句
+3. `/api/debate/presets` → 预设话题
+4. 前端 `http://localhost:3000/` → 首页可访问
+
+### 5. 停止服务
+
+按 `Ctrl+C` 停止前后端进程。
+
 ## 最快体验
 
 评委和投资人现场只看一条主线：
