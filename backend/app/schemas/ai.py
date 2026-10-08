@@ -14,7 +14,15 @@ class RAGReference(BaseModel):
     text: str = Field(..., description="原文内容")
     source: str = Field(..., description="出处，如《论语·学而》")
     chapter: Optional[str] = Field(None, description="篇章")
-    verse_no: Optional[int] = Field(None, description="章序号")
+    # 类型变更说明（P0R-01 / C1 修复）：
+    # 原为 Optional[int]，但索引中的 verse_no 实际全部是字符串，形如 '1.1'（章.节）、
+    # '15.16'，百家语料为 'daodejing-33-01'。pydantic 无法把 '1.1' 解析为 int，
+    # 构造 RAGReference 时抛 ValidationError，被 rag_service 的 except 吞掉，
+    # 导致 retrieve()/hybrid_search() 恒返回空列表。
+    # 改为 Optional[str] 是最小改动：无需重建索引，且保留 '1.1' 的章.节语义。
+    # 注意 pydantic v2 不会把 int 强制转成 str，故写入侧需自行规范化
+    # （见 rag_service._normalize_verse_no）。
+    verse_no: Optional[str] = Field(None, description="章序号，形如 '1.1'（章.节）")
     similarity: float = Field(0.0, description="相关度分数 0-1")
 
 
@@ -105,7 +113,10 @@ class Citation(BaseModel):
     id: str = Field(..., description="引用标记，如 引1")
     source: str = Field(..., alias="出处", description="出处，如 论语·学而篇")
     original: str = Field(..., alias="原文", description="经典原文")
-    verifiable: bool = Field(True, description="是否可溯源")
+    # PHASE 5 / P5-07：原为 Field(True)，使「缺省即通过」—— 构造 Citation 时
+    # 若忘记传 verifiable，模型会被默认标为"可溯源"。改为**必填**，
+    # 强制调用方给出真实校验结果（None 不再是合法值）。
+    verifiable: bool = Field(..., description="是否可溯源（必须显式给出，无默认值）")
 
     model_config = ConfigDict(populate_by_name=True)
 

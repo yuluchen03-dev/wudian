@@ -148,6 +148,20 @@ class RAGService:
 
     _instance: Optional["RAGService"] = None
 
+    # P0R-02 / C3：百家论道向量检索的**相关性下限**。
+    #
+    # 原实现无任何下限，使完全无关的问题也返回「本派原典证据」，
+    # 导致 `insufficient_evidence` 结构上不可达（违反 brief 第十二章与
+    # 核心承诺「找不到，就不硬编」）。
+    #
+    # 取值 0.10，依据本地 hash embedding 的实测相似度分布：
+    #   合法现代问题（brief ch.7/P0 要求可检索）：0.106 ~ 0.165
+    #   无支撑问题（brief ch.12 要求拒答）：0.0 ~ 0.092（多数）
+    # 注意两类在 0.10~0.16 存在**重叠**（如「孔子怎么看职场PUA」达 0.140），
+    # 因 hash embedding 非语义，无法靠单一阈值完美区分；本阈值只做保守过滤，
+    # 真正的语义判别属 PHASE 4（语义 embedding + reranker）范围。
+    DEBATE_MIN_SIMILARITY: float = 0.10
+
     # 同义词映射：现代词汇 → 古文关键词（用于检索改写）
     SYNONYM_MAP: Dict[str, List[str]] = {
         "领导": ["上", "君", "上官", "君上"],
@@ -234,7 +248,14 @@ class RAGService:
             self._initialized = True
             return
 
-        self.persist_dir = settings.CHROMA_PERSIST_DIR
+        # P0R-03 / B2：必须使用「已解析为绝对路径」的 persist dir。
+        # 原实现直接用 settings.CHROMA_PERSIST_DIR（默认相对 "./chroma_db"），
+        # 而 main.py:39 用的是 settings.resolved_chroma_persist_dir（绝对）。
+        # 两者不一致会导致：当 CWD 不是 backend/ 时（例如从仓库根启动），
+        # rag_service 会在错误位置静默新建一个空索引并降级，而 main.py 的
+        # 健康检查仍按绝对路径判断、继续报 rag_available=true。
+        # 统一改用 resolved_* 后，行为与 CWD 无关。
+        self.persist_dir = settings.resolved_chroma_persist_dir
         os.makedirs(self.persist_dir, exist_ok=True)
         try:
             self.client = chromadb.PersistentClient(
@@ -490,10 +511,16 @@ class RAGService:
                 elif term in translation or term in text:
                     score += 1.0
 
-            # Debate prompts need at least some authoritative context even when
-            # the modern topic vocabulary is sparse.
-            if score == 0:
-                score = 0.25
+            # P0R-02 / C3：原先对 score == 0 的条目兜底为 0.25 并无条件 append，
+            # 使完全无关的查询（实测 'asdfghjkl' 各派均返回 3 条 sims=0.0，
+            # 「如何面对亲人的离世」四派各返回 3 条）也得到「本派原典证据」。
+            # 这让「检索不到」在结构上不可达，使 PROJECT-BRIEF 第十二章的
+            # `insufficient_evidence` 永远无法触发，直接违背核心承诺
+            # 「找不到，就不硬编」。
+            # 现在只保留有真实词面命中的条目；无命中则返回空列表，
+            # 由上层走 insufficient_evidence / 拒答路径。
+            if score <= 0:
+                continue
 
             scored.append({**item, "similarity": min(score / 8.0, 1.0)})
 
@@ -545,7 +572,28 @@ class RAGService:
         query: str,
         top_k: int = 5,
     ) -> List[Dict[str, Any]]:
-        """在 ChromaDB 中按 sage_key 过滤检索百家论道专属经典。"""
+        """在 ChromaDB 中按 sage_key 过滤检索百家论道专属经典。
+
+        P0R-02 / C3（后半）：原实现把向量检索结果**全部**返回，没有任何相关性
+        下限，因此完全无关的问题也会拿到若干条相似度≈0 的「本派证据」，
+        使 ``insufficient_evidence`` 在 debate 路径结构上不可达。
+
+        现按相关性下限过滤。阈值依据（本地 hash embedding 实测原始相似度）：
+
+            有真实关联的现代问题（brief ch.7/P0 要求必须能检索到）：
+               我该不该躺平      -> confucius 0.165 / laozi 0.143 / mozi 0.106 / hanfeizi 0.109
+            语料无支撑、应拒答的问题（brief ch.12 要求不硬编）：
+               如何面对亲人的离世 -> 最高 0.092
+               asdfghjkl          -> 最高 0.071
+               孔子怎么看职场PUA   -> 最高 0.140（注意：此例与合法问题区间重叠）
+               韩非子会建议我辞职吗 -> 最高 0.152（同上）
+
+        说明：由于 hash embedding 非语义，两类查询的相似度**存在重叠区**
+        （约 0.10–0.16），单靠阈值无法完美区分。这里取 ``DEBATE_MIN_SIMILARITY``
+        作为保守下限，只滤掉明显无关联的条目（≈0 与 <0.10），
+        保留「现代问题→古典思想」的可达性；真正的语义区分需 PHASE 4
+        的语义 embedding + reranker，属后续阶段范围，不在本修复内假装达成。
+        """
         if self.collection is None:
             return []
 
@@ -562,10 +610,24 @@ class RAGService:
                 },
                 include=["documents", "metadatas", "distances"],
             )
-            return self._format_results(results)
+            formatted = self._format_results(results)
         except Exception as e:
             logger.warning("百家论道向量检索失败，降级为本派关键词检索: %s", e)
             return []
+
+        filtered = [
+            item for item in formatted
+            if item.get("similarity", 0.0) >= self.DEBATE_MIN_SIMILARITY
+        ]
+        if not filtered and formatted:
+            logger.debug(
+                "百家论道向量检索无达到相关性下限的条目（sage=%s, 候选=%d, 最高=%.4f < %.4f），返回空",
+                sage_key,
+                len(formatted),
+                max((i.get("similarity", 0.0) for i in formatted), default=0.0),
+                self.DEBATE_MIN_SIMILARITY,
+            )
+        return filtered
 
     def _format_debate_results(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """把百家论道检索结果统一格式化为 verses/commentaries。"""
@@ -752,8 +814,26 @@ class RAGService:
 
     @property
     def is_available(self) -> bool:
-        """RAG 服务是否可用（chromadb 或文件索引）"""
-        return self.collection is not None or len(self._file_index) > 0
+        """RAG 服务是否可用（chromadb 或文件索引）
+
+        P0R-03 / B2：原实现只判断 ``self.collection is not None``，
+        因此「collection 存在但为 0 条」也会被报成可用 —— 空索引时
+        main.py 的 ``healthy = llm_available and rag_available`` 会误报健康，
+        而实际检索什么都返回不了。
+
+        现改为要求**真实有数据**：collection 的 count() > 0，或有文件回退索引。
+        count() 读取失败（例如 HNSW 段暂不可读）时保守返回 False，
+        宁可报「不可用」也不要给出虚假的可用信号。
+        """
+        if len(self._file_index) > 0:
+            return True
+        if self.collection is None:
+            return False
+        try:
+            return self.collection.count() > 0
+        except Exception as e:
+            logger.warning("检查 RAG 可用性时读取 collection.count() 失败: %s", e)
+            return False
 
     # ----------------------------------------------------------
     # 索引：批量写入文档
@@ -1003,8 +1083,31 @@ class RAGService:
         results = self._debate_keyword_search(sage_key, query, top_k=top_k)
 
         # 孔子沿用现有《论语》学习索引；其他圣贤必须使用专属语料。
+        #
+        # P0R-02 / C3：原实现无条件 `return await self.retrieve_for_sage_chat(...)`，
+        # 而该方法内部是无相关性下限的 vector_search，会把任何查询都返回若干条
+        # 近似度极低的条目 —— 这正是「垃圾查询 confucius 仍返回 3 条」的来源。
+        # 现增加与 `_debate_vector_search` 一致的**相关性下限**过滤：
+        # 只有达到 DEBATE_MIN_SIMILARITY 的条目才保留，否则返回空，
+        # 使 insufficient_evidence 在孔子路径同样可达。
+        # 注意：这不会破坏「现代问题→古典思想」的可达性 —— 实测合法现代问题
+        # （如「我该不该躺平」）在该路径的相似度为 0.165/0.143，高于下限。
         if not results and sage_key == "confucius":
-            return await self.retrieve_for_sage_chat(query, top_k=top_k)
+            fallback = await self.retrieve_for_sage_chat(query, top_k=top_k)
+            filtered_verses = [
+                v for v in fallback.get("verses", [])
+                if v.get("similarity", 0.0) >= self.DEBATE_MIN_SIMILARITY
+            ]
+            filtered_commentaries = [
+                c for c in fallback.get("commentaries", [])
+                if c.get("similarity", 0.0) >= self.DEBATE_MIN_SIMILARITY
+            ]
+            if not filtered_verses and not filtered_commentaries:
+                logger.debug(
+                    "孔子路径回退检索无达到相关性下限的条目（query=%r），返回空",
+                    query[:30],
+                )
+            return {"verses": filtered_verses, "commentaries": filtered_commentaries}
 
         return self._format_debate_results(results)
 
