@@ -1,0 +1,12 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    ".next.bak/",
+    "out/",
+    "public/",
+    "tests/**/*.cjs"
+  ]
+}
