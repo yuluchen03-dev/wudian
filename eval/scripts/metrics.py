@@ -167,15 +167,32 @@ def compute_fabricated_classical_quote(records: Sequence[Dict[str, Any]],
 # ---------------------------------------------------------------- retrieval
 
 
+def normalize_passage_id(pid: Any) -> str:
+    """把 passage_id / verse_id 归一到可比较的形式。
+
+    数据集用 ``lunyu:12.2``，而检索结果返回 ``12.2``（或
+    ``lunyu-taibo-01`` 这类 slug）。早期实现直接对二者做集合交集，
+    交集恒为空，使 Recall@K / MRR **恒为 0.0**（独立复核 D5）。
+    这里统一去掉 ``前缀:`` 部分再比较，使两种写法可互通。
+    """
+    s = str(pid or "").strip()
+    if ":" in s:
+        s = s.split(":", 1)[1]
+    return s
+
+
 def recall_at_k(records: Sequence[Dict[str, Any]],
                 retrieved: Sequence[Sequence[str]], k: int) -> Dict[str, Any]:
-    """Recall@K = (1/N) * sum( hit_i ), hit_i = any(expected ∩ top-K) != ∅."""
+    """Recall@K = (1/N) * sum( hit_i ), hit_i = any(expected ∩ top-K) != ∅.
+
+    比较前先经 :func:`normalize_passage_id` 归一，避免前缀写法差异导致恒 0。
+    """
     n = len(records)
     hits = 0
     details = []
     for rec, got in zip(records, retrieved):
-        expected = set(rec.get("expected_passage_ids") or [])
-        topk = list(got)[:k]
+        expected = {normalize_passage_id(p) for p in (rec.get("expected_passage_ids") or [])}
+        topk = [normalize_passage_id(p) for p in list(got)[:k]]
         if expected & set(topk):
             hits += 1
         else:
@@ -193,10 +210,10 @@ def reciprocal_rank(records: Sequence[Dict[str, Any]],
     total = 0.0
     details = []
     for rec, got in zip(records, retrieved):
-        expected = set(rec.get("expected_passage_ids") or [])
+        expected = {normalize_passage_id(p) for p in (rec.get("expected_passage_ids") or [])}
         rr = 0.0
         for rank, ref in enumerate(got, start=1):
-            if ref in expected:
+            if normalize_passage_id(ref) in expected:
                 rr = 1.0 / rank
                 break
         if rr == 0.0:
@@ -225,18 +242,31 @@ def compute_school_leakage(records: Sequence[Dict[str, Any]],
                            book_of_ref) -> Dict[str, Any]:
     """School Leakage = cross-school citations / all citations.
 
-    A citation is out-of-school when the retrieved passage's book is not in the
-    sage's `allowed_books`.
+    判据（修复独立复核 D4）：
+
+    - 若样本给出了 ``forbidden_books``，**以它为准**：检索到的书出现在
+      禁列即为跨派泄露。这是数据集里最明确、最可判定的信号。
+    - 否则退回 ``allowed_books`` 白名单：不在允许列表内即为泄露。
+
+    为什么不能只用 ``allowed_books``：本数据集对非先秦诸子用了**聚合标签**
+    （如 sage ``li_bai`` 的 ``allowed_books=["李白诗文"]``），而被检对象是
+    具体篇目（《将进酒》《行路难》）。字符串永远不相等，于是把 5 条**正确**
+    的引用误判为泄露，泄漏率虚高到 0.2632。独立复核已逐条核实这 5 条归属无误。
     """
     total = 0
     leaked = 0
     details = []
     for rec, got in zip(records, retrieved):
         allowed = set(rec.get("allowed_books") or [])
+        forbidden = set(rec.get("forbidden_books") or [])
         for ref in got:
             total += 1
             book = book_of_ref(ref)
-            if allowed and book not in allowed:
+            if forbidden:
+                out_of_school = book in forbidden
+            else:
+                out_of_school = bool(allowed) and book not in allowed
+            if out_of_school:
                 leaked += 1
                 details.append({"id": rec.get("id"), "sage_key": rec.get("sage_key"),
                                 "ref": ref, "book": book})

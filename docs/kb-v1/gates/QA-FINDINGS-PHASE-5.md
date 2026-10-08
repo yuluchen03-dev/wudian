@@ -69,7 +69,8 @@ ok = sum(structure(r['modern_query']).scene == r['expected']['scene'] for r in m
 print(f"{ok}/{len(mtc)}")
 '@ | .venv\Scripts\python.exe -
 ```
-输出：`9/20`（另有 9 条 `scene=None`，2 条错配到 `choice`/`achievement`）。
+输出：`9/20`（11 条不匹配中，**7 条** `scene=None`，**4 条**错配到
+`choice`/`achievement` —— 见下表 `None` 与非 `None` 的分布）。
 
 ### 11 条不匹配明细
 
@@ -141,3 +142,47 @@ print(f"{ok}/{len(mtc)}")
   本文件全部指标**不依赖 LLM**，故仍可测；但端到端链路不可验证。
 
 两项均**未伪造完成**。
+
+---
+
+## §6 独立复核（fresh-context 审计代理）结论与处置
+
+由于团队成员受上游速率限制（`workbuddy upstream soft_rate`，配额于
+2026-10-09 16:39:48 UTC+8 重置），本次独立复核改由**全新上下文、互不共享本
+会话记忆**的审计代理执行：只读仓库、自行复现命令、自行编写探针。
+
+它逐条核验了 7 项声明，结果与处置如下。
+
+### 已核验为真（未修改）
+
+| 声明 | 结论 |
+|---|---|
+| GATE-1：147 用例通过，fixture 真实可 ingest（5 条正文均能在 `lunyu.json` 定位、全部 C 级） | **VERIFIED** |
+| PHASE 3：21 情景、结构化器确定性、≥50 分类用例（实测 52 用例） | **VERIFIED** |
+| PHASE 5：「文本存在」与「出处正确」独立判定；brief 第一例返回 `citation_corrected`；旧的双向子串缺陷**已不存在** | **VERIFIED** |
+| Claim-Evidence：Pack 外 `evidence_id` → `unsupported`；无核心 claim 时 `coverage()==0.0` | **VERIFIED** |
+| Eval 数值可复现、`TARGETS` 与 brief 第十七章一致且未被修改 | **VERIFIED** |
+| 无虚假 PASS；Q3/Q5 诚实标注为阻塞 | **VERIFIED** |
+
+### 它发现的问题及处置
+
+| 编号 | 问题 | 处置 |
+|---|---|---|
+| **D1** | `run_eval.py` 仅 2/7 指标走冻结实现，其余自实现，导致同名指标两个数值（e.g. fabricated 冻结 0 vs 自实现 2；recall 冻结 0.0 vs 自实现 0.325；school_leakage 冻结 0.2632 vs 自实现 0.0） | **已修**：7 项全部委派冻结实现；摘句检查拆为单独命名的**诊断项**，不再混入 fabricated |
+| **D2** | 本文档早前称口径为「冻结定义」，但当时仅 2/7 成立 | **已修**：`GATE-STATUS-PHASE-5.md` 已改写并记录该更正 |
+| **D3** | `citation_guard.guard_citations` 无条件把 `match_type` 写成 `"exact"`，使「勿施于人」4 字片段被判 `verifiable=True`/`verified`，与 `quote_verifier` 及 aq-0010 期望矛盾 | **已修**：按 `MIN_FULL_QUOTE_CHARS` 判定片段并置 `partial`；新增回归测试 `TestFragmentNeverVerified`（5 例）；完整句判定保持不变 |
+| **D4** | 冻结 `compute_school_leakage` 在随仓库数据集上不可用（聚合标签 `李白诗文` vs 具体篇目《将进酒》→ 5 条**正确**引用被误判泄露，虚高至 0.2632） | **已修**：优先采用语义明确的 `forbidden_books` |
+| **D5** | 冻结 `recall_at_k`/`reciprocal_rank` 恒为 0.0（数据集 `lunyu:12.2` vs 检索 `12.2`，集合交集恒空） | **已修**：统一经 `normalize_passage_id` 归一 |
+| **D6** | 本文档早前把 11 条不匹配写成「9 条 None + 2 条错配」 | **已修**：实为 **7 条 None + 4 条错配** |
+| **D7** | `.gitignore` 忽略 `data/processed/` 与 `scripts/`，但其中已有文件被强制跟踪 → 新文件会被静默漏掉（此陷阱已实际导致 7cf14c3 的问题） | **已知，未修**（属仓库约定层面，需评审统一策略） |
+| Claim 7 | 「12 个提交」实为「领先 origin/main 12 个」，分支本身有 60+ 提交；且历史中仍存 5 个 `__pycache__/*.pyc` blob（已从工作树移除，未推送） | **如实记录**，措辞已在后续汇报中更正 |
+
+### 审计代理的安全声明（记录备查）
+
+- 生产索引 HNSW 段从未被重建（mtime 与大小不变，`count()==143`）。
+- 但 `chroma.sqlite3` 在其会话中被重写两次：chromadb 的 catalog 元数据在
+  **打开时即写入**，其两个 PHASE 3 探针未设 `CHROMA_PERSIST_DIR`，因而打开了
+  真实目录。内容完整性事后经功能比对确认（143 条，检索指标与隔离副本一致）。
+  这是 chromadb 的固有行为，对「索引即生产数据」的纪律有参考价值。
+- 全部临时产物已清理，`git status --porcelain` 为空，未修改任何产品文件。
+

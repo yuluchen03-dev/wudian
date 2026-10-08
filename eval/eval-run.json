@@ -1,5 +1,5 @@
 {
-  "note": "实测结果：由 eval/scripts/run_eval.py 对真实实现运行得出。目标数字来自 metrics.TARGETS，未做任何修改。",
+  "note": "实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**（独立复核 D1 后收紧，早期版本仅 2 项委派）。目标数字来自 metrics.TARGETS，未做任何修改。",
   "targets_frozen": {
     "quote_exactness": 0.99,
     "source_attribution": 0.98,
@@ -80,86 +80,119 @@
       "failures": []
     },
     "fabricated_classical_quote": {
-      "value": 2,
+      "metric": "fabricated_classical_quote",
+      "value": 0,
       "target": 0,
-      "passed": false,
-      "samples": 20,
-      "failures": [
-        {
-          "id": "aq-0010",
-          "reason": "trust_state=quote_relaxed is displayable as classic"
-        },
-        {
-          "id": "aq-0011",
-          "reason": "trust_state=quote_relaxed is displayable as classic"
-        }
-      ]
+      "passed": true,
+      "failures": [],
+      "diagnostic_fragment_displayed_as_classic": {
+        "note": "本模块补充的诊断，非 PROJECT-BRIEF ch.17 冻结指标。统计「语料中存在但仅为摘句」却被视为可作为完整经典原文展示的条数。",
+        "value": 2,
+        "samples": 20,
+        "failures": [
+          {
+            "id": "aq-0010",
+            "trust_state": "quote_relaxed",
+            "match_type": "partial"
+          },
+          {
+            "id": "aq-0011",
+            "trust_state": "quote_relaxed",
+            "match_type": "normalized"
+          }
+        ]
+      }
     },
     "unsupported_correct_refusal": {
+      "metric": "unsupported_correct_refusal",
+      "numerator": 0,
+      "denominator": 12,
       "value": 0.0,
       "target": 0.95,
       "passed": false,
-      "samples": 12,
-      "refusal_message_required": "当前知识库没有检索到足够可靠的原典支持这一判断。",
       "failures": [
         {
           "id": "uq-0001",
-          "question": "量子计算机如何改变儒家伦理？",
-          "spurious_hits": 7
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0002",
-          "question": "如何用《论语》指导短视频运营？",
-          "spurious_hits": 2
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0003",
-          "question": "孔子对人工智能的看法是什么？",
-          "spurious_hits": 7
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0004",
-          "question": "请给出《庄子·逍遥游》全文。",
-          "spurious_hits": 12
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0005",
-          "question": "孟子怎么看待绩效考核？",
-          "spurious_hits": 5
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0006",
-          "question": "《孙子兵法》里有哪些管理方法？",
-          "spurious_hits": 7
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0007",
-          "question": "王阳明如何论述心即理？",
-          "spurious_hits": 5
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0008",
-          "question": "请引用《大学》原文说明修身。",
-          "spurious_hits": 12
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0009",
-          "question": "如何面对亲人的离世？",
-          "spurious_hits": 9
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         },
         {
           "id": "uq-0010",
-          "question": "请告诉我《道德经》第八十一章的原文。",
-          "spurious_hits": 10
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
+        },
+        {
+          "id": "uq-0011",
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
+        },
+        {
+          "id": "uq-0012",
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
         }
-      ]
+      ],
+      "basis": "信任层判定（无 LLM 凭证，Q5 阻塞）：四派检索均无命中 -> insufficient_evidence + ch.12 拒答文案。不是 LLM 端到端回答的验证。"
     },
     "school_leakage": {
+      "metric": "school_leakage",
+      "numerator": 0,
+      "denominator": 19,
       "value": 0.0,
-      "target": 0.01,
+      "target_max": 0.01,
       "passed": true,
-      "samples": 19,
-      "leaked": 0,
       "failures": []
     },
     "retrieval": {
@@ -174,171 +207,193 @@
         {
           "id": "rg-0001",
           "expected": [
-            "lunyu:12.2",
-            "lunyu:15.24",
-            "lunyu:4.16"
+            "12.2",
+            "15.24",
+            "4.16"
           ],
-          "got": [
+          "topk": [
             "2.24",
             "3.21",
-            "2.9"
+            "2.9",
+            "3.9",
+            "1.16"
           ]
         },
         {
           "id": "rg-0003",
           "expected": [
-            "lunyu:4.8",
-            "lunyu:9.19"
+            "4.8",
+            "9.19"
           ],
-          "got": [
+          "topk": [
             "1.4",
             "1.12",
-            "2.9"
+            "2.9",
+            "fanzhongyan-yueyanglouji-01",
+            "2.20"
           ]
         },
         {
           "id": "rg-0004",
           "expected": [
-            "lunyu:1.1",
-            "lunyu:1.16"
+            "1.1",
+            "1.16"
           ],
-          "got": [
+          "topk": [
             "2.10",
             "6.30",
-            "3.2"
+            "3.2",
+            "3.18",
+            "15.16"
           ]
         },
         {
           "id": "rg-0006",
           "expected": [
-            "lunyu:1.14",
-            "lunyu:2.15"
+            "1.14",
+            "2.15"
           ],
-          "got": [
+          "topk": [
             "1.4",
             "4.5",
-            "14.24"
+            "14.24",
+            "1.2",
+            "8.7"
           ]
         },
         {
           "id": "rg-0010",
           "expected": [
-            "lunyu:13.6",
-            "lunyu:2.1"
+            "13.6",
+            "2.1"
           ],
-          "got": [
+          "topk": [
             "20.1",
             "1.2",
-            "3.19"
+            "3.19",
+            "16.9",
+            "2.10"
           ]
         },
         {
           "id": "rg-0012",
           "expected": [
-            "lunyu:4.16",
-            "lunyu:4.5"
+            "4.16",
+            "4.5"
           ],
-          "got": [
+          "topk": [
             "2.10",
             "2.20",
-            "3.3"
+            "3.3",
+            "mozi-jianai-01",
+            "4.1"
           ]
         },
         {
           "id": "rg-0015",
           "expected": [
-            "lunyu:4.8",
-            "lunyu:9.19"
+            "4.8",
+            "9.19"
           ],
-          "got": [
+          "topk": [
             "3.6",
             "2.8",
-            "daodejing-22-01"
+            "daodejing-22-01",
+            "17.23",
+            "libai-jiangjinjiu-01"
           ]
         },
         {
           "id": "rg-0016",
           "expected": [
-            "lunyu:1.1",
-            "lunyu:15.28"
+            "1.1",
+            "15.28"
           ],
-          "got": [
+          "topk": [
             "20.3",
             "11.12",
-            "hanfeizi-youdu-01"
+            "hanfeizi-youdu-01",
+            "7.3",
+            "3.1"
           ]
         },
         {
           "id": "rg-0018",
           "expected": [
-            "lunyu:1.12",
-            "lunyu:12.2"
+            "1.12",
+            "12.2"
           ],
-          "got": [
+          "topk": [
             "15.9",
             "3.3",
-            "11.12"
+            "11.12",
+            "mozi-jianai-01",
+            "6.30"
           ]
         },
         {
           "id": "rg-0019",
           "expected": [
-            "lunyu:4.5",
-            "lunyu:6.11"
+            "4.5",
+            "6.11"
           ],
-          "got": [
+          "topk": [
             "1.2",
             "1.1",
-            "4.24"
+            "4.24",
+            "wanganshi-dengfeilaifeng-01",
+            "3.8"
           ]
         }
       ]
     },
     "core_claim_evidence_coverage": {
+      "metric": "core_claim_evidence_coverage",
+      "numerator": 30,
+      "denominator": 40,
       "value": 0.75,
       "target": 0.95,
       "passed": false,
-      "samples": 40,
       "failures": [
         {
           "id": "rg-0021",
-          "reason": "no corpus entry for expected ids"
+          "claim": "无为而治是什么意思？"
         },
         {
           "id": "rg-0022",
-          "reason": "no corpus entry for expected ids"
+          "claim": "不争真的有用吗？"
         },
         {
           "id": "rg-0023",
-          "reason": "no corpus entry for expected ids"
+          "claim": "知足常乐有道理吗？"
         },
         {
           "id": "rg-0024",
-          "reason": "no corpus entry for expected ids"
+          "claim": "上善若水应该怎么理解？"
         },
         {
           "id": "rg-0025",
-          "reason": "no corpus entry for expected ids"
+          "claim": "兼爱是什么主张？"
         },
         {
           "id": "rg-0026",
-          "reason": "no corpus entry for expected ids"
+          "claim": "为什么要自食其力？"
         },
         {
           "id": "rg-0027",
-          "reason": "no corpus entry for expected ids"
+          "claim": "法治和公平怎么兼顾？"
         },
         {
           "id": "rg-0028",
-          "reason": "no corpus entry for expected ids"
+          "claim": "奖惩制度该怎么设计？"
         },
         {
           "id": "rg-0029",
-          "reason": "no corpus entry for expected ids"
+          "claim": "时代变了，旧规则要不要改？"
         },
         {
           "id": "rg-0030",
-          "reason": "no corpus entry for expected ids"
+          "claim": "为什么事情没成就到处说？"
         }
       ]
     }

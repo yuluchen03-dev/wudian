@@ -439,3 +439,72 @@ class TestGuardStatusSemantics:
         assert guarded[0].quote_exists is True
         assert guarded[0].source_correct is False
         assert guarded[0].trust_state == "citation_corrected"
+
+
+# ============================================================
+# D3 回归：摘句（片段）不得判为 verified
+# ============================================================
+
+
+class TestFragmentNeverVerified:
+    """独立复核发现的 D3：4 字片段曾被判 ``verified``。
+
+    原实现把 ``match_type`` 无条件写成 ``"exact"``，于是「勿施于人」这类
+    片段虽然只是原典的**子串**，却得到 ``verifiable=True`` /
+    ``trust_state="verified"``，与 :func:`quote_verifier.verify_quote` 对
+    同一输入的判定（``partial`` / ``quote_relaxed``）矛盾，也违反
+    ``eval/adversarial_quotes.jsonl`` aq-0010 的期望
+    （``quote_exists=true`` 但 ``verifiable=false``、不得作为经典原文展示）。
+    """
+
+    def test_four_char_fragment_is_not_verified(self):
+        """「勿施于人」是 15.24 的摘句，不得判 verified。"""
+        guarded, status = guard_citations(
+            [{"id": "引1", "出处": "《论语·卫灵公》", "原文": "勿施于人"}],
+            rag_refs=[REF_WEILINGGONG],
+        )
+        assert guarded[0].quote_exists is True, "该片段确实出现在原典中"
+        assert guarded[0].source_correct is True, "出处本身是对的"
+        assert guarded[0].verifiable is False, "摘句不足以支撑一条思想结论"
+        assert guarded[0].trust_state != "verified"
+        assert status != "all_verified"
+
+    def test_fragment_verdict_agrees_with_quote_verifier(self):
+        """Guard 与 QuoteVerifier 对同一片段必须给出**一致的**状态。"""
+        from app.services.quote_verifier import verify_quote
+
+        fragment = "勿施于人"
+        guarded, _status = guard_citations(
+            [{"id": "引1", "出处": "《论语·卫灵公》", "原文": fragment}],
+            rag_refs=[REF_WEILINGGONG],
+        )
+        direct = verify_quote(fragment, "《论语·卫灵公》")
+        assert direct.match_type == "partial"
+        assert guarded[0].trust_state == direct.trust_state, (
+            f"guard={guarded[0].trust_state!r} 与 verifier={direct.trust_state!r} 不一致"
+        )
+
+    def test_complete_sentence_still_verified(self):
+        """修复必须**不**影响完整句子 —— 否则会误伤正常引用。"""
+        guarded, status = guard_citations(
+            [{"id": "引1", "出处": "《论语·卫灵公》", "原文": QUOTE_YI_SUO_BU_YU}],
+            rag_refs=[REF_WEILINGGONG],
+        )
+        assert guarded[0].verifiable is True
+        assert guarded[0].trust_state == "verified"
+        assert status == "all_verified"
+
+    def test_threshold_boundary_is_shared_with_verifier(self):
+        """片段阈值必须与 quote_verifier 同源，避免两处阈值分叉。"""
+        from app.services.quote_verifier import MIN_FULL_QUOTE_CHARS
+
+        # 恰好低于阈值 -> 片段，不可验证
+        short = "己所不欲"[: MIN_FULL_QUOTE_CHARS - 1]
+        guarded_short, _ = guard_citations(
+            [{"id": "引1", "出处": "《论语·卫灵公》", "原文": short}],
+            rag_refs=[REF_WEILINGGONG],
+        )
+        if guarded_short[0].quote_exists:
+            assert guarded_short[0].verifiable is False, (
+                f"短于 {MIN_FULL_QUOTE_CHARS} 字的片段不得可验证"
+            )

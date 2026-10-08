@@ -1,29 +1,25 @@
 """
 悟典 - 真实系统评测运行器（PHASE 8 / E-09）
 
-与 ``report.py`` 的区别
------------------------
-``report.py`` 生成的是**可计算性报告**：当被评系统不存在时，指标输出
-``value=null`` + ``status=not_computable`` + 原因。
-
-本模块在**被评系统已经存在**之后，真正调用它并对数据集打分：
-
-- Quote Exactness / Source Attribution / Fabricated Classical Quote
-      -> 调用 ``quote_verifier.verify_quote``（PHASE 5）
-- Unsupported Correct Refusal
-      -> 调用 RAG 检索；无足够证据时应走 insufficient_evidence 拒答
-- Core Claim Evidence Coverage
-      -> 调用 ``claim_evidence``（PHASE 5）
-- School Leakage
-      -> 调用 ``retrieve_for_debate_sage``，检查返回的 source 是否越派
-- Retrieval Recall@1/3/5 与 MRR
-      -> 调用 RAG 检索，比对 expected_passage_ids
-
-纪律
+职责
 ----
-- **不修改任何目标数字**：目标一律从 ``metrics.TARGETS`` 读取。
-- **不为通过而放宽判据**：本模块只做测量；未达标就如实输出未达标。
-- **无法测量的指标保持 not_computable**，绝不用占位值冒充。
+``report.py`` 生成的是**可计算性报告**（被评系统不存在时输出 not_computable）。
+本模块在实现已存在之后，**真实调用实现**并对数据集打分。
+
+口径纪律（独立复核 D1 后收紧）
+------------------------------
+**所有 7 项指标一律调用 ``metrics.py`` 的冻结实现**，本模块不再自行定义任何
+指标口径。早期版本只有 2 项走冻结实现，其余 5 项自实现，导致同名指标出现
+两个不同数值（例如 fabricated 冻结口径 0、自实现口径 2）。现已全部改为委派。
+
+仍属「本模块补充」而非冻结指标的内容，一律单独命名并明确标注为
+**diagnostic**（诊断），不得冒充冻结指标：
+
+- ``diagnostic_fragment_displayed_as_classic``：摘句被当作完整经典原文展示的
+  条数。冻结的 ``fabricated_classical_quote`` 只统计「语料中**不存在**却被判
+  verifiable」的伪造引文；摘句（语料中确实存在）不在其定义内，故必须分开计。
+
+本模块不修改任何目标数字（目标一律取自 ``metrics.TARGETS``）。
 """
 from __future__ import annotations
 
@@ -33,7 +29,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-# 允许以脚本方式运行（python eval/scripts/run_eval.py）
 _THIS = Path(__file__).resolve()
 _EVAL_DIR = _THIS.parent.parent
 _REPO_ROOT = _EVAL_DIR.parent
@@ -42,109 +37,115 @@ for _p in (str(_BACKEND), str(_EVAL_DIR / "scripts")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from metrics import TARGETS  # noqa: E402
+from metrics import (  # noqa: E402
+    TARGETS,
+    compute_core_claim_evidence_coverage,
+    compute_fabricated_classical_quote,
+    compute_quote_exactness,
+    compute_retrieval_metrics,
+    compute_school_leakage,
+    compute_source_attribution,
+    compute_unsupported_correct_refusal,
+)
 from schema import load_jsonl  # noqa: E402
 
 
 def _load(name: str) -> List[Dict[str, Any]]:
     path = _EVAL_DIR / f"{name}.jsonl"
-    if not path.exists():
-        return []
-    return load_jsonl(path)
+    return load_jsonl(path) if path.exists() else []
+
+
+def _extract_quote(rec: Dict[str, Any]) -> tuple:
+    """从不同数据集形态中取出 (quote, claimed_source)。
+
+    各数据集字段位置**不一致**，必须同时兼容，否则会把空引文喂给校验器，
+    从而产生假的「0 条伪造引文」——本模块早期版本正是犯了这个错：
+
+    - ``quote_verification`` / ``source_attribution``：顶层 ``quote`` /
+      ``claimed_source``
+    - ``adversarial_quotes``：嵌套在 ``input`` 下
+    """
+    nested = rec.get("input") or {}
+    quote = rec.get("quote") or nested.get("quote") or ""
+    claimed = rec.get("claimed_source") or nested.get("claimed_source") or ""
+    return quote, claimed
+
+
+def _quote_prediction(rec: Dict[str, Any]) -> Dict[str, Any]:
+    """对 quote_verification / source_attribution / adversarial 记录跑真实校验。"""
+    from app.services.quote_verifier import verify_quote
+
+    quote, claimed = _extract_quote(rec)
+    r = verify_quote(quote, claimed)
+    return {
+        "quote_exists": r.quote_exists,
+        "exact_match": r.exact_match,
+        "normalized_match": r.normalized_match,
+        "source_correct": r.source_correct,
+        "correct_source": r.correct_source,
+        "trust_state": r.trust_state,
+        "match_type": r.match_type,
+        "similarity": r.similarity,
+        "verifiable": r.quote_exists and r.source_correct and r.match_type != "partial",
+    }
 
 
 # ---------------------------------------------------------------------------
-# Quote / Source 指标（PHASE 5 QuoteVerifier 真实运行）
+# 1. Quote Exactness / Source Attribution —— 直接委派冻结实现
 # ---------------------------------------------------------------------------
 
 def eval_quote_metrics() -> Dict[str, Any]:
-    """在 quote_verification + source_attribution 上真实运行 QuoteVerifier。
-
-    **使用 ``metrics.py`` 的冻结定义**，不在此重新发明指标口径：
-
-    - ``compute_quote_exactness``：分母 = 系统判为 quote_exists=True 的条数，
-      分子 = 其中 ``exact_match`` 为真且期望确实存在的条数。
-      注意它**不是**「quote_exists 预测准确率」——早期版本的 run_eval.py
-      用后者，得到一个明显偏高的数字，属口径错误，已改为调用冻结实现。
-    - ``compute_source_attribution``：分母 = 全部样本，分子 = source_correct 一致。
-    """
-    from app.services.quote_verifier import verify_quote
-    from metrics import compute_source_attribution, compute_quote_exactness
-
     qv = _load("quote_verification")
     sa = _load("source_attribution")
-
-    # 以真实实现产出 predictions（字段名与 metrics.py 期望一致）
-    def _predict(rec: Dict[str, Any]) -> Dict[str, Any]:
-        r = verify_quote(rec.get("quote", ""), rec.get("claimed_source", ""))
-        return {
-            "quote_exists": r.quote_exists,
-            "exact_match": r.exact_match,
-            "normalized_match": r.normalized_match,
-            "source_correct": r.source_correct,
-            "correct_source": r.correct_source,
-            "trust_state": r.trust_state,
-            "match_type": r.match_type,
-            "similarity": r.similarity,
-        }
-
-    q_preds = [_predict(rec) for rec in qv]
-    s_preds = [_predict(rec) for rec in sa]
-
     return {
-        "quote_exactness": compute_quote_exactness(qv, q_preds),
-        "source_attribution": compute_source_attribution(sa, s_preds),
+        "quote_exactness": compute_quote_exactness(qv, [_quote_prediction(r) for r in qv]),
+        "source_attribution": compute_source_attribution(sa, [_quote_prediction(r) for r in sa]),
     }
 
 
 # ---------------------------------------------------------------------------
-# 对抗套件（Fabricated Classical Quote）
+# 2. Fabricated Classical Quote —— 冻结实现 + 独立的摘句诊断
 # ---------------------------------------------------------------------------
 
 def eval_adversarial() -> Dict[str, Any]:
-    """运行 adversarial_quotes，统计「明显伪造名言通过验证」的条数。
-
-    brief 第十七章要求 Fabricated Classical Quote ≈ 0，且
-    「任何明显伪造名言通过验证 -> 立即 FAIL」。
-    """
-    from app.services.quote_verifier import verify_quote
+    """伪造引文（冻结口径）+ 摘句展示诊断（本模块补充，单独命名）。"""
     from app.services.trust_state import is_displayable_as_classic
 
     records = _load("adversarial_quotes")
-    fabricated_passed: List[Dict[str, Any]] = []
-    checked = 0
-    for rec in records:
-        inp = rec.get("input", {})
-        exp = rec.get("expected", {})
-        result = verify_quote(inp.get("quote", ""), inp.get("claimed_source", ""))
-        checked += 1
-        if exp.get("quote_exists") is False and result.quote_exists:
-            fabricated_passed.append({"id": rec.get("id"),
-                                      "reason": "expected quote_exists=False but got True"})
-            continue
-        if exp.get("must_not_display_as_classic") and is_displayable_as_classic(result.trust_state):
-            fabricated_passed.append({
-                "id": rec.get("id"),
-                "reason": f"trust_state={result.trust_state} is displayable as classic",
-            })
+    preds = [_quote_prediction(r) for r in records]
 
-    return {
-        "fabricated_classical_quote": {
-            "value": len(fabricated_passed),
-            "target": TARGETS["fabricated_classical_quote"],
-            "passed": len(fabricated_passed) <= TARGETS["fabricated_classical_quote"],
-            "samples": checked,
-            "failures": fabricated_passed[:10],
-        }
+    frozen = compute_fabricated_classical_quote(records, preds)
+
+    # --- 本模块补充的诊断（**不是**冻结指标）---
+    fragment_hits = []
+    for rec, pred in zip(records, preds):
+        # 只针对「语料中确实存在」的摘句（伪造引文已由冻结指标覆盖）
+        if rec.get("expected", {}).get("quote_exists") is True and \
+           rec.get("expected", {}).get("must_not_display_as_classic") and \
+           is_displayable_as_classic(pred["trust_state"]):
+            fragment_hits.append({"id": rec.get("id"), "trust_state": pred["trust_state"],
+                                  "match_type": pred.get("match_type")})
+    frozen["diagnostic_fragment_displayed_as_classic"] = {
+        "note": "本模块补充的诊断，非 PROJECT-BRIEF ch.17 冻结指标。"
+                "统计「语料中存在但仅为摘句」却被视为可作为完整经典原文展示的条数。",
+        "value": len(fragment_hits),
+        "samples": len(records),
+        "failures": fragment_hits[:10],
     }
+    return {"fabricated_classical_quote": frozen}
 
 
 # ---------------------------------------------------------------------------
-# 拒答（Unsupported Correct Refusal）
+# 3. Unsupported Correct Refusal —— 冻结实现
 # ---------------------------------------------------------------------------
 
 def eval_unsupported_refusal() -> Dict[str, Any]:
-    """对 unsupported_questions 真实检索：无足够证据时必须拒答。"""
+    """无足够证据时必须拒答（冻结口径：trust_state + ch.12 文案 + 未展示伪经典）。
+
+    注意：本环境**无 LLM 凭证**（Q5 阻塞），因此这里构造的是
+    「信任层会给出的答复状态」，而不是 LLM 生成的自由文本。
+    这条限制在下述 ``basis`` 字段中显式声明，避免被误读为端到端验证。
+    """
     import asyncio
 
     from app.services.rag_service import get_rag_service
@@ -152,8 +153,7 @@ def eval_unsupported_refusal() -> Dict[str, Any]:
 
     rag = get_rag_service()
     records = _load("unsupported_questions")
-    correct = 0
-    failures: List[Dict[str, Any]] = []
+    preds: List[Dict[str, Any]] = []
     for rec in records:
         q = rec.get("question", "")
         hits = 0
@@ -161,184 +161,123 @@ def eval_unsupported_refusal() -> Dict[str, Any]:
             res = asyncio.run(rag.retrieve_for_debate_sage(sage, q, top_k=3))
             hits += len(res.get("verses", []))
         if hits == 0:
-            correct += 1
+            # 无证据 -> 信任层判定 insufficient_evidence 并给出规定拒答文案
+            preds.append({
+                "trust_state": "insufficient_evidence",
+                "answer_text": INSUFFICIENT_EVIDENCE_MESSAGE,
+                "presented_quote_as_classic": False,
+            })
         else:
-            failures.append({"id": rec.get("id"), "question": q[:30], "spurious_hits": hits})
+            # 检索到内容 -> 不会走拒答分支
+            preds.append({
+                "trust_state": "quote_relaxed",
+                "answer_text": "",
+                "presented_quote_as_classic": bool(hits),
+            })
 
-    total = len(records)
-    return {
-        "unsupported_correct_refusal": {
-            "value": (correct / total) if total else None,
-            "target": TARGETS["unsupported_correct_refusal"],
-            "passed": (correct / total) >= TARGETS["unsupported_correct_refusal"] if total else None,
-            "samples": total,
-            "refusal_message_required": INSUFFICIENT_EVIDENCE_MESSAGE,
-            "failures": failures[:10],
-        }
-    }
+    out = compute_unsupported_correct_refusal(records, preds)
+    out["basis"] = ("信任层判定（无 LLM 凭证，Q5 阻塞）："
+                    "四派检索均无命中 -> insufficient_evidence + ch.12 拒答文案。"
+                    "不是 LLM 端到端回答的验证。")
+    return {"unsupported_correct_refusal": out}
 
 
 # ---------------------------------------------------------------------------
-# 学派泄露（School Leakage）
+# 4. School Leakage —— 冻结实现
 # ---------------------------------------------------------------------------
 
 def eval_school_leakage() -> Dict[str, Any]:
-    """检查各派检索结果是否越派（school_consistency 数据集）。"""
     import asyncio
 
+    from app.services.quote_verifier import load_corpus
     from app.services.rag_service import get_rag_service
+
+    corpus = {e.passage_id: e for e in load_corpus()}
+
+    def book_of_ref(ref: str) -> str:
+        entry = corpus.get(str(ref))
+        return entry.book if entry is not None else str(ref)
 
     rag = get_rag_service()
     records = _load("school_consistency")
-    total = leaked = 0
-    failures: List[Dict[str, Any]] = []
+    retrieved: List[List[str]] = []
     for rec in records:
-        sage = rec.get("sage_key", "")
-        forbidden = rec.get("forbidden_books", []) or []
-        res = asyncio.run(rag.retrieve_for_debate_sage(sage, rec.get("query", ""), top_k=3))
-        for v in res.get("verses", []):
-            total += 1
-            src = v.get("source", "")
-            if any(fb and fb in src for fb in forbidden):
-                leaked += 1
-                failures.append({"id": rec.get("id"), "sage": sage, "source": src})
+        res = asyncio.run(rag.retrieve_for_debate_sage(
+            rec.get("sage_key", ""), rec.get("query", ""), top_k=3))
+        retrieved.append([str(v.get("verse_id", "")) for v in res.get("verses", [])])
 
-    if total == 0:
-        return {
-            "school_leakage": {
-                "value": None,
-                "status": "not_computable",
-                "reason": "各派检索均未返回条目，样本量为 0，无法计算泄漏率（不用 0.0 冒充无泄漏）",
-                "target": TARGETS["school_leakage_max"],
-                "passed": None,
-                "samples": 0,
-            }
-        }
-    return {
-        "school_leakage": {
-            "value": leaked / total,
-            "target": TARGETS["school_leakage_max"],
-            "passed": (leaked / total) < TARGETS["school_leakage_max"],
-            "samples": total,
-            "leaked": leaked,
-            "failures": failures[:10],
-        }
-    }
+    out = compute_school_leakage(records, retrieved, book_of_ref)
+    if not out.get("denominator"):
+        out.update({"value": None, "passed": None, "status": "not_computable",
+                    "reason": "各派检索均未返回条目，样本量为 0（不用 0.0 冒充无泄漏）"})
+    return {"school_leakage": out}
 
 
 # ---------------------------------------------------------------------------
-# 检索 Recall / MRR
+# 5. Retrieval Recall@1/3/5 + MRR —— 冻结实现
 # ---------------------------------------------------------------------------
-
-def _matches(got: str, expected: set) -> bool:
-    """语料 passage_id 前缀不统一（lunyu:15.24 / daodejing-08-01 / commentary:12.2），
-    而 sage_chat 返回 verse_id，故做双向宽松匹配。"""
-    if not got:
-        return False
-    if got in expected:
-        return True
-    tail = got.split(":", 1)[-1]
-    return any(exp.split(":", 1)[-1] == tail for exp in expected)
-
 
 def eval_retrieval() -> Dict[str, Any]:
-    """对 retrieval_gold 运行真实检索，计算 Recall@1/3/5 与 MRR。"""
     import asyncio
 
     from app.services.rag_service import get_rag_service
 
     rag = get_rag_service()
     records = _load("retrieval_gold")
-    hits_at = {1: 0, 3: 0, 5: 0}
-    rr_sum = 0.0
-    total = 0
-    failures: List[Dict[str, Any]] = []
+    retrieved: List[List[str]] = []
     for rec in records:
-        expected = set(rec.get("expected_passage_ids", []) or [])
-        if not expected:
-            continue
-        total += 1
         res = asyncio.run(rag.retrieve_for_sage_chat(rec.get("query", ""), top_k=5))
-        got_ids = [str(v.get("verse_id", "")) for v in res.get("verses", [])]
-        rank = None
-        for i, g in enumerate(got_ids, start=1):
-            if _matches(g, expected):
-                rank = i
-                break
-        for k in (1, 3, 5):
-            if rank is not None and rank <= k:
-                hits_at[k] += 1
-        if rank is not None:
-            rr_sum += 1.0 / rank
-        else:
-            failures.append({"id": rec.get("id"), "expected": sorted(expected)[:3], "got": got_ids[:3]})
+        retrieved.append([str(v.get("verse_id", "")) for v in res.get("verses", [])])
 
-    return {
-        "retrieval": {
-            "recall_at_1": (hits_at[1] / total) if total else None,
-            "recall_at_3": (hits_at[3] / total) if total else None,
-            "recall_at_5": (hits_at[5] / total) if total else None,
-            "mrr": (rr_sum / total) if total else None,
-            "target_recall_at_5": TARGETS["recall_at_5"],
-            "passed": (hits_at[5] / total) >= TARGETS["recall_at_5"] if total else None,
-            "samples": total,
-            "failures": failures[:10],
-        }
-    }
+    out = compute_retrieval_metrics(records, retrieved)
+    r5 = out["recall_at_5"]
+    return {"retrieval": {
+        "recall_at_1": r5 and out["recall_at_1"]["value"],
+        "recall_at_3": out["recall_at_3"]["value"],
+        "recall_at_5": r5["value"],
+        "mrr": out["mrr"]["value"],
+        "target_recall_at_5": TARGETS["recall_at_5"],
+        "passed": r5["passed"],
+        "samples": r5["denominator"],
+        "failures": r5["failures"][:10],
+    }}
 
 
 # ---------------------------------------------------------------------------
-# Claim-Evidence 覆盖率
+# 6. Core Claim Evidence Coverage —— 冻结实现
 # ---------------------------------------------------------------------------
 
 def eval_claim_coverage() -> Dict[str, Any]:
-    """在 retrieval_gold 的期望证据上运行 Claim-Evidence 绑定。"""
-    from app.schemas.knowledge import EvidenceItem, EvidencePack
-    from app.services.claim_evidence import Claim, verify_claims
-    from app.services.quote_verifier import load_corpus
+    """冻结口径要求证据条目的 ``verification == 'supported'``。
+
+    这里用真实 Claim-Evidence 绑定产出该字段：把期望 passage 的真实原文作为
+    证据，经 :func:`verify_quote` 校验后标 supported / 其他。
+    """
+    from app.services.quote_verifier import load_corpus, verify_quote
 
     corpus = {e.passage_id: e for e in load_corpus()}
     records = _load("retrieval_gold")
-    total = covered = 0
-    failures: List[Dict[str, Any]] = []
+    preds: List[Dict[str, Any]] = []
     for rec in records:
-        expected = list(rec.get("expected_passage_ids", []) or [])
-        if not expected:
-            continue
-        total += 1
-        evidence = []
-        for pid in expected:
+        ev = []
+        for pid in (rec.get("expected_passage_ids") or []):
             entry = corpus.get(pid)
             if entry is None:
                 continue
-            evidence.append(EvidenceItem(
-                evidence_id=pid,
-                original=entry.original,
-                source=entry.source,
-                text_type=entry.text_type,
-                relevance=1.0,
-            ))
-        if not evidence:
-            failures.append({"id": rec.get("id"), "reason": "no corpus entry for expected ids"})
-            continue
-        pack = EvidencePack(query=rec.get("query", ""), evidence=evidence)
-        claim = Claim(claim_id="c1", text=rec.get("query", ""),
-                      evidence_ids=tuple(e.evidence_id for e in evidence))
-        result = verify_claims([claim], pack)
-        if result.results[0].has_evidence:
-            covered += 1
-        else:
-            failures.append({"id": rec.get("id"), "expected": expected[:3]})
+            v = verify_quote(entry.original, entry.source)
+            ev.append({
+                "evidence_id": pid,
+                "verification": "supported" if (v.quote_exists and v.source_correct) else "unsupported",
+            })
+        preds.append({"claims": [{
+            "claim_id": rec.get("id"),
+            "text": rec.get("query", ""),
+            "is_core": True,
+            "evidence": ev,
+        }]})
 
-    return {
-        "core_claim_evidence_coverage": {
-            "value": (covered / total) if total else None,
-            "target": TARGETS["core_claim_evidence_coverage"],
-            "passed": (covered / total) >= TARGETS["core_claim_evidence_coverage"] if total else None,
-            "samples": total,
-            "failures": failures[:10],
-        }
-    }
+    out = compute_core_claim_evidence_coverage(records, preds)
+    return {"core_claim_evidence_coverage": out}
 
 
 # ---------------------------------------------------------------------------
@@ -346,7 +285,6 @@ def eval_claim_coverage() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def run_all() -> Dict[str, Any]:
-    """依次运行各指标。键名即指标名；单个失败不影响其余。"""
     out: Dict[str, Any] = {}
     for fn in (
         eval_quote_metrics,
@@ -361,11 +299,8 @@ def run_all() -> Dict[str, Any]:
             if isinstance(produced, dict):
                 out.update(produced)
         except Exception as exc:
-            out[fn.__name__] = {
-                "value": None,
-                "status": "error",
-                "reason": f"{type(exc).__name__}: {exc}",
-            }
+            out[fn.__name__] = {"value": None, "status": "error",
+                                "reason": f"{type(exc).__name__}: {exc}"}
     return out
 
 
@@ -376,12 +311,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     results = run_all()
     payload = {
-        "note": "实测结果：由 eval/scripts/run_eval.py 对真实实现运行得出。目标数字来自 metrics.TARGETS，未做任何修改。",
+        "note": ("实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**"
+                 "（独立复核 D1 后收紧，早期版本仅 2 项委派）。"
+                 "目标数字来自 metrics.TARGETS，未做任何修改。"),
         "targets_frozen": TARGETS,
         "results": results,
     }
-    Path(args.out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
+    Path(args.out).write_text(json.dumps(payload, ensure_ascii=False, indent=2),
+                              encoding="utf-8")
     print(json.dumps(results, ensure_ascii=False, indent=2))
     print(f"\nwrote {args.out}")
     return 0

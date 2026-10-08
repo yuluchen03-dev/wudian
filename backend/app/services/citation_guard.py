@@ -35,6 +35,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from app.schemas.knowledge import EvidenceItem, EvidencePack
 from app.services.quote_verifier import (
     MIN_FRAGMENT_CHARS,
+    MIN_FULL_QUOTE_CHARS,
     is_source_missing,
     normalize_text,
     parse_source,
@@ -307,6 +308,7 @@ def guard_citations(
                 reason = f"出处 {source!r} 不在 Evidence Pack 白名单内"
 
         # 3. 检索支持 + 出处正确性
+        is_fragment = False
         if not reason:
             supported = quote_is_supported_by_refs(original, refs)
             if not supported:
@@ -316,15 +318,32 @@ def guard_citations(
                 source_correct = source_matches_quote(original, source, refs)
                 if not source_correct:
                     correct_source = _infer_correct_source(original, refs)
+                # 摘句（片段）判定 —— D3 修复。
+                # 归一化后短于 MIN_FULL_QUOTE_CHARS 的引文只是**片段**，
+                # 只能说明"这些字在原典里出现过"，不足以作为完整经典原文呈现。
+                # 原实现无条件把 match_type 写成 "exact"，
+                # 导致「勿施于人」这类 4 字片段被判 verifiable=True / verified，
+                # 与 quote_verifier 对同一输入的判定（partial / quote_relaxed）
+                # 互相矛盾，也违反 adversarial_quotes aq-0010 的期望
+                # （quote_exists=true 但 verifiable=false、不得作为经典原文展示）。
+                is_fragment = len(normalize_text(original)) < MIN_FULL_QUOTE_CHARS
+
+        # 真实匹配类型：片段 → "partial"；否则沿用原有"整句命中即 exact"的语义
+        # （保留此语义是为了不改变既有契约对**完整句子**的判定，见
+        # tests/test_citation_guard.py:128 对「己所不欲，勿施于人。」的断言）。
+        real_match_type = (
+            "partial" if is_fragment
+            else ("exact" if (quote_exists and source_correct) else "none")
+        )
 
         trust_state = decide_trust_state(
             quote_exists=quote_exists,
             source_correct=source_correct,
-            exact_match=quote_exists and source_correct,
-            match_type="exact" if (quote_exists and source_correct) else "none",
+            exact_match=quote_exists and source_correct and not is_fragment,
+            match_type=real_match_type,
         )
         verifiable = quote_exists and source_correct and is_verifiable(
-            trust_state, "exact",
+            trust_state, real_match_type,
         )
 
         guarded.append(GuardedCitation(
