@@ -1,0 +1,215 @@
+{
+  "generated_at": "2026-10-08T09:38:48.068706+00:00",
+  "project": "WUDIAN-KB-V1",
+  "phase": "PHASE 0 (eval baseline only; no evaluated system exists yet)",
+  "corpus": {
+    "passage_ids_available": 143,
+    "by_kind": {
+      "l1_original": 128,
+      "l2_commentary": 15
+    },
+    "source_files": [
+      "data/processed/lunyu.json",
+      "data/processed/debate_classics.json",
+      "backend/data/commentaries/lunyu_zhuxi.json"
+    ]
+  },
+  "datasets": [
+    {
+      "name": "retrieval_gold",
+      "file": "retrieval_gold.jsonl",
+      "description": "现代问题 -> 期望命中的真实原典 passage id（GATE-4 Recall@K / MRR）",
+      "records": 40,
+      "provenance": {
+        "derived": 40
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "quote_verification",
+      "file": "quote_verification.jsonl",
+      "description": "引文存在性与逐字精确度；必须区分 quote_exists 与 source_correct（GATE-5）",
+      "records": 21,
+      "provenance": {
+        "derived": 21
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "source_attribution",
+      "file": "source_attribution.jsonl",
+      "description": "出处正确性（独立于引文是否存在）（GATE-5）",
+      "records": 18,
+      "provenance": {
+        "derived": 18
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "modern_to_classic",
+      "file": "modern_to_classic.jsonl",
+      "description": "现代问题结构化（scene/actors/conflict/emotion/choices/concepts）（GATE-3）",
+      "records": 20,
+      "provenance": {
+        "derived": 20
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "school_consistency",
+      "file": "school_consistency.jsonl",
+      "description": "多学派隔离；School Leakage = 越界引用 / 总引用（GATE-6）",
+      "records": 17,
+      "provenance": {
+        "derived": 17
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "adversarial_quotes",
+      "file": "adversarial_quotes.jsonl",
+      "description": "对抗输入（PROJECT-BRIEF ch.16 全部 12 类）（GATE-5，硬前置）",
+      "records": 20,
+      "provenance": {
+        "derived": 20
+      },
+      "human_annotated": 0
+    },
+    {
+      "name": "unsupported_questions",
+      "file": "unsupported_questions.jsonl",
+      "description": "语料无支撑的问题，期望诚实拒答（GATE-8）",
+      "records": 12,
+      "provenance": {
+        "derived": 12
+      },
+      "human_annotated": 0
+    }
+  ],
+  "totals": {
+    "records": 148,
+    "provenance": {
+      "derived": 148
+    },
+    "human_annotated": 0
+  },
+  "targets_frozen": {
+    "quote_exactness": 0.99,
+    "source_attribution": 0.98,
+    "school_leakage_max": 0.01,
+    "recall_at_5": 0.9,
+    "unsupported_correct_refusal": 0.95,
+    "core_claim_evidence_coverage": 0.95,
+    "fabricated_classical_quote": 0,
+    "p50_seconds": 1.0,
+    "p95_seconds": 3.0
+  },
+  "metrics": {
+    "quote_exactness": {
+      "metric": "quote_exactness",
+      "formula": "正确逐字匹配数 / 全部被判定为 quote_exists=True 的引文数",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 QuoteVerifier 产出 predictions（PHASE 5 未实现）；且无外部 LLM/verifier 运行。"
+    },
+    "source_attribution": {
+      "metric": "source_attribution",
+      "formula": "source_correct 与期望一致数 / 全部引文数（独立于 quote_exists）",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 QuoteVerifier 的 source_correct 判定（PHASE 5 未实现）；现状 citation_validator 不校验出处。"
+    },
+    "school_leakage": {
+      "metric": "school_leakage",
+      "formula": "越界引用数 / 总引用数（引用 source 不属于该 sage 的 allowed_books）",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 RAG V2 真实检索结果（PHASE 4 未实现）；且 sage-chat 主路径无学派过滤（G-D 未修复）。"
+    },
+    "retrieval": {
+      "recall_at_1": {
+        "metric": "recall_at_k",
+        "formula": "(1/N) * sum(命中 expected ∩ top-1 非空)",
+        "value": null,
+        "status": "not_computable",
+        "reason": "需要 RAG V2 真实检索（PHASE 4 未实现）。注：C1 已由 t20 修复（schemas/ai.py:25 verse_no 改为 Optional[str]），实测 retrieve('学而时习之') 已返回 5 条；但当前 hybrid_search 的排序质量尚未评估，且语料仅 143 条、12 部书目仅 4 部有数据。"
+      },
+      "recall_at_3": {
+        "metric": "recall_at_k",
+        "formula": "(1/N) * sum(命中 expected ∩ top-3 非空)",
+        "value": null,
+        "status": "not_computable",
+        "reason": "需要 RAG V2 真实检索（PHASE 4 未实现）。注：C1 已由 t20 修复（schemas/ai.py:25 verse_no 改为 Optional[str]），实测 retrieve('学而时习之') 已返回 5 条；但当前 hybrid_search 的排序质量尚未评估，且语料仅 143 条、12 部书目仅 4 部有数据。"
+      },
+      "recall_at_5": {
+        "metric": "recall_at_k",
+        "formula": "(1/N) * sum(命中 expected ∩ top-5 非空)",
+        "value": null,
+        "status": "not_computable",
+        "reason": "需要 RAG V2 真实检索（PHASE 4 未实现）。注：C1 已由 t20 修复（schemas/ai.py:25 verse_no 改为 Optional[str]），实测 retrieve('学而时习之') 已返回 5 条；但当前 hybrid_search 的排序质量尚未评估，且语料仅 143 条、12 部书目仅 4 部有数据。"
+      },
+      "mrr": {
+        "metric": "mrr",
+        "formula": "(1/N) * sum(1 / 首个命中 rank)，无命中记 0",
+        "value": null,
+        "status": "not_computable",
+        "reason": "同 Recall：依赖 RAG V2 与真实规模语料。"
+      }
+    },
+    "unsupported_correct_refusal": {
+      "metric": "unsupported_correct_refusal",
+      "formula": "正确拒答数 / 应拒答数；拒答须同时满足 trust_state=insufficient_evidence、含 ch.12 拒答语、未展示任何经典原文",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 Trust State 四态（PHASE 5 未实现）。另注意：C3 已在 _debate_keyword_search 修复（rag_service.py:500 `if score <= 0: continue`），但 retrieve_for_debate_sage 先走 _debate_vector_search（:1024）且无相关性阈值，实测垃圾查询仍返回 3 条 sim=0.0，故 insufficient_evidence 在该路径仍不可达。"
+    },
+    "core_claim_evidence_coverage": {
+      "metric": "core_claim_evidence_coverage",
+      "formula": "有 >=1 条 verification=supported 证据的核心 claim 数 / 全部核心 claim 数",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 Claim-Evidence 绑定（PHASE 5 未实现）。"
+    },
+    "fabricated_classical_quote": {
+      "metric": "fabricated_classical_quote",
+      "formula": "expected.quote_exists=False 却被判 verifiable=True 的条数（目标绝对值为 0）",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要对抗套件对真实实现运行（PHASE 5）。数据集已就绪，但被评系统尚不存在。"
+    },
+    "latency": {
+      "metric": "latency",
+      "formula": "本地检索 P50 / P95（秒），排除外部 LLM",
+      "value": null,
+      "status": "not_computable",
+      "reason": "需要 RAG V2 实现后在真实规模语料上测量；当前 143 条基线不具代表性。"
+    }
+  },
+  "gate_attainability": {
+    "GATE-4": "不可达：Recall@5>=90% 依赖 RAG V2；C1 已由 t20 修复（retrieve 已可用），但语料仅 143 条、12 部书目仅 4 部有数据，且检索排序质量未评估。",
+    "GATE-5": "不可达：需 PHASE 5 Trust Layer；数据集已就绪但被评系统不存在。",
+    "GATE-6": "不可达：需学派过滤（G-D 未修复）与各派语料扩充。",
+    "GATE-8": "不可达：需 Trust State + Claim-Evidence + >=200 gold。"
+  },
+  "honesty": {
+    "human_gold_count": 0,
+    "statement": "本数据集全部为规则/表格辅助构造（provenance=derived），**没有人工标注**。当前无法人工产出 1000 条。未将任何机器生成样本标为 human。",
+    "targets_modified": false,
+    "no_mock_as_real_rag": true
+  },
+  "expansion_plan": {
+    "current_total": 148,
+    "target_total": 1000,
+    "method": "按 book x concept x scenario 三维矩阵补齐缺口；每本书按章节分层抽样保证覆盖；新增数据集只用 derived 候选 + 真实人工确认后升级为 human；所有入库必须通过 validate_gold.py。",
+    "constraints": [
+      "禁止用 LLM 批量生成看似合理的 Gold 并标 human",
+      "expected_passage_ids 只能指向语料中真实存在的条目",
+      "不得为了凑数编造 passage 或出处"
+    ],
+    "blocked_by": [
+      "PHASE 2 语料扩充（当前 12 部书目仅 4 部有数据）",
+      "PHASE 1 passage_id 正式化",
+      "真实人工标注资源（当前不可得，故全部为 derived）"
+    ]
+  }
+}
