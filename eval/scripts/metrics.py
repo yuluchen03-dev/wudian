@@ -113,18 +113,30 @@ def compute_source_attribution(records: Sequence[Dict[str, Any]],
     Denominator = every quote (regardless of whether it exists).
     Numerator   = predictions whose `source_correct` equals the expected value.
     Independent of `quote_exists` by contract (PROJECT-BRIEF ch.11).
+
+    字段口径（与 ``schema.py`` 的 ``source_attribution`` 规格一致）：
+    该数据集使用**扁平**字段 ``expected_source`` / ``expected_source_correct``，
+    而不是 `quote_verification` 那样的嵌套 ``expected{...}``。
+    早期版本读取 ``rec["expected"]["source_correct"]``，与实际数据不符，
+    会直接抛 ``KeyError: 'expected'`` —— 属两半实现从未真正连通的集成缺陷。
+    这里改为优先读扁平字段，并保留对嵌套写法的兼容。
     """
     denom = len(records)
     numer = 0
     details = []
     for rec, pred in zip(records, predictions):
-        want = bool(rec["expected"].get("source_correct"))
+        nested = rec.get("expected") or {}
+        if "expected_source_correct" in rec:
+            want = bool(rec["expected_source_correct"])
+        else:
+            want = bool(nested.get("source_correct"))
         got = bool(pred.get("source_correct"))
         if got == want:
             numer += 1
         else:
             details.append({"id": rec.get("id"), "expected": want, "got": got,
-                            "correct_source": rec["expected"].get("correct_source")})
+                            "expected_source": rec.get("expected_source"),
+                            "correct_source": pred.get("correct_source")})
     value = (numer / denom) if denom else None
     return {"metric": "source_attribution", "numerator": numer, "denominator": denom,
             "value": value, "target": TARGETS["source_attribution"],

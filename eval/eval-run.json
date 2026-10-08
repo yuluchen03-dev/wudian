@@ -13,17 +13,70 @@
   },
   "results": {
     "quote_exactness": {
-      "value": 1.0,
+      "metric": "quote_exactness",
+      "numerator": 6,
+      "denominator": 18,
+      "value": 0.3333333333333333,
       "target": 0.99,
-      "passed": true,
-      "samples": 21,
-      "failures": []
+      "passed": false,
+      "failures": [
+        {
+          "id": "qv-0001",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0002",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0003",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0004",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0007",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0008",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0009",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0010",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0012",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0016",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0017",
+          "reason": "not an exact match"
+        },
+        {
+          "id": "qv-0018",
+          "reason": "not an exact match"
+        }
+      ]
     },
     "source_attribution": {
+      "metric": "source_attribution",
+      "numerator": 18,
+      "denominator": 18,
       "value": 1.0,
       "target": 0.98,
       "passed": true,
-      "samples": 18,
       "failures": []
     },
     "fabricated_classical_quote": {

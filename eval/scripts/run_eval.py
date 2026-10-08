@@ -58,50 +58,42 @@ def _load(name: str) -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 def eval_quote_metrics() -> Dict[str, Any]:
-    """在 quote_verification + source_attribution 上真实运行 QuoteVerifier。"""
+    """在 quote_verification + source_attribution 上真实运行 QuoteVerifier。
+
+    **使用 ``metrics.py`` 的冻结定义**，不在此重新发明指标口径：
+
+    - ``compute_quote_exactness``：分母 = 系统判为 quote_exists=True 的条数，
+      分子 = 其中 ``exact_match`` 为真且期望确实存在的条数。
+      注意它**不是**「quote_exists 预测准确率」——早期版本的 run_eval.py
+      用后者，得到一个明显偏高的数字，属口径错误，已改为调用冻结实现。
+    - ``compute_source_attribution``：分母 = 全部样本，分子 = source_correct 一致。
+    """
     from app.services.quote_verifier import verify_quote
+    from metrics import compute_source_attribution, compute_quote_exactness
 
     qv = _load("quote_verification")
     sa = _load("source_attribution")
 
-    q_total = q_correct = 0
-    q_detail: List[Dict[str, Any]] = []
-    for rec in qv:
-        expected = rec.get("expected", {})
-        result = verify_quote(rec.get("quote", ""), rec.get("claimed_source", ""))
-        ok = result.quote_exists == bool(expected.get("quote_exists"))
-        q_total += 1
-        q_correct += int(ok)
-        if not ok:
-            q_detail.append({"id": rec.get("id"), "got": result.quote_exists,
-                             "want": expected.get("quote_exists")})
+    # 以真实实现产出 predictions（字段名与 metrics.py 期望一致）
+    def _predict(rec: Dict[str, Any]) -> Dict[str, Any]:
+        r = verify_quote(rec.get("quote", ""), rec.get("claimed_source", ""))
+        return {
+            "quote_exists": r.quote_exists,
+            "exact_match": r.exact_match,
+            "normalized_match": r.normalized_match,
+            "source_correct": r.source_correct,
+            "correct_source": r.correct_source,
+            "trust_state": r.trust_state,
+            "match_type": r.match_type,
+            "similarity": r.similarity,
+        }
 
-    s_total = s_correct = 0
-    s_detail: List[Dict[str, Any]] = []
-    for rec in sa:
-        result = verify_quote(rec.get("quote", ""), rec.get("claimed_source", ""))
-        ok = result.source_correct == bool(rec.get("expected_source_correct"))
-        s_total += 1
-        s_correct += int(ok)
-        if not ok:
-            s_detail.append({"id": rec.get("id"), "got": result.source_correct,
-                             "want": rec.get("expected_source_correct")})
+    q_preds = [_predict(rec) for rec in qv]
+    s_preds = [_predict(rec) for rec in sa]
 
     return {
-        "quote_exactness": {
-            "value": (q_correct / q_total) if q_total else None,
-            "target": TARGETS["quote_exactness"],
-            "passed": (q_correct / q_total) >= TARGETS["quote_exactness"] if q_total else None,
-            "samples": q_total,
-            "failures": q_detail[:10],
-        },
-        "source_attribution": {
-            "value": (s_correct / s_total) if s_total else None,
-            "target": TARGETS["source_attribution"],
-            "passed": (s_correct / s_total) >= TARGETS["source_attribution"] if s_total else None,
-            "samples": s_total,
-            "failures": s_detail[:10],
-        },
+        "quote_exactness": compute_quote_exactness(qv, q_preds),
+        "source_attribution": compute_source_attribution(sa, s_preds),
     }
 
 
