@@ -1,0 +1,339 @@
+{
+  "ontology_version": "1.0.0",
+  "schema": "modern_issue_ontology/v1",
+  "description": "悟典 Modern Issue Ontology — 把现代现实问题结构化为「场景 → 核心冲突 → 思想概念」，供 RAG V2 Stage 1（Query Analyzer）与 Stage 2（Modern→Classical 概念扩展）使用。PROJECT-BRIEF 第七章要求：不能把用户输入直接丢给 embedding。",
+  "provenance": {
+    "authored_by": "wudian-kb-v1 / P3-01 (product-research)",
+    "authored_at": "2026-02-12",
+    "basis": [
+      "PROJECT-BRIEF 第七章（21 类情境 + 「同事抢了我的功劳」完整示例）",
+      "docs/kb-v1/02-architecture.md §3.2（PHASE 3 模块清单）、§2（数据流 Stage 1/2）",
+      "docs/kb-v1/01-gap-analysis.md §1.4（第七章当前 0 实现）"
+    ],
+    "concept_grounding": "concepts 词表中的每个概念都是真实且可考的 Chinese-thought 概念（见 concepts[].school 与 concepts[].gloss）。场景→概念 的映射是**本项目为产品目的所作的设计决策**，不是从某部权威文献直接抄录的定论；下游若需作为「权威」引用，须另行人工复核。",
+    "verification_level": "D",
+    "verification_note": "本文件是 AI 辅助编写的产品设计资产，不是古籍原典、不是注疏、无人工复核记录。不得标记为 A/B 级，不得作为「经典原文」展示。",
+    "license": "unknown",
+    "human_reviewed": false
+  },
+
+  "controlled_vocabularies": {
+    "actors": [
+      "self", "peer", "colleague", "superior", "subordinate", "competitor",
+      "family_member", "parent", "child", "spouse", "friend", "partner",
+      "group", "institution", "society", "other"
+    ],
+    "conflict": [
+      "fairness", "relationship", "growth", "security", "identity", "autonomy",
+      "loyalty", "recognition", "resource", "obligation", "expectation",
+      "meaning", "control", "trust", "belonging", "self_worth", "order"
+    ],
+    "emotion": [
+      "anger", "frustration", "anxiety", "fear", "sadness", "loneliness",
+      "guilt", "shame", "self_doubt", "envy", "hope", "confusion",
+      "grief", "helplessness", "relief", "pride"
+    ],
+    "choices": [
+      "confront", "communicate", "escalate", "tolerate", "leave", "stay",
+      "negotiate", "apologize", "forgive", "seek_help", "wait", "act",
+      "refuse", "accept", "change", "persist", "give_up", "upskill",
+      "protect_self", "help_others"
+    ],
+    "concepts": [
+      "仁", "义", "礼", "智", "信", "孝", "悌", "忠", "恕", "勇", "慈", "友", "均",
+      "正名", "名实", "中庸", "诚", "学", "志", "修身", "慎独", "利",
+      "不争", "无为", "自然", "知足", "柔弱", "逍遥", "齐物",
+      "兼爱", "非攻", "尚贤", "节用",
+      "法", "势", "术", "赏罚",
+      "良知", "知行合一"
+    ]
+  },
+
+  "concepts": {
+    "仁": {"school": "儒家", "gloss": "对他人的关爱与推己及人，儒家最高德目。"},
+    "义": {"school": "儒家", "gloss": "合宜、正当；判断当为与不当为的准则。"},
+    "礼": {"school": "儒家", "gloss": "社会秩序与行为规范、仪节，含恭敬与节度。"},
+    "智": {"school": "儒家", "gloss": "明辨是非、审察情实的判断力（三达德之一）。"},
+    "信": {"school": "儒家", "gloss": "诚实不欺、言行一致；亦为法家所重之信用。"},
+    "孝": {"school": "儒家", "gloss": "对父母的敬养与承顺。"},
+    "悌": {"school": "儒家", "gloss": "敬爱兄长，引申为同辈间的敬让。"},
+    "忠": {"school": "儒家", "gloss": "尽己之心以待人处事。"},
+    "恕": {"school": "儒家", "gloss": "推己及人，「己所不欲，勿施于人」。"},
+    "勇": {"school": "儒家", "gloss": "见义而为的胆识（三达德之一）；非血气之勇。"},
+    "慈": {"school": "儒家", "gloss": "上对下的仁爱，与「孝」相对（父慈子孝）。"},
+    "友": {"school": "儒家", "gloss": "朋友一伦与其相处之道（朋友有信）。"},
+    "均": {"school": "儒家", "gloss": "分配上的均衡，「不患寡而患不均」。"},
+    "正名": {"school": "儒家", "gloss": "名分与实责相符，使言行有据（孔子）。"},
+    "名实": {"school": "儒家/法家/名家", "gloss": "名义与实际是否相符；名实相符则事定。"},
+    "中庸": {"school": "儒家", "gloss": "不偏不倚、无过无不及的处事之道。"},
+    "诚": {"school": "儒家", "gloss": "真实无妄、内外一致（《中庸》《孟子》）。"},
+    "学": {"school": "儒家", "gloss": "学习与修养的持续过程。"},
+    "志": {"school": "儒家", "gloss": "心之所向、立定的志向。"},
+    "修身": {"school": "儒家", "gloss": "自我修养，「自天子以至于庶人，壹是皆以修身为本」。"},
+    "慎独": {"school": "儒家", "gloss": "独处时亦不放纵，内在自律。"},
+    "利": {"school": "儒家", "gloss": "利益、功利；与「义」相对，构成义利之辨。"},
+    "不争": {"school": "道家", "gloss": "不与人争胜，「夫唯不争，故天下莫能与之争」。"},
+    "无为": {"school": "道家", "gloss": "顺任自然、不妄加干预。"},
+    "自然": {"school": "道家", "gloss": "事物本然如此的状态。"},
+    "知足": {"school": "道家", "gloss": "知道满足，「知足不辱，知止不殆」。"},
+    "柔弱": {"school": "道家", "gloss": "柔弱胜刚强，以柔韧处世的策略。"},
+    "逍遥": {"school": "道家", "gloss": "无所依待的精神自由（《庄子》）。"},
+    "齐物": {"school": "道家", "gloss": "齐同物论、超越是非对立（《庄子》）。"},
+    "兼爱": {"school": "墨家", "gloss": "不分亲疏地爱他人（《墨子》）。"},
+    "非攻": {"school": "墨家", "gloss": "反对侵略攻伐。"},
+    "尚贤": {"school": "墨家", "gloss": "以贤能而非亲疏任人。"},
+    "节用": {"school": "墨家", "gloss": "节制用度、反对奢费。"},
+    "法": {"school": "法家", "gloss": "成文法令与制度约束。"},
+    "势": {"school": "法家", "gloss": "权位与形势所构成的支配力。"},
+    "术": {"school": "法家", "gloss": "君主驾驭臣下的方法与考核手段。"},
+    "赏罚": {"school": "法家", "gloss": "以赏罚二柄驱动行为（《韩非子·二柄》）。"},
+    "良知": {"school": "心学", "gloss": "心之本体，知善知恶的内在判断（王阳明）。"},
+    "知行合一": {"school": "心学", "gloss": "知与行本为一事，不行不足以言知（王阳明）。"}
+  },
+
+  "emotion_markers": {
+    "生气": "anger", "愤怒": "anger", "火大": "anger", "发火": "anger",
+    "恼火": "anger", "气死": "anger", "忍无可忍": "anger",
+    "烦": "frustration", "烦躁": "frustration", "沮丧": "frustration",
+    "受挫": "frustration", "无奈": "frustration",
+    "焦虑": "anxiety", "紧张": "anxiety", "不安": "anxiety", "心慌": "anxiety",
+    "睡不着": "anxiety", "内耗": "anxiety", "压力": "anxiety",
+    "害怕": "fear", "恐惧": "fear", "担心": "fear", "恐慌": "fear",
+    "难过": "sadness", "伤心": "sadness", "失落": "sadness", "委屈": "sadness",
+    "孤独": "loneliness", "孤单": "loneliness", "寂寞": "loneliness",
+    "没人懂": "loneliness", "被孤立": "loneliness",
+    "愧疚": "guilt", "自责": "guilt", "对不起": "guilt",
+    "羞耻": "shame", "丢脸": "shame", "没面子": "shame",
+    "自我怀疑": "self_doubt", "自卑": "self_doubt", "我不行": "self_doubt",
+    "不够好": "self_doubt", "没信心": "self_doubt", "配不上": "self_doubt",
+    "嫉妒": "envy", "羡慕": "envy", "眼红": "envy",
+    "迷茫": "confusion", "困惑": "confusion", "纠结": "confusion", "犹豫": "confusion",
+    "希望": "hope", "期待": "hope", "不甘心": "hope",
+    "自豪": "pride", "骄傲": "pride", "成就感": "pride"
+  },
+
+  "matching": {
+    "algorithm": "deterministic_substring_v1",
+    "description": "对输入文本做归一化后，逐个 scene 统计其 triggers 的命中；每条命中贡献 len(trigger) 分，scene 得分再乘以其 specificity。得分最高者为 primary scene。不调用任何 LLM 或网络。",
+    "normalization": ["strip", "lowercase", "remove_whitespace"],
+    "score_formula": "score(scene) = specificity(scene) * sum(len(trigger) for trigger in triggers if trigger in normalized_input)",
+    "confidence_formula": "confidence = min(1.0, score / confidence_full_score)",
+    "confidence_full_score": 5.0,
+    "confidence_calibration": "单个 2 字特征触发词 → 0.40（达到可归类门槛）；2 个以上或更长触发词 → 0.6–1.0；仅命中泛化触发词（如 choice 的「该不该」）→ < 0.4，标记 needs_clarification。",
+    "secondary_scene_ratio": 0.5,
+    "note": "confidence < 0.4 时 needs_clarification=true，表示结构化结果不确定，下游应降级而非强行检索。score == 0 时 scene=null、confidence=0.0，禁止硬编归类。"
+  },
+
+  "scenes": {
+    "career": {
+      "label_zh": "职业发展",
+      "specificity": 1.0,
+      "actors": ["self", "institution"],
+      "conflict": ["growth", "security"],
+      "emotion": ["anxiety", "self_doubt"],
+      "choices": ["stay", "change", "negotiate", "upskill", "leave"],
+      "concepts": ["学", "志", "义", "中庸", "修身"],
+      "triggers": ["职业发展", "职业规划", "升职", "晋升", "跳槽", "转行", "前途", "事业", "职业", "岗位", "工作方向"]
+    },
+    "workplace_conflict": {
+      "label_zh": "职场冲突",
+      "specificity": 1.0,
+      "actors": ["self", "peer"],
+      "conflict": ["fairness", "relationship"],
+      "emotion": ["anger", "frustration"],
+      "choices": ["confront", "communicate", "escalate", "tolerate", "leave"],
+      "concepts": ["义", "礼", "正名", "不争", "尚贤", "名实", "赏罚"],
+      "triggers": ["抢了我的功劳", "抢功", "抢走我的", "争功", "功劳被", "同事", "撕破脸", "排挤", "甩锅", "打小报告", "职场冲突", "职场pua", "pua", "抢了", "被抢"]
+    },
+    "leadership": {
+      "label_zh": "领导与管理",
+      "specificity": 1.0,
+      "actors": ["self", "subordinate", "group"],
+      "conflict": ["order", "obligation", "trust"],
+      "emotion": ["anxiety", "confusion"],
+      "choices": ["act", "communicate", "escalate", "wait", "change"],
+      "concepts": ["正名", "礼", "法", "势", "术", "赏罚", "尚贤"],
+      "triggers": ["管理团队", "带团队", "带好团队", "当领导", "做领导", "领导者", "领导力", "管理者", "怎么管", "团队管理", "带队", "下属", "部属", "带人", "如何领导", "怎么带"]
+    },
+    "achievement": {
+      "label_zh": "成就与认可",
+      "specificity": 1.0,
+      "actors": ["self", "superior"],
+      "conflict": ["recognition", "self_worth"],
+      "emotion": ["frustration", "self_doubt"],
+      "choices": ["persist", "communicate", "change", "give_up", "negotiate"],
+      "concepts": ["学", "志", "义", "名实", "修身"],
+      "triggers": ["不被认可", "得不到认可", "努力没有回报", "努力却", "被看见", "表扬", "被肯定", "付出没有", "成就", "认可", "成绩"]
+    },
+    "money": {
+      "label_zh": "金钱与义利",
+      "specificity": 1.0,
+      "actors": ["self", "other", "institution"],
+      "conflict": ["resource", "fairness", "obligation"],
+      "emotion": ["anxiety", "confusion"],
+      "choices": ["accept", "refuse", "negotiate", "act", "tolerate"],
+      "concepts": ["义", "利", "信", "知足", "节用", "中庸"],
+      "triggers": ["金钱", "工资", "收入", "报酬", "利益", "义利", "借钱", "财富", "该不该要钱", "涨薪", "待遇", "钱"]
+    },
+    "competition": {
+      "label_zh": "竞争",
+      "specificity": 1.0,
+      "actors": ["self", "competitor", "peer"],
+      "conflict": ["fairness", "recognition", "resource"],
+      "emotion": ["anxiety", "envy"],
+      "choices": ["confront", "persist", "change", "communicate", "tolerate"],
+      "concepts": ["义", "不争", "尚贤", "中庸", "勇"],
+      "triggers": ["竞争", "比拼", "比不过", "竞争对手", "排名", "内卷", "竞争压力", "输给", "赢过", "对手"]
+    },
+    "family": {
+      "label_zh": "家庭",
+      "specificity": 1.0,
+      "actors": ["self", "family_member"],
+      "conflict": ["obligation", "relationship", "expectation"],
+      "emotion": ["guilt", "frustration", "sadness"],
+      "choices": ["communicate", "tolerate", "act", "forgive", "seek_help"],
+      "concepts": ["孝", "悌", "仁", "礼", "恕"],
+      "triggers": ["家庭关系", "家人", "父母", "家里", "亲人", "亲戚", "家庭", "家里的事"]
+    },
+    "parent_child": {
+      "label_zh": "亲子",
+      "specificity": 1.0,
+      "actors": ["self", "parent", "child"],
+      "conflict": ["expectation", "autonomy", "obligation"],
+      "emotion": ["anxiety", "guilt", "frustration"],
+      "choices": ["communicate", "tolerate", "act", "forgive", "seek_help"],
+      "concepts": ["孝", "慈", "仁", "礼", "中庸"],
+      "triggers": ["孩子", "亲子", "教育孩子", "管孩子", "望子成龙", "青春期", "子女", "父母管", "叛逆", "儿子", "女儿"]
+    },
+    "marriage": {
+      "label_zh": "婚姻",
+      "specificity": 1.0,
+      "actors": ["self", "spouse"],
+      "conflict": ["relationship", "loyalty", "expectation"],
+      "emotion": ["sadness", "anger", "loneliness"],
+      "choices": ["communicate", "tolerate", "forgive", "leave", "seek_help"],
+      "concepts": ["礼", "信", "恕", "诚", "中庸"],
+      "triggers": ["婚姻", "结婚", "夫妻", "配偶", "老婆", "老公", "离婚", "出轨", "伴侣"]
+    },
+    "friendship": {
+      "label_zh": "友情",
+      "specificity": 1.0,
+      "actors": ["self", "friend"],
+      "conflict": ["relationship", "loyalty", "trust"],
+      "emotion": ["sadness", "frustration", "loneliness"],
+      "choices": ["communicate", "forgive", "tolerate", "leave", "help_others"],
+      "concepts": ["信", "友", "恕", "义", "兼爱"],
+      "triggers": ["朋友", "友情", "交友", "友谊", "好友", "闺蜜", "哥们", "朋友不", "朋友一直"]
+    },
+    "anxiety": {
+      "label_zh": "焦虑",
+      "specificity": 1.0,
+      "actors": ["self"],
+      "conflict": ["self_worth", "control", "meaning"],
+      "emotion": ["anxiety", "fear", "helplessness"],
+      "choices": ["wait", "act", "seek_help", "change", "accept"],
+      "concepts": ["知足", "不争", "中庸", "修身", "无为"],
+      "triggers": ["焦虑", "压力大", "很焦虑", "紧张", "睡不着", "心慌", "内耗", "不安", "担心", "静不下来", "想太多"]
+    },
+    "failure": {
+      "label_zh": "失败与挫折",
+      "specificity": 1.0,
+      "actors": ["self"],
+      "conflict": ["self_worth", "recognition", "growth"],
+      "emotion": ["sadness", "self_doubt", "shame"],
+      "choices": ["persist", "give_up", "change", "seek_help", "accept"],
+      "concepts": ["学", "志", "修身", "诚", "勇"],
+      "triggers": ["失败", "挫折", "没做成", "搞砸", "犯错", "失误", "一败涂地", "被否定", "做错了", "错了"]
+    },
+    "anger": {
+      "label_zh": "愤怒",
+      "specificity": 1.0,
+      "actors": ["self", "other"],
+      "conflict": ["fairness", "relationship", "autonomy"],
+      "emotion": ["anger", "frustration"],
+      "choices": ["confront", "communicate", "tolerate", "leave", "wait"],
+      "concepts": ["恕", "礼", "中庸", "修身", "不争"],
+      "triggers": ["生气", "愤怒", "火大", "气死", "恼火", "忍无可忍", "发火", "很气", "被激怒"]
+    },
+    "loneliness": {
+      "label_zh": "孤独",
+      "specificity": 1.0,
+      "actors": ["self", "group"],
+      "conflict": ["belonging", "meaning", "relationship"],
+      "emotion": ["loneliness", "sadness", "helplessness"],
+      "choices": ["seek_help", "act", "communicate", "wait", "accept"],
+      "concepts": ["仁", "友", "恕", "逍遥", "修身"],
+      "triggers": ["孤独", "没人懂", "寂寞", "一个人", "孤单", "没有朋友", "被孤立", "融不进去", "没人在乎"]
+    },
+    "self_doubt": {
+      "label_zh": "自我怀疑",
+      "specificity": 1.0,
+      "actors": ["self", "other"],
+      "conflict": ["self_worth", "identity", "recognition"],
+      "emotion": ["self_doubt", "anxiety", "shame"],
+      "choices": ["persist", "act", "seek_help", "accept", "change"],
+      "concepts": ["修身", "诚", "学", "志", "良知"],
+      "triggers": ["自我怀疑", "我不行", "不够好", "配不上", "自卑", "没信心", "怀疑自己", "否定自己", "很差", "比不上别人"]
+    },
+    "choice": {
+      "label_zh": "抉择",
+      "specificity": 0.5,
+      "actors": ["self"],
+      "conflict": ["autonomy", "meaning", "obligation"],
+      "emotion": ["confusion", "anxiety", "hope"],
+      "choices": ["act", "wait", "negotiate", "change", "accept"],
+      "concepts": ["义", "中庸", "智", "志", "诚"],
+      "triggers": ["该不该", "要不要", "如何选择", "抉择", "怎么办", "两难", "取舍", "选哪个", "纠结要不要"]
+    },
+    "responsibility": {
+      "label_zh": "责任",
+      "specificity": 1.0,
+      "actors": ["self", "other", "group"],
+      "conflict": ["obligation", "autonomy", "loyalty"],
+      "emotion": ["anxiety", "guilt", "confusion"],
+      "choices": ["act", "accept", "refuse", "negotiate", "tolerate"],
+      "concepts": ["义", "仁", "忠", "修身", "诚"],
+      "triggers": ["责任", "该不该我管", "担当", "负责", "义务", "逃避", "承担", "甩给我", "背锅"]
+    },
+    "justice": {
+      "label_zh": "正义",
+      "specificity": 1.0,
+      "actors": ["self", "other", "institution"],
+      "conflict": ["fairness", "order", "obligation"],
+      "emotion": ["anger", "frustration", "hope"],
+      "choices": ["confront", "escalate", "act", "tolerate", "seek_help"],
+      "concepts": ["义", "正名", "法", "赏罚", "勇"],
+      "triggers": ["正义", "不公", "不公平", "冤枉", "见义勇为", "公道", "坏人", "该不该管闲事", "主持公道"]
+    },
+    "fairness": {
+      "label_zh": "公平",
+      "specificity": 1.0,
+      "actors": ["self", "peer", "institution"],
+      "conflict": ["fairness", "recognition", "resource"],
+      "emotion": ["anger", "frustration", "envy"],
+      "choices": ["confront", "communicate", "escalate", "tolerate", "leave"],
+      "concepts": ["义", "正名", "名实", "赏罚", "均", "中庸"],
+      "triggers": ["公平", "不公平", "偏心", "区别对待", "双标", "平等", "公正", "不患寡", "凭什么"]
+    },
+    "meaning": {
+      "label_zh": "意义",
+      "specificity": 1.0,
+      "actors": ["self"],
+      "conflict": ["meaning", "self_worth", "control"],
+      "emotion": ["confusion", "loneliness", "hope"],
+      "choices": ["act", "wait", "change", "seek_help", "accept"],
+      "concepts": ["志", "学", "修身", "逍遥", "知足"],
+      "triggers": ["人生意义", "意义", "为什么活", "没意思", "虚无", "活着为了什么", "图什么", "为了什么"]
+    },
+    "ambition": {
+      "label_zh": "志向与抱负",
+      "specificity": 1.0,
+      "actors": ["self", "other"],
+      "conflict": ["growth", "recognition", "autonomy"],
+      "emotion": ["hope", "anxiety", "pride"],
+      "choices": ["persist", "act", "change", "negotiate", "give_up"],
+      "concepts": ["志", "学", "义", "勇", "修身"],
+      "triggers": ["野心", "志向", "抱负", "想成功", "出人头地", "不甘心", "追求目标", "立志", "想成为"]
+    }
+  }
+}
