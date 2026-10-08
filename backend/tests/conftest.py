@@ -46,18 +46,44 @@ os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///./test_wudian_{_PID}
 #   - 2026-10-08 曾发生两个并发未隔离 pytest 同时重建真实索引，
 #     导致 HNSW 段文件被写入不可读状态（data_level0.bin 167600 → 958672）。
 #
-# 因此这里强制把 CHROMA_PERSIST_DIR 默认指向**相对**隔离目录：
+# 因此这里强制把 CHROMA_PERSIST_DIR 指向**相对**隔离目录：
 #   - 必须是相对路径：绝对路径会让 test_hackathon_readiness.py:15-24 的
 #     `startswith(backend_root)` 断言失败（config.py 会把它解析到 backend 之下）。
-#   - 用 setdefault：调用方仍可显式指定别的隔离目录。
 #   - **必须 per-process（PID 后缀）**：早期版本用固定的
 #     "./_regression_iso_chroma"，结果两个并发 pytest 会共享同一隔离目录，
 #     互相 build_index(force=True) 清空对方，产生**并发索引竞态**
 #     （2026-10-08 实测：多成员同时跑测试时出现莫名失败，且互相误判为代码缺陷）。
 #     加 PID 后缀后，每个进程写入自己的目录，并发也互不干扰。
-# 这样任何人不带隔离变量直接跑 `pytest tests` 也是安全且并发安全的。
+#
+# SAFETY-001：**不再使用 setdefault**。
+# 原实现用 setdefault，意味着只要环境里已经有 CHROMA_PERSIST_DIR
+# （开发者 shell、CI 变量、.env 等），测试就会**沿用**它——如果它指向
+# 生产目录 backend/chroma_db，测试将直接操作生产索引，且没有任何提示。
+# 这是真实的安全漏洞，2026-10-08 的索引损坏事故即由此类未隔离运行导致。
+# 现在改为：
+#   1) 一律强制指向 per-process 隔离目录；
+#   2) 若发现继承来的值解析后**等于生产目录**，额外打印醒目警告。
+# 安全的隔离目录不会被拒绝；只有「指向生产」才会被强制纠正。
 # ---------------------------------------------------------------------------
-os.environ.setdefault("CHROMA_PERSIST_DIR", f"./_test_iso_chroma_{_PID}")
+_ISOLATED_CHROMA = f"./_test_iso_chroma_{_PID}"
+_PROD_CHROMA_DIR = (backend_dir / "chroma_db").resolve()
+
+
+def _resolved_from_env(value: str) -> Path:
+    """按 config._resolve_backend_path 的同一规则解析（相对路径基于 backend）。"""
+    p = Path(value)
+    return (p if p.is_absolute() else (backend_dir / p)).resolve()
+
+
+_inherited = os.environ.get("CHROMA_PERSIST_DIR")
+if _inherited and _resolved_from_env(_inherited) == _PROD_CHROMA_DIR:
+    print(
+        "\n[SAFETY-001] 检测到 CHROMA_PERSIST_DIR 指向**生产索引**"
+        f"（{_PROD_CHROMA_DIR}）。已强制改用隔离目录 {_ISOLATED_CHROMA}，"
+        "以免测试清空/重建生产索引。\n",
+        file=sys.stderr,
+    )
+os.environ["CHROMA_PERSIST_DIR"] = _ISOLATED_CHROMA
 
 # 可选：设置测试用的 AI 配置（如果测试需要）
 os.environ.setdefault("OPENAI_API_KEY", "test-key-placeholder")

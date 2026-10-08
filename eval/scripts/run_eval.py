@@ -25,7 +25,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -33,9 +36,46 @@ _THIS = Path(__file__).resolve()
 _EVAL_DIR = _THIS.parent.parent
 _REPO_ROOT = _EVAL_DIR.parent
 _BACKEND = _REPO_ROOT / "backend"
-for _p in (str(_BACKEND), str(_EVAL_DIR / "scripts")):
+for _p in (str(_BACKEND), str(_EVAL_DIR / "scripts"), str(_BACKEND / "tests")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+# ---------------------------------------------------------------------------
+# SAFETY-001：默认把向量索引指向**临时隔离目录**
+# ---------------------------------------------------------------------------
+# eval 会导入 app.services（进而实例化 RAGService），若不加隔离就会打开生产
+# 索引 backend/chroma_db。chromadb 在**打开时即写入目录元数据**，因此即使是
+# 只读评测也会改动生产文件；更危险的是任何 force rebuild 会清空生产数据。
+#
+# 默认：把 CHROMA_PERSIST_DIR 指向一个临时目录，评测完全不碰生产索引。
+# 例外：显式传 --use-production-chroma 时才读生产，并且必须通过
+#       「读前/读后内容指纹一致」校验，任何变化立刻 FAIL 退出。
+_PROD_CHROMA = (_BACKEND / "chroma_db").resolve()
+
+
+def _isolate_chroma() -> str:
+    """把 CHROMA_PERSIST_DIR 指向**生产索引的临时副本**，返回该目录。
+
+    为什么要副本而不是空目录：检索类指标（Recall@K / MRR / school_leakage /
+    refusal）都需要真实语料。若隔离目录是空的，这些指标会因"没有索引"而
+    恒为 0 —— 那是**测量失效**，不是真实成绩。
+
+    为什么副本是安全的：``shutil.copytree`` 只**读取**生产文件、写入临时目录，
+    不修改生产任何字节；随后所有打开/写入都发生在副本上。
+    """
+    iso = Path(tempfile.mkdtemp(prefix="wudian_eval_iso_chroma_"))
+    if _PROD_CHROMA.exists():
+        shutil.copytree(_PROD_CHROMA, iso, dirs_exist_ok=True)
+    os.environ["CHROMA_PERSIST_DIR"] = str(iso)
+    return str(iso)
+
+
+def _use_production_chroma() -> None:
+    """显式允许读生产索引（调用方负责事后校验指纹）。"""
+    os.environ["CHROMA_PERSIST_DIR"] = str(_PROD_CHROMA)
+
+
+_ISOLATED_CHROMA_DIR = _isolate_chroma()
 
 from metrics import (  # noqa: E402
     TARGETS,
@@ -307,13 +347,68 @@ def run_all() -> Dict[str, Any]:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="对真实系统运行 Eval 并输出实测指标")
     ap.add_argument("--out", default=str(_EVAL_DIR / "eval-run.json"))
+    ap.add_argument(
+        "--use-production-chroma", action="store_true",
+        help=("读取**生产**索引（默认不读）。启用后会校验读前/读后内容指纹，"
+              "任何变化立即 FAIL 退出，不静默接受。"),
+    )
     args = ap.parse_args(argv)
 
-    results = run_all()
+    before = after = None
+    if args.use_production_chroma:
+        from _chroma_fingerprint import (
+            assert_content_unchanged,
+            content_fingerprint,
+            file_fingerprint,
+        )
+
+        _use_production_chroma()
+        before = dict(
+            file_fingerprint(_PROD_CHROMA),
+            **content_fingerprint(_PROD_CHROMA),
+        )
+        print(f"[SAFETY-001] 已显式启用生产索引读取：{_PROD_CHROMA}")
+        print(f"[SAFETY-001] 读前指纹：doc_count={before['doc_count']} "
+              f"id_md5={before['id_md5']}")
+
+    try:
+        results = run_all()
+    finally:
+        if args.use_production_chroma:
+            from _chroma_fingerprint import (
+                assert_content_unchanged, content_fingerprint as _cf,
+                file_fingerprint as _ff,
+            )
+
+            after = dict(_ff(_PROD_CHROMA), **_cf(_PROD_CHROMA))
+            problems = assert_content_unchanged(before, after, label="production chroma")
+            if problems:
+                print("[SAFETY-001] FAIL — 生产索引在本次读取期间发生变化：",
+                      file=sys.stderr)
+                for p in problems:
+                    print(f"    - {p}", file=sys.stderr)
+                return 2
+            print(f"[SAFETY-001] 读后指纹一致：doc_count={after['doc_count']} "
+                  f"id_md5={after['id_md5']}（内容未变）")
+            print("[SAFETY-001] 注意：chroma.sqlite3 的字节可能因 chromadb 打开时"
+                  "写入目录元数据而变化，这是**预期行为**，不属数据损坏；"
+                  "内容判据是 doc_count / id_md5 / HNSW 段。")
+
+    # 清理默认创建的隔离副本（若本次未使用生产索引）
+    if not args.use_production_chroma:
+        shutil.rmtree(_ISOLATED_CHROMA_DIR, ignore_errors=True)
+
     payload = {
         "note": ("实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**"
                  "（独立复核 D1 后收紧，早期版本仅 2 项委派）。"
                  "目标数字来自 metrics.TARGETS，未做任何修改。"),
+        "chroma": {
+            "used_production": bool(args.use_production_chroma),
+            "isolated_dir": None if args.use_production_chroma else _ISOLATED_CHROMA_DIR,
+            "integrity_checked": bool(args.use_production_chroma),
+            "before": before,
+            "after": after,
+        },
         "targets_frozen": TARGETS,
         "results": results,
     }

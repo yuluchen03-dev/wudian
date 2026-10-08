@@ -1,5 +1,12 @@
 {
   "note": "实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**（独立复核 D1 后收紧，早期版本仅 2 项委派）。目标数字来自 metrics.TARGETS，未做任何修改。",
+  "chroma": {
+    "used_production": false,
+    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_a2zi8p79",
+    "integrity_checked": false,
+    "before": null,
+    "after": null
+  },
   "targets_frozen": {
     "quote_exactness": 0.99,
     "source_attribution": 0.98,
