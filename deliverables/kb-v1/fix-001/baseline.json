@@ -1,0 +1,747 @@
+{
+  "note": "冻结实现 metrics.compute_quote_exactness 的原始输出，未经改动。",
+  "dataset": "quote_verification.jsonl",
+  "dataset_size": 21,
+  "numerator": 6,
+  "denominator": 18,
+  "score": 0.3333333333333333,
+  "target": 0.99,
+  "passed": false,
+  "cases": [
+    {
+      "id": "qv-0001",
+      "quote": "己所不欲，勿施于人。",
+      "claimed_source": "《论语·卫灵公》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.2759
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0002",
+      "quote": "己所不欲，勿施于人。",
+      "claimed_source": "《论语·颜渊》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·颜渊》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.1739
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0003",
+      "quote": "己所不欲，勿施于人。",
+      "claimed_source": "《孟子·公孙丑上》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": false,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "citation_corrected"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": false,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "citation_corrected",
+        "match_type": "normalized",
+        "similarity": 0.2759
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0004",
+      "quote": "己所不欲，勿施于人。",
+      "claimed_source": "《论语·学而》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": false,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "citation_corrected"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": false,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "citation_corrected",
+        "match_type": "normalized",
+        "similarity": 0.2759
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0005",
+      "quote": "上善若水，水善利万物而不争。",
+      "claimed_source": "《道德经·第八章》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《道德经·第八章》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "verified",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "daodejing-08-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0006",
+      "quote": "上善若水，水善利万物而不争。",
+      "claimed_source": "《庄子·逍遥游》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": false,
+        "correct_source": "《道德经·第八章》",
+        "trust_state": "citation_corrected"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": false,
+        "correct_source": "《道德经·第八章》",
+        "trust_state": "citation_corrected",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "daodejing-08-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0007",
+      "quote": "学而时习之，不亦说乎？",
+      "claimed_source": "《论语·学而》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·学而》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.2812
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:1.1",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0008",
+      "quote": "温故而知新，可以为师矣。",
+      "claimed_source": "《论语·为政》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·为政》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.8333
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:2.11",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0009",
+      "quote": "学而不思则罔，思而不学则殆。",
+      "claimed_source": "《论语·为政》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·为政》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.8571
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:2.15",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0010",
+      "quote": "三人行，必有我师焉。",
+      "claimed_source": "《论语·述而》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·述而》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.3333
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:7.22",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0011",
+      "quote": "士不可以不弘毅，任重而道远。",
+      "claimed_source": "《论语·泰伯》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·泰伯》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "verified",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu-taibo-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0012",
+      "quote": "君子喻于义，小人喻于利。",
+      "claimed_source": "《论语·里仁》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《论语·里仁》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.8333
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:4.16",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0013",
+      "quote": "法不阿贵，绳不挠曲。",
+      "claimed_source": "《韩非子·有度》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《韩非子·有度》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "verified",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "hanfeizi-youdu-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0014",
+      "quote": "赖其力者生，不赖其力者不生。",
+      "claimed_source": "《墨子·非乐上》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《墨子·非乐上》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "verified",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "mozi-feile-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0015",
+      "quote": "知人者智，自知者明。",
+      "claimed_source": "《道德经·第三十三章》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": true,
+        "source_correct": true,
+        "correct_source": "《道德经·第三十三章》",
+        "trust_state": "verified"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": true,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "verified",
+        "match_type": "exact",
+        "similarity": 1.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "daodejing-33-01",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": true
+    },
+    {
+      "id": "qv-0016",
+      "quote": "己所不欲勿施于人",
+      "claimed_source": "《论语·卫灵公》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": false,
+        "source_correct": true,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "quote_relaxed"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.2759
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0017",
+      "quote": "己所不欲，勿施於人。",
+      "claimed_source": "《论语·卫灵公》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": false,
+        "source_correct": true,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "quote_relaxed"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": true,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "normalized",
+        "similarity": 0.2759
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": true,
+        "displayable": true,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0018",
+      "quote": "勿施于人",
+      "claimed_source": "《论语·卫灵公》",
+      "expected": {
+        "quote_exists": true,
+        "exact_match": false,
+        "source_correct": true,
+        "correct_source": "《论语·卫灵公》",
+        "trust_state": "quote_relaxed"
+      },
+      "predicted": {
+        "quote_exists": true,
+        "exact_match": false,
+        "normalized_match": false,
+        "source_correct": true,
+        "correct_source": null,
+        "trust_state": "quote_relaxed",
+        "match_type": "partial",
+        "similarity": 0.1379
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": true,
+        "exact_match": true,
+        "matched_passage": "lunyu:15.24",
+        "matched_text_type": "original",
+        "crosses_sentence_boundary": false,
+        "gate": false,
+        "displayable": false,
+        "root_cause": null
+      },
+      "counted_in_denominator": true,
+      "pass": false
+    },
+    {
+      "id": "qv-0019",
+      "quote": "以德报怨。",
+      "claimed_source": "《孟子·公孙丑上》",
+      "expected": {
+        "quote_exists": false,
+        "exact_match": false,
+        "source_correct": false,
+        "correct_source": "",
+        "trust_state": "insufficient_evidence"
+      },
+      "predicted": {
+        "quote_exists": false,
+        "exact_match": false,
+        "normalized_match": false,
+        "source_correct": false,
+        "correct_source": null,
+        "trust_state": "insufficient_evidence",
+        "match_type": "none",
+        "similarity": 0.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": false,
+        "exact_match": false,
+        "matched_passage": null,
+        "matched_text_type": null,
+        "crosses_sentence_boundary": null,
+        "gate": false,
+        "displayable": false,
+        "root_cause": "corpus absence"
+      },
+      "counted_in_denominator": false,
+      "pass": null
+    },
+    {
+      "id": "qv-0020",
+      "quote": "天行健，君子以自强不息。",
+      "claimed_source": "《周易》",
+      "expected": {
+        "quote_exists": false,
+        "exact_match": false,
+        "source_correct": false,
+        "correct_source": "",
+        "trust_state": "insufficient_evidence"
+      },
+      "predicted": {
+        "quote_exists": false,
+        "exact_match": false,
+        "normalized_match": false,
+        "source_correct": false,
+        "correct_source": null,
+        "trust_state": "insufficient_evidence",
+        "match_type": "none",
+        "similarity": 0.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": false,
+        "exact_match": false,
+        "matched_passage": null,
+        "matched_text_type": null,
+        "crosses_sentence_boundary": null,
+        "gate": true,
+        "displayable": false,
+        "root_cause": "corpus absence"
+      },
+      "counted_in_denominator": false,
+      "pass": null
+    },
+    {
+      "id": "qv-0021",
+      "quote": "知行合一。",
+      "claimed_source": "《传习录》",
+      "expected": {
+        "quote_exists": false,
+        "exact_match": false,
+        "source_correct": false,
+        "correct_source": "",
+        "trust_state": "insufficient_evidence"
+      },
+      "predicted": {
+        "quote_exists": false,
+        "exact_match": false,
+        "normalized_match": false,
+        "source_correct": false,
+        "correct_source": null,
+        "trust_state": "insufficient_evidence",
+        "match_type": "none",
+        "similarity": 0.0
+      },
+      "contract_view": {
+        "admissible": true,
+        "quote_exists": false,
+        "exact_match": false,
+        "matched_passage": null,
+        "matched_text_type": null,
+        "crosses_sentence_boundary": null,
+        "gate": false,
+        "displayable": false,
+        "root_cause": "corpus absence"
+      },
+      "counted_in_denominator": false,
+      "pass": null
+    }
+  ]
+}
