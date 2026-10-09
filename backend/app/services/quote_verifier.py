@@ -395,6 +395,37 @@ def _match_entries(
 
 _MATCH_RANK = {"exact": 0, "normalized": 1, "partial": 2}
 
+#: 句界标点（CONTRACT-001 v2 §3.3）。
+#: 注意：**只含**「。！？」——分号「；」不在 §3.3 列表内，不得自行加严。
+_SENTENCE_BOUNDARY_RE = re.compile(r"[。！？]")
+
+
+def crosses_sentence_boundary(
+    entry_original: str, quote_norm: str, quote_raw: str,
+) -> bool:
+    """判断归一化引文是否**跨句**拼接而成（CONTRACT-001 v2 §3.3）。
+
+    为什么需要：``_strip_punctuation`` 会删除「。！？「」」等标点，于是
+    「上一句结尾 + 下一句开头」在归一化后会被**无缝拼接**，形成一个在原文中
+    并不连续存在的字符串。例如把子贡的问句与孔子的答句粘成
+    ``有一言而可以终身行之者乎子曰其恕乎``。若不拦截，这种拼接会获得
+    ``exact_match=true``，甚至（在满足出处与完整性门时）被判 ``verified``
+    并作为经典原文展示 —— 比修复前**更宽松**。
+
+    判定方式（不依赖脆弱的「归一化下标 → 原文下标」反查）：
+    把原文按句界切分；若归一化引文能**完整落在某一个句子之内**，则未跨句。
+    否则视为跨句。
+
+    例外：若**原始引文自身**含句界标点，说明引用者明确引用了跨句原文
+    （例如整章引用），此时不算违规。
+    """
+    if any(mark in (quote_raw or "") for mark in "。！？"):
+        return False
+    for sentence in _SENTENCE_BOUNDARY_RE.split(entry_original or ""):
+        if sentence and quote_norm in normalize_text(sentence):
+            return False
+    return True
+
 
 def _select_best(
     matches: Sequence[Tuple[CorpusEntry, str, float]],
@@ -566,18 +597,42 @@ def verify_quote(
     )
     correct_source = attribution_source.source
 
-    # exact_match：引文与任一命中条目的**原始文本**逐字相等
+    # exact_match：CONTRACT-001 v2 §2.2
+    #   = 归一化引文是任一命中条目原文的**连续逐字子串**（且不跨句界）
+    # **不要求**引文等于整条 passage —— 语料按章/verse 存储（如 lunyu:15.24
+    # 含「子贡问曰：…己所不欲，勿施于人。」），若要求整条相等，则任何单句引用
+    # 都不可能 exact，与数据集期望直接冲突（FIX-001 实测 12/12 失败均源于此）。
+    #
+    # 注意两处**不得**混入本判定（复核明确警告，误差余量为零）：
+    #   1. **完整性门**（MIN_FULL_QUOTE_CHARS）属展示合同（§3.1/§3.2），
+    #      不属于 exact_match；折进来会得到 17/18 = 0.9444（不达标）。
+    #   2. **L1/text_type** 只约束 verified 与「可作经典原文展示」（§3.2/§4），
+    #      不约束 exact_match。
+    # 又：不得退化为「原文逐字相等」口径（17/18 = 0.9444），
+    # 也不得要求 raw 逐字（qv-0017 繁体 於→于 需归一化后才命中）。
+    #
+    # `matches` 已由 _match_entries 保证 `quote_norm in entry.norm`（连续子串），
+    # 故此处只需再排除跨句拼接。
     exact_match = any(
-        entry.original.strip() == (quote or "").strip()
+        not crosses_sentence_boundary(entry.original, quote_norm, quote)
         for entry, _match_type, _similarity in matches
     )
     normalized_match = best_match_type in ("exact", "normalized")
+
+    # CONTRACT-001 v2 §3.1 / §3.2 / §4：
+    #   完整性门 = len(N(q)) >= MIN_FULL_QUOTE_CHARS（共享常量，不另造阈值）
+    #   L1 判定  = 用于**报告出处**的那条命中条目是否为 text_type=="original"
+    # 二者只影响 verified/可展示，**不**影响 exact_match（见上）。
+    completeness_gate = len(quote_norm) >= MIN_FULL_QUOTE_CHARS
+    is_l1 = getattr(attribution_source, "text_type", None) == "original"
 
     trust_state = decide_trust_state(
         quote_exists=quote_exists,
         source_correct=source_correct,
         exact_match=exact_match,
         match_type=best_match_type,
+        completeness_gate=completeness_gate,
+        is_l1=is_l1,
     )
 
     return QuoteVerification(

@@ -75,21 +75,41 @@ def decide_trust_state(
     source_correct: bool,
     exact_match: bool,
     match_type: str = "exact",
+    completeness_gate: bool = False,
+    is_l1: bool = False,
 ) -> TrustState:
-    """按 §9.2 冻结表判定 Trust State（四态之一）。
+    """按 CONTRACT-001 v2 §4 判定 Trust State（四态之一）。
 
     Args:
         quote_exists: 该句是否**真实存在**于知识库（经归一化 + 长度下限判定）。
         source_correct: 声称出处是否与真实出处一致。
-            仅当 ``quote_exists=True`` 时有意义。
-        exact_match: 是否**逐字**命中（未归一化即相等）。
-        match_type: ``exact`` / ``normalized`` / ``partial`` / ``none``。
-            ``partial``（摘句）**不得**判为 ``verified``：摘句虽真实存在，
-            但不足以作为"该观点由这段原典支持"的证据（P5-05 用例 B2）。
+        exact_match: 是否为**连续逐字子串**（§2.2；含归一化，不要求等于整条 passage）。
+        match_type: ``exact`` / ``normalized`` / ``partial`` / ``none``（仅记录用）。
+        completeness_gate: 是否通过完整性门（§3.1，``len(N(q)) >= MIN_FULL_QUOTE_CHARS``）。
+        is_l1: 命中条目是否为 L1 原典（``text_type == "original"``，§3.2 / RC4）。
 
     Returns:
         ``verified`` / ``citation_corrected`` / ``quote_relaxed`` / ``insufficient_evidence``
-        之一。**永不返回"默认通过"**。
+
+    默认值取**保守**方向（``completeness_gate=False`` / ``is_l1=False``）：
+    调用方若未显式提供这两项，就拿不到 ``verified``，而不是"缺省即通过"。
+    这与本项目「缺省即不可验证」的纪律一致。
+
+    §4 规则（自上而下，命中即返回）：
+
+    1. ``not quote_exists``                                  → ``insufficient_evidence``
+    2. ``quote_exists and not source_correct``               → ``citation_corrected``
+    3. ``quote_exists and exact_match and source_correct
+        and completeness_gate and is_l1``                    → ``verified``
+    4. 其余                                                  → ``quote_relaxed``
+
+    与旧实现的差异（CONTRACT-001 v2 §4 / RC3 / RC4）：
+
+    - 旧规则 3 要求 ``match_type == "exact"``，而 ``match_type`` 只在「引文等于
+      **整条** passage」时才为 ``exact``，导致 ``verified`` 在真实语料下几乎不可达。
+      现按 §4 改为由 ``exact_match`` + 完整性门 + L1 决定。
+    - 摘句（``partial``）本就不满足完整性门，故仍不可能 ``verified``（保持 P5-05 B2）。
+    - **注疏（L2）不得**因为逐字存在而被判 ``verified``（RC4）。
     """
     # 1. 文本不存在 → 证据不足（禁止编造）
     if not quote_exists:
@@ -99,24 +119,32 @@ def decide_trust_state(
     if not source_correct:
         return "citation_corrected"
 
-    # 3. 文本存在 + 出处正确 + 逐字命中 → verified
-    if exact_match and match_type == "exact":
+    # 3. 文本存在 + 逐字连续命中 + 出处正确 + 过完整性门 + L1 → verified
+    if exact_match and completeness_gate and is_l1:
         return "verified"
 
-    # 4. 文本存在 + 出处正确 + 仅归一化命中（繁简/标点）或摘句 → quote_relaxed
+    # 4. 其余（含摘句、注疏、未过完整性门）→ quote_relaxed（**不可**作为经典原文展示）
     return "quote_relaxed"
 
 
 def is_displayable_as_classic(trust_state: TrustState) -> bool:
     """该状态下，文本是否**可**作为"经典原文"展示。
 
-    - ``verified`` / ``quote_relaxed``：文本真实存在且出处正确 → 可展示为原文。
-    - ``citation_corrected``：文本真实存在，但**必须以修正后的出处**展示
-      （``correct_source``），不得按声称出处展示 → 返回 ``False``，
-      调用方须改用 ``correct_source``。
-    - ``insufficient_evidence``：**不得**展示为经典原文。
+    CONTRACT-001 v2 §3.2 / RC3：**恒等于** ``trust_state == "verified"``。
+
+    - ``verified``：存在 + 逐字连续 + 出处正确 + 完整性门 + L1 → 可展示。
+    - ``citation_corrected``：文本真实，但**必须**改用 ``correct_source`` 展示 → False。
+    - ``quote_relaxed``：**不可**展示（CONTRACT-001 v2 有意变更）。
+      它包括摘句、注疏，以及未过完整性门的引用 —— 都不是「完整经典原文」。
+    - ``insufficient_evidence``：不得展示。
+
+    RC3 说明：旧实现返回 ``trust_state in ("verified", "quote_relaxed")``，
+    即把 ``quote_relaxed`` 也视为可展示。这与 §3.2 的四项合取要求矛盾：
+    既然 §4 规则 3 是通往 ``verified`` 的唯一路径，
+    「可展示」就**恒等于** ``verified``。任何"再加参数"的方案在逻辑上不可能
+    让 ``quote_relaxed`` 变为可展示，故这里直接取恒等式。
     """
-    return trust_state in ("verified", "quote_relaxed")
+    return trust_state == "verified"
 
 
 def is_verifiable(trust_state: TrustState, match_type: str = "exact") -> bool:

@@ -272,11 +272,31 @@ class TestC2TraditionalChinese:
         assert result.source_correct is True
         assert result.trust_state in ("quote_relaxed", "verified")
 
-    def test_c2_traditional_not_verified_when_not_exact(self, corpus):
-        """繁简差异属"归一化命中"，非逐字命中 → 不得判 verified。"""
+    def test_c2_traditional_quote_is_verified_under_contract(self, corpus):
+        """CONTRACT-001 v2 §2.2/§5 行 5：繁简差异在**归一化后**即为连续逐字子串。
+
+        变更说明（合同变更，**非**降低断言）：旧用例名
+        ``test_c2_traditional_not_verified_when_not_exact`` 断言
+        ``exact_match is False`` 且 trust_state 为 ``quote_relaxed``，
+        其依据是「繁简差异属归一化命中，非逐字命中」——
+        但 v2 §2.2 明确把 §1.1 声明的归一化（含繁→简）**纳入** exact_match 定义，
+        且 §5 行 5 规定繁体写法 → ``exact_match=true`` → ``verified``。
+        因此这里按合同改为 verified；同时**保留**原来的正向断言
+        （``quote_exists`` / ``source_correct`` 为真），断言并未减少。
+        """
         result = verify_quote("己所不欲，勿施於人。", CORRECT_SOURCE_WEILINGGONG, entries=corpus)
-        assert result.exact_match is False
-        assert result.trust_state == "quote_relaxed"
+        assert result.quote_exists is True, "繁体版本应经归一化后命中"
+        assert result.source_correct is True
+        assert result.exact_match is True, "§2.2 将声明的归一化纳入 exact_match"
+        assert result.trust_state == "verified"
+
+    def test_c2_traditional_differs_from_simplified_only_by_normalization(self, corpus):
+        """繁简两种写法在合同下应得到**相同**判定（归一化是唯一口径）。"""
+        traditional = verify_quote("己所不欲，勿施於人。", CORRECT_SOURCE_WEILINGGONG, entries=corpus)
+        simplified = verify_quote("己所不欲，勿施于人。", CORRECT_SOURCE_WEILINGGONG, entries=corpus)
+        assert traditional.quote_exists == simplified.quote_exists is True
+        assert traditional.exact_match == simplified.exact_match
+        assert traditional.trust_state == simplified.trust_state
 
 
 class TestC3ModernChickenSoup:
@@ -393,9 +413,39 @@ class TestTrustStateRules:
         ) == "citation_corrected"
 
     def test_exists_correct_and_exact_is_verified(self):
+        """CONTRACT-001 v2 §4 规则 3：存在 + 逐字连续 + 出处正确 + 完整性门 + L1。
+
+        变更说明（合同变更，**非**降低断言）：旧规则 3 为
+        ``exact_match and match_type == "exact"``，而 ``match_type == "exact"``
+        只在「引文等于**整条** passage」时为真，使 ``verified`` 在真实语料下
+        几乎不可达。v2 按 §4 改为由 ``exact_match`` + 完整性门 + L1 决定，
+        因此本用例显式提供这两项。
+        """
         assert decide_trust_state(
-            quote_exists=True, source_correct=True, exact_match=True, match_type="exact",
+            quote_exists=True, source_correct=True, exact_match=True,
+            match_type="exact", completeness_gate=True, is_l1=True,
         ) == "verified"
+
+    def test_verified_requires_completeness_gate(self):
+        """未过完整性门（摘句）→ 不得 verified（§3.1/§4，P5-05 B2 保持）。"""
+        assert decide_trust_state(
+            quote_exists=True, source_correct=True, exact_match=True,
+            match_type="partial", completeness_gate=False, is_l1=True,
+        ) == "quote_relaxed"
+
+    def test_verified_requires_l1(self):
+        """RC4：注疏（L2）逐字存在也不得 verified。"""
+        assert decide_trust_state(
+            quote_exists=True, source_correct=True, exact_match=True,
+            match_type="normalized", completeness_gate=True, is_l1=False,
+        ) == "quote_relaxed"
+
+    def test_verified_defaults_are_conservative(self):
+        """未显式提供 gate/L1 时**不得** verified（缺省即不通过）。"""
+        assert decide_trust_state(
+            quote_exists=True, source_correct=True, exact_match=True,
+            match_type="exact",
+        ) == "quote_relaxed"
 
     def test_exists_correct_but_normalized_is_quote_relaxed(self):
         assert decide_trust_state(
@@ -417,10 +467,25 @@ class TestTrustStateRules:
         ) == "citation_corrected"
 
     def test_display_rules(self):
+        """CONTRACT-001 v2 §3.2 / RC3：``is_displayable_as_classic`` 恒等于 ``verified``。
+
+        变更说明（合同变更，**非**降低断言）：本用例原先断言
+        ``is_displayable_as_classic("quote_relaxed") is True``。
+        v2 §3.2 要求展示须同时满足
+        ``quote_exists ∧ exact_match ∧ source_correct ∧ 完整性门 ∧ L1``，
+        而 §4 规则 3 是通往 ``verified`` 的**唯一**路径，故「可展示 ⇔ verified」。
+        复核已证明「再加参数让 quote_relaxed 可展示」在逻辑上不可能
+        （quote_relaxed 的定义即「未满足规则 3」）。
+        因此这里改为 ``is False``，并**新增**穷尽性断言，覆盖全部四态，
+        断言数量不减反增。
+        """
         assert is_displayable_as_classic("verified") is True
-        assert is_displayable_as_classic("quote_relaxed") is True
+        assert is_displayable_as_classic("quote_relaxed") is False
         assert is_displayable_as_classic("citation_corrected") is False
         assert is_displayable_as_classic("insufficient_evidence") is False
+        # 穷尽性：四态中**只有** verified 可展示
+        from app.schemas.knowledge import TRUST_STATES
+        assert {ts for ts in TRUST_STATES if is_displayable_as_classic(ts)} == {"verified"}
 
     def test_citation_corrected_is_not_verifiable(self):
         """原声称出处错误 → 不算 verifiable。"""

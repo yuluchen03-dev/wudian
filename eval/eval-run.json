@@ -2,7 +2,7 @@
   "note": "实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**（独立复核 D1 后收紧，早期版本仅 2 项委派）。目标数字来自 metrics.TARGETS，未做任何修改。",
   "chroma": {
     "used_production": false,
-    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_a2zi8p79",
+    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_09auj3wq",
     "integrity_checked": false,
     "before": null,
     "after": null
@@ -21,61 +21,12 @@
   "results": {
     "quote_exactness": {
       "metric": "quote_exactness",
-      "numerator": 6,
+      "numerator": 18,
       "denominator": 18,
-      "value": 0.3333333333333333,
+      "value": 1.0,
       "target": 0.99,
-      "passed": false,
-      "failures": [
-        {
-          "id": "qv-0001",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0002",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0003",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0004",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0007",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0008",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0009",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0010",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0012",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0016",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0017",
-          "reason": "not an exact match"
-        },
-        {
-          "id": "qv-0018",
-          "reason": "not an exact match"
-        }
-      ]
+      "passed": true,
+      "failures": []
     },
     "source_attribution": {
       "metric": "source_attribution",
@@ -94,17 +45,12 @@
       "failures": [],
       "diagnostic_fragment_displayed_as_classic": {
         "note": "本模块补充的诊断，非 PROJECT-BRIEF ch.17 冻结指标。统计「语料中存在但仅为摘句」却被视为可作为完整经典原文展示的条数。",
-        "value": 2,
+        "value": 1,
         "samples": 20,
         "failures": [
           {
-            "id": "aq-0010",
-            "trust_state": "quote_relaxed",
-            "match_type": "partial"
-          },
-          {
             "id": "aq-0011",
-            "trust_state": "quote_relaxed",
+            "trust_state": "verified",
             "match_type": "normalized"
           }
         ]

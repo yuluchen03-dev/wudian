@@ -336,11 +336,35 @@ def guard_citations(
             else ("exact" if (quote_exists and source_correct) else "none")
         )
 
+        # CONTRACT-001 v2 §3.1/§3.2/§4：
+        #   完整性门 = 非片段（len(N(q)) >= MIN_FULL_QUOTE_CHARS）
+        #   L1 判定  = 支持该引文的 ref 是否为原典（text_type == "original"）
+        #
+        # ⚠️ 已知限制（如实记录，不掩盖）：`RAGReference` 目前**没有
+        # `text_type` 字段**，rag_service 也未传播它，因此本函数**无法**从 refs
+        # 判断 L1。这里的处理是：ref 显式带 text_type 时按它判定；缺失时**保守
+        # 视为 L1**（否则 citation_guard 将永远拿不到 verified，等于改变既有行为）。
+        # 后果：**RC4（注疏不得判 verified）在 citation_guard 这条路径上尚未强制**，
+        # 仅由契约的权威实现 `quote_verifier.verify_quote` 强制。
+        # 该缺口已登记为待办（需向 RAGReference 传播 text_type）。
+        _supporting = None
+        for _ref in refs:
+            _ref_orig = str(_ref.get("original", ""))
+            _qn = normalize_text(original)
+            if _qn and _qn in normalize_text(_ref_orig):
+                _supporting = _ref
+                break
+        is_l1 = True
+        if _supporting is not None and _supporting.get("text_type") is not None:
+            is_l1 = _supporting.get("text_type") == "original"
+
         trust_state = decide_trust_state(
             quote_exists=quote_exists,
             source_correct=source_correct,
             exact_match=quote_exists and source_correct and not is_fragment,
             match_type=real_match_type,
+            completeness_gate=not is_fragment,
+            is_l1=is_l1,
         )
         verifiable = quote_exists and source_correct and is_verifiable(
             trust_state, real_match_type,
