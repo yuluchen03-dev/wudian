@@ -1,0 +1,35 @@
+{
+  "note": "失败分类。聚合分数取自冻结实现；分类为分析结论，不改动任何数据。",
+  "denominator": 18,
+  "numerator": 18,
+  "score": 1.0,
+  "failure_count": 0,
+  "root_cause_tally": {},
+  "failures": [],
+  "excluded_from_denominator": [
+    {
+      "id": "qv-0019",
+      "quote": "以德报怨。",
+      "predicted_quote_exists": false,
+      "expected_quote_exists": false,
+      "contract_quote_exists": false,
+      "contract_root_cause": "corpus absence"
+    },
+    {
+      "id": "qv-0020",
+      "quote": "天行健，君子以自强不息。",
+      "predicted_quote_exists": false,
+      "expected_quote_exists": false,
+      "contract_quote_exists": false,
+      "contract_root_cause": "corpus absence"
+    },
+    {
+      "id": "qv-0021",
+      "quote": "知行合一。",
+      "predicted_quote_exists": false,
+      "expected_quote_exists": false,
+      "contract_quote_exists": false,
+      "contract_root_cause": "corpus absence"
+    }
+  ]
+}

@@ -29,59 +29,67 @@ for _p in (str(_BACKEND), str(_EVAL_DIR / "scripts")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-# SAFETY-001：绝不打开生产索引；本脚本若需索引只用生产副本
-import os
-import shutil
+# SAFETY-001：绝不打开生产索引。
+# C5 修复：早前实现**无条件**把 4.3 MB 生产索引 copytree 到临时目录，
+# 并且会覆盖调用方显式设置的 CHROMA_PERSIST_DIR，还在"被 import 而非 __main__"
+# 时泄漏临时目录。本脚本实际**不使用 chroma**（只用 metrics 与 load_corpus 的
+# JSON），因此：
+#   1) 调用方已显式设置 CHROMA_PERSIST_DIR 时**不再覆盖**；
+#   2) 不做无谓的生产索引复制；
+#   3) 用 atexit 保证临时目录一定会被清理。
+import atexit  # noqa: E402
+import os  # noqa: E402
+import shutil  # noqa: E402
 import tempfile  # noqa: E402
 
 _PROD = (_BACKEND / "chroma_db").resolve()
-_ISO = Path(tempfile.mkdtemp(prefix="wudian_fix001_iso_"))
-if _PROD.exists():
-    shutil.copytree(_PROD, _ISO, dirs_exist_ok=True)
-os.environ["CHROMA_PERSIST_DIR"] = str(_ISO)
+if not os.environ.get("CHROMA_PERSIST_DIR"):
+    _ISO = Path(tempfile.mkdtemp(prefix="wudian_fix001_iso_"))
+    atexit.register(shutil.rmtree, _ISO, True)
+    os.environ["CHROMA_PERSIST_DIR"] = str(_ISO)
 
 from metrics import TARGETS, compute_quote_exactness  # noqa: E402
 from schema import load_jsonl  # noqa: E402
 
 _DATASET = _EVAL_DIR / "quote_verification.jsonl"
-_OUT_DIR = _REPO_ROOT / "deliverables" / "kb-v1" / "fix-001"
+# 产物目录。
+# ⚠️ **冻结的修复前基线**位于 `deliverables/kb-v1/fix-001/`（固定于 commit d7ef182），
+# 属不可变证据，**不得**被本工具覆盖。本工具测的是**当前** production，
+# 因此默认写入 `fix-001/current/` 子目录，避免把修复后的 1.0000 写进基线文件。
+_OUT_DIR = _REPO_ROOT / "deliverables" / "kb-v1" / "fix-001" / "current"
 
 # 合同常量（与 quote_verifier 同源，不另造数字）
 from app.services.quote_verifier import (  # noqa: E402
     MIN_FRAGMENT_CHARS,
     MIN_FULL_QUOTE_CHARS,
-    _strip_punctuation,
+    crosses_sentence_boundary,
     load_corpus,
     normalize_text,
     verify_quote,
 )
 
-_SENTENCE_MARKS = "。！？；"
-
 
 # ---------------------------------------------------------------------------
 # 合同语义判定（用于分类，**不用于计分**）
 # ---------------------------------------------------------------------------
-
-def _raw_span(entry_original: str, quote_norm: str) -> Optional[tuple]:
-    """把归一化命中区间映射回原文下标区间 (start, end)，含端点。"""
-    pos = 0
-    start = end = None
-    for i, ch in enumerate(entry_original):
-        if _strip_punctuation(ch):
-            if pos == 0 and start is None:
-                start = i
-            if pos == len(quote_norm) - 1:
-                end = i
-                break
-            pos += 1
-    if start is None or end is None:
-        return None
-    return start, end
+# 注：句界判定（§3.3）已改为直接复用 production 的
+# `quote_verifier.crosses_sentence_boundary`（单一真值来源）。
+# 早前本文件自带 `_raw_span`/`_SENTENCE_MARKS` 实现，存在两处缺陷（复核 C1/C2）：
+#   C1 `_raw_span` 把归一化下标误当原文前 N 个非标点字符，跨度定位错误，
+#      会在**错误的区间**上判句界（对 lunyu:15.24 得 (0,9) 而非真实跨度）；
+#   C2 `_SENTENCE_MARKS` 多含「；」，而 §3.3 只列「。！？」。
+# 二者对当期数据均无影响（18 条命中跨度全部未跨句），但作为第二套逻辑有分叉风险，
+# 故整体删除、改为复用。
 
 
-def contract_view(quote: str, claimed_source: str, corpus) -> Dict[str, Any]:
-    """按 CONTRACT-001 v2 推导各字段（分析用，计分仍用冻结实现）。"""
+def contract_view(quote: str, claimed_source: str, corpus,
+                  source_correct: Optional[bool] = None) -> Dict[str, Any]:
+    """按 CONTRACT-001 v2 推导各字段（分析用，计分仍用冻结实现）。
+
+    C3 修复：``displayable`` 原先漏掉 ``source_correct``，与 §3.2/§4 规则 3 不符
+    （对一条**故意写错出处**的引文也会返回 displayable=true）。
+    现要求调用方传入 ``source_correct``（取自 production 判定），并纳入合取。
+    """
     qn = normalize_text(quote)
     if len(qn) < MIN_FRAGMENT_CHARS:
         return {
@@ -105,13 +113,12 @@ def contract_view(quote: str, claimed_source: str, corpus) -> Dict[str, Any]:
         return (0 if e.text_type == "original" else 1, len(e.norm), e.passage_id)
 
     best = sorted(hits, key=rank)[0]
-    span = _raw_span(best.original, qn)
-    crosses = False
-    if span is not None:
-        inner = best.original[span[0]: span[1] + 1]
-        # 原始引文自身含句界标点 -> 属显式跨句引用，不算违规
-        raw_has_mark = any(m in quote for m in _SENTENCE_MARKS)
-        crosses = any(m in inner for m in _SENTENCE_MARKS) and not raw_has_mark
+    # C1/C2 修复：**复用 production 的权威实现**，不再自带一套跨度/句界逻辑。
+    # 旧实现的 `_raw_span` 把「归一化下标」错误地当成「原文前 N 个非标点字符」，
+    # 对 lunyu:15.24 会得到 (0,9)（解码为「子贡问曰：「有一言而」」）而非真实跨度，
+    # 因而在**错误的跨度**上判 §3.3；且它把「；」也当作句界，与 §3.3 不一致。
+    # 现直接调用 quote_verifier.crosses_sentence_boundary（单一真值来源）。
+    crosses = crosses_sentence_boundary(best.original, qn, quote)
 
     gate = len(qn) >= MIN_FULL_QUOTE_CHARS
     is_l1 = best.text_type == "original"
@@ -123,7 +130,11 @@ def contract_view(quote: str, claimed_source: str, corpus) -> Dict[str, Any]:
         "matched_text_type": best.text_type,
         "crosses_sentence_boundary": crosses,
         "gate": gate,
-        "displayable": bool(not crosses and gate and is_l1),
+        # §3.2/§4 规则 3：展示须同时满足 exists ∧ exact ∧ source ∧ gate ∧ L1
+        "displayable": bool(
+            (not crosses) and gate and is_l1
+            and (source_correct if source_correct is not None else False)
+        ),
         "root_cause": None,
     }
 
@@ -156,7 +167,10 @@ def build() -> Dict[str, Any]:
 
     cases = []
     for rec, pred in zip(records, preds):
-        cv = contract_view(rec.get("quote", ""), rec.get("claimed_source", ""), corpus)
+        cv = contract_view(
+            rec.get("quote", ""), rec.get("claimed_source", ""), corpus,
+            source_correct=pred["source_correct"],
+        )
         counted = bool(pred["quote_exists"])          # 冻结分母口径
         passed = None if not counted else (rec["id"] not in failed_ids)
         cases.append({
@@ -334,7 +348,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    finally:
-        shutil.rmtree(_ISO, ignore_errors=True)
+    raise SystemExit(main())
