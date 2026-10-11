@@ -49,7 +49,7 @@ def test_chat_with_sage_stream_hides_structured_json_wrapper(monkeypatch):
     async def fake_stream(messages, temperature=0.8):
         raw = (
             '{"reply":"Human answer",'
-            '"citations":[{"id":"ref1"}],'
+            '"citations":[], '
             '"modern_takeaway":"Useful takeaway",'
             '"confidence":"medium",'
             '"honest_note":null}'

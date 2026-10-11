@@ -119,101 +119,30 @@ async def chat_with_sage(
                 )
                 yield f"data: {chapters_data}\n\n"
 
-                # --- 正常流式输出 LLM 回复 ---
-                async for chunk in ai_service.chat_with_sage(
+                response = await ai_service.chat_with_sage_stream_response(
                     sage=req.sage,
                     question=req.question,
                     history=history,
-                    stream=True,
-                ):
-                    # SSE 格式：data: {json}\n\n
+                )
+                # Final response is only returned after the shared CitationGuard.
+                for chunk in ai_service._response_text_chunks(response):
                     data = json.dumps({"content": chunk}, ensure_ascii=False)
                     yield f"data: {data}\n\n"
-
-                # --- 思想依据：发送 citations 事件（新格式） ---
-                citations = []
-                cit_idx = 1
-                for v in sage_result.get("verses", []):
-                    original = v.get("original") or v.get("text") or ""
-                    if not original:
-                        continue
-                    citations.append({
-                        "id": f"引{cit_idx}",
-                        "出处": v.get("source", "未知"),
-                        "原文": original,
-                        "chapter": v.get("chapter", ""),
-                        "translation": v.get("translation", ""),
-                        "verifiable": True,
-                    })
-                    cit_idx += 1
-                for c in sage_result.get("commentaries", []):
-                    original = c.get("original") or c.get("text") or ""
-                    if not original:
-                        continue
-                    citations.append({
-                        "id": f"引{cit_idx}",
-                        "出处": c.get("source", "朱熹《论语集注》"),
-                        "原文": original,
-                        "chapter": c.get("chapter", ""),
-                        "translation": c.get("commentary", ""),
-                        "verifiable": True,
-                    })
-                    cit_idx += 1
-                if citations:
-                    cit_data = json.dumps(
-                        {"type": "citations", "citations": citations},
-                        ensure_ascii=False,
-                    )
+                if response.citations:
+                    citations = [citation.model_dump(by_alias=True) for citation in response.citations]
+                    cit_data = json.dumps({"type": "citations", "citations": citations}, ensure_ascii=False)
                     yield f"data: {cit_data}\n\n"
-
                 yield "data: [DONE]\n\n"
-            except Exception as e:
-                # 兜底：LLM 不可用时返回缓存兜底，不报 500
-                logger.error("chat-sage stream error，启用缓存兜底: %s", e)
-                from app.services import sage_cache
-                import asyncio
-                fallback = sage_cache.get_fallback_qa(req.question)
-                content = fallback.get("content", "")
-                vernacular = fallback.get("vernacular", "")
-                disclaimer = fallback.get("disclaimer", "⚠️ 缓存兜底回复")
-                quotes = fallback.get("original_quotes", [])
-                sources = fallback.get("sources", [])
-                quote_text = quotes[0] if quotes else "无"
-                source_text = sources[0] if sources else "无"
-                # 统一 <<<TAG>>> 格式输出
-                full = (
-                    f"<<<QUOTE>>>\n{quote_text}\n"
-                    f"<<<SOURCE>>>\n{source_text}\n"
-                    f"<<<CLASSICAL>>>\n{content}\n"
-                    f"<<<VERNACULAR>>>\n{vernacular}\n"
-                    f"<<<DISCLAIMER>>>\n{disclaimer}"
+            except Exception:
+                # Do not expose any citation if completion/verification was interrupted.
+                # Avoid logging provider exception payloads which may contain headers.
+                logger.error("chat-sage stream failed before citation validation completed")
+                event = json.dumps(
+                    {"type": "error", "code": "stream_incomplete",
+                     "message": "本次回答未完成验证，请稍后重试。"},
+                    ensure_ascii=False,
                 )
-                chunk_size = 4
-                for i in range(0, len(full), chunk_size):
-                    data = json.dumps(
-                        {"content": full[i:i+chunk_size]},
-                        ensure_ascii=False,
-                    )
-                    yield f"data: {data}\n\n"
-                    await asyncio.sleep(0.02)
-                
-                # 发送 citations（从缓存构造）
-                fallback_citations = []
-                for idx, q in enumerate(quotes):
-                    src = sources[idx] if idx < len(sources) else ""
-                    fallback_citations.append({
-                        "id": f"引{idx + 1}",
-                        "出处": src,
-                        "原文": q,
-                        "verifiable": True,
-                    })
-                if fallback_citations:
-                    cit_data = json.dumps(
-                        {"citations": fallback_citations},
-                        ensure_ascii=False,
-                    )
-                    yield f"data: {cit_data}\n\n"
-                
+                yield f"data: {event}\n\n"
                 yield "data: [DONE]\n\n"
 
         return StreamingResponse(

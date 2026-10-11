@@ -109,14 +109,20 @@ class ChatSageRequest(BaseModel):
 
 
 class Citation(BaseModel):
-    """引用条目"""
+    """引用条目；verification_status 是 verifiable 的详细、兼容性扩展。"""
     id: str = Field(..., description="引用标记，如 引1")
     source: str = Field(..., alias="出处", description="出处，如 论语·学而篇")
     original: str = Field(..., alias="原文", description="经典原文")
-    # PHASE 5 / P5-07：原为 Field(True)，使「缺省即通过」—— 构造 Citation 时
-    # 若忘记传 verifiable，模型会被默认标为"可溯源"。改为**必填**，
-    # 强制调用方给出真实校验结果（None 不再是合法值）。
-    verifiable: bool = Field(..., description="是否可溯源（必须显式给出，无默认值）")
+    # PHASE 5 / P5-07：必须显式提供，禁止缺省即通过。
+    verifiable: bool = Field(..., description="是否可溯源")
+    verification_status: Literal[
+        "pending",
+        "verified",
+        "citation_corrected",
+        "quote_relaxed",
+        "unverified",
+        "insufficient_evidence",
+    ] = Field("unverified", description="引用核验生命周期/最终信任状态")
 
     model_config = ConfigDict(populate_by_name=True)
 

@@ -177,82 +177,126 @@ class AIService:
         history: List[dict] = None,
         stream: bool = True,
     ) -> AsyncGenerator[str, None]:
-        """与圣贤对话（角色扮演），流式 yield 文本片段
+        """Compatibility generator: yields display chunks from a verified final response."""
+        response = await self.chat_with_sage_stream_response(sage, question, history)
+        for chunk in self._response_text_chunks(response):
+            yield chunk
 
-        断网兜底策略：
-        1. 优先匹配 sage_cache 安全问答，命中则直接 yield 缓存内容（不调 LLM）
-        2. 未命中则走 RAG + LLM 链路
-        3. LLM 调用失败时（网络错误/超时），fallback 到缓存兜底
-        """
+    async def chat_with_sage_stream_response(
+        self,
+        sage: str,
+        question: str,
+        history: List[dict] = None,
+    ) -> ChatSageResponse:
+        """Generate/assemble a complete response, then validate citations before return."""
         history = history or []
+        rag = get_rag_service()
+        sage_result = await rag.retrieve_for_sage_chat(question, top_k=settings.RAG_TOP_K)
 
-        # ----- 0. 优先检查安全问答缓存 -----
+        # Local cache answers are not exempt from the citation validation path.
         cached = sage_cache.match_safe_qa(question)
         if cached is not None:
             logger.info("chat_with_sage 命中安全问答缓存: %s", cached.get("cache_key"))
-            async for chunk in self._yield_cached_reply(cached):
-                yield chunk
-            return
+            return self.build_stream_fallback_response(sage, cached, sage_result)
 
         if not llm_client.is_available:
             logger.info("chat_with_sage LLM 不可用，直接启用缓存兜底")
             fallback = sage_cache.get_fallback_qa(question)
-            async for chunk in self._yield_cached_reply(fallback):
-                yield chunk
-            return
+            return self.build_stream_fallback_response(sage, fallback, sage_result)
 
-        # ----- 1. RAG 检索（专用方法：返回原文+译文+注疏，区分原文和注疏）-----
-        rag = get_rag_service()
-        sage_result = await rag.retrieve_for_sage_chat(question, top_k=settings.RAG_TOP_K)
         rag_context = rag.build_sage_chat_context(sage_result)
-
-        # 2. 构建 system prompt
         sys_prompt = build_sage_system_prompt(sage, rag_context)
         sage_name = get_sage_name(sage)
-
-        # 3. 构建 messages（含历史）
         messages = [{"role": "system", "content": sys_prompt}]
-        for h in history:
-            role = h.get("role", "user")
-            content = h.get("content", "")
-            messages.append({"role": role, "content": content})
-
-        # 检查是否有检索结果
+        for item in history:
+            messages.append({"role": item.get("role", "user"), "content": item.get("content", "")})
         has_results = bool(sage_result.get("verses") or sage_result.get("commentaries"))
-        user_msg = pt.SAGE_CHAT_USER.format(
-            question=question,
-            persona_name=sage_name,
-            has_results="有" if has_results else "无",
-        )
-        messages.append({"role": "user", "content": user_msg})
+        messages.append({
+            "role": "user",
+            "content": pt.SAGE_CHAT_USER.format(
+                question=question,
+                persona_name=sage_name,
+                has_results="有" if has_results else "无",
+            ),
+        })
 
-        # 4. 流式输出（带 LLM 失败兜底）
+        raw_chunks = []
         try:
-            raw_chunks = []
             async for chunk in llm_client.stream(messages, temperature=0.8):
                 raw_chunks.append(chunk)
-        except Exception as e:
-            logger.error("chat_with_sage LLM 调用失败，启用缓存兜底: %s", e)
-            # fallback 到缓存中最相似的问答
+        except Exception:
+            # Provider exception strings may contain headers. Never log their payload.
+            logger.error("chat_with_sage LLM 调用失败，启用缓存兜底")
             fallback = sage_cache.get_fallback_qa(question)
-            async for chunk in self._yield_cached_reply(fallback):
-                yield chunk
-            return
+            return self.build_stream_fallback_response(sage, fallback, sage_result)
 
-        reply_text = extract_stream_reply_text("".join(raw_chunks))
-        if _looks_like_llm_unavailable(reply_text):
+        raw_response = "".join(raw_chunks)
+        if _looks_like_llm_unavailable(extract_stream_reply_text(raw_response)):
             logger.info("chat_with_sage 收到 LLM 不可用文本，启用缓存兜底")
             fallback = sage_cache.get_fallback_qa(question)
-            async for chunk in self._yield_cached_reply(fallback):
-                yield chunk
-            return
+            raw_response = json.dumps(self._cached_structured_payload(fallback), ensure_ascii=False)
 
+        # Stream and non-stream both return only after this shared final validator.
+        data = llm_client._parse_json(raw_response)
+        if not isinstance(data, dict):
+            data = {}
+        raw_citations = data.get("citations", []) or []
+        refs = list(sage_result.get("verses", [])) + list(sage_result.get("commentaries", []))
+        citations, all_verified = self._validate_citations(raw_citations, refs)
+        if not all_verified:
+            failed = [citation for citation in citations if not citation.verifiable]
+            if failed:
+                if data.get("confidence") == "high":
+                    data["confidence"] = "medium"
+                data["honest_note"] = data.get("honest_note") or "部分引用无法在经典原文中溯源，请谨慎参考。"
+        return ChatSageResponse(
+            sage=sage,
+            reply=str(data.get("reply") or extract_stream_reply_text(raw_response)),
+            disclaimer=pt.DISCLAIMER_SAGE,
+            citations=citations,
+            modern_takeaway=data.get("modern_takeaway"),
+            confidence=data.get("confidence", "medium"),
+            honest_note=data.get("honest_note"),
+        )
+
+    @staticmethod
+    def _response_text_chunks(response: ChatSageResponse) -> List[str]:
+        """Build display text from the validated completed response."""
+        citations = [
+            {"id": c.id, "出处": c.source, "原文": c.original, "verifiable": c.verifiable,
+             "verification_status": c.verification_status}
+            for c in response.citations
+        ]
+        payload = {
+            "reply": response.reply,
+            "citations": citations,
+            "modern_takeaway": response.modern_takeaway,
+            "confidence": response.confidence,
+            "honest_note": response.honest_note,
+        }
+        rendered = extract_stream_reply_text(json.dumps(payload, ensure_ascii=False))
         chunk_size = 4
-        for i in range(0, len(reply_text), chunk_size):
-            yield reply_text[i : i + chunk_size]
-            await asyncio.sleep(0.02)
+        return [rendered[i:i + chunk_size] for i in range(0, len(rendered), chunk_size)]
 
-        # 注：LLM 已在 <<<DISCLAIMER>>> 区块内输出免责声明，无需额外追加
+    @staticmethod
+    def _cached_structured_payload(cached: dict) -> dict:
+        """Adapt the approved local cache structure to the common validator input."""
+        quotes = cached.get("original_quotes", []) or []
+        sources = cached.get("sources", []) or []
+        citations = []
+        for index, quote in enumerate(quotes):
+            citations.append({
+                "id": f"引{index + 1}",
+                "出处": sources[index] if index < len(sources) else "",
+                "原文": quote,
+            })
+        return {
+            "reply": cached.get("content", ""),
+            "citations": citations,
+            "modern_takeaway": cached.get("vernacular", ""),
+            "confidence": "low",
+            "honest_note": cached.get("disclaimer"),
+        }
 
     async def _yield_cached_reply(
         self, cached: dict
@@ -352,78 +396,50 @@ class AIService:
     def _validate_citations(
         self, citations: List[dict], rag_refs: List[dict]
     ) -> tuple[List[Citation], bool]:
-        """
-        校验 citations 中每一条原文是否可溯源。
-        
-        匹配逻辑：
-        - 将 citation 的原文与 RAG 检索到的原文做子串匹配
-        - 匹配成功 → 标记为可溯源 (verifiable=True)
-        - 匹配失败 → 标记为不可溯源 (verifiable=False)
-        
-        返回：
-        - (validated_citations, all_verified)
-        - all_verified: 所有引用是否都通过校验
-        """
-        # 构建 RAG 原文集合（用于匹配）
-        rag_originals = set()
-        for ref in rag_refs:
-            original = ref.get("original", "")
-            if original:
-                rag_originals.add(original.strip())
-                # 也添加去掉标点的版本，增加匹配容错
-                cleaned = original.replace("。", "").replace("，", "").replace("？", "").replace("！", "").strip()
-                if cleaned:
-                    rag_originals.add(cleaned)
-        
-        validated = []
-        all_verified = True
-        
-        for cit in citations:
-            cit_id = cit.get("id", "")
-            cit_source = cit.get("出处", cit.get("source", ""))
-            cit_original = cit.get("原文", cit.get("original", ""))
-            
-            # 检查是否可溯源
-            verifiable = False
-            if cit_original and cit_original != "无":
-                cit_cleaned = cit_original.replace("。", "").replace("，", "").replace("？", "").replace("！", "").strip()
-                for rag_text in rag_originals:
-                    # 双向子串匹配
-                    if (cit_cleaned in rag_text or rag_text in cit_cleaned or
-                        cit_original in rag_text or rag_text in cit_original):
-                        verifiable = True
-                        break
-            
-            if not verifiable and cit_original and cit_original != "无":
-                all_verified = False
-                logger.warning(
-                    "引用校验失败: id=%s, 原文=%s 无法在 RAG 语料中匹配",
-                    cit_id, cit_original[:30]
-                )
-            
-            validated.append(Citation(
-                id=cit_id,
-                source=cit_source,
-                original=cit_original,
-                verifiable=verifiable,
-            ))
-        
-        return validated, all_verified
+        """Validate citations through the shared CitationGuard for both transports."""
+        from app.services.citation_guard import guard_citations
 
-    def _build_citations_from_cache(self, cached: dict) -> List[Citation]:
-        """从安全问答缓存构造 citations 列表（缓存内容预设为可溯源）"""
-        quotes = cached.get("original_quotes", [])
-        sources = cached.get("sources", [])
-        citations = []
-        for idx, q in enumerate(quotes):
-            src = sources[idx] if idx < len(sources) else ""
-            citations.append(Citation(
-                id=f"引{idx + 1}",
-                source=src,
-                original=q,
-                verifiable=True,
+        guarded, status = guard_citations(citations, rag_refs=rag_refs)
+        validated: List[Citation] = []
+        for item in guarded:
+            source = item.correct_source if item.trust_state == "citation_corrected" and item.correct_source else item.source
+            validated.append(Citation(
+                id=item.citation_id,
+                source=source,
+                original=item.original,
+                verifiable=item.verifiable,
+                verification_status=item.trust_state,
             ))
-        return citations
+        return validated, status == "all_verified"
+
+    def _build_citations_from_cache(
+        self, cached: dict, rag_refs: Optional[List[dict]] = None
+    ) -> List[Citation]:
+        """Validate cache citations only against independently retrieved refs."""
+        quotes = cached.get("original_quotes", []) or []
+        sources = cached.get("sources", []) or []
+        candidates = [
+            {"id": f"引{idx + 1}", "出处": sources[idx] if idx < len(sources) else "", "原文": quote}
+            for idx, quote in enumerate(quotes)
+        ]
+        validated, _ = self._validate_citations(candidates, list(rag_refs or []))
+        return validated
+
+    def build_stream_fallback_response(
+        self, sage: str, cached: dict, sage_result: Optional[dict] = None
+    ) -> ChatSageResponse:
+        """Construct a fallback response and validate citations against available RAG refs."""
+        refs = list((sage_result or {}).get("verses", [])) + list((sage_result or {}).get("commentaries", []))
+        citations = self._build_citations_from_cache(cached, refs)
+        return ChatSageResponse(
+            sage=sage,
+            reply=cached.get("content", ""),
+            disclaimer=cached.get("disclaimer", pt.DISCLAIMER_SAGE),
+            citations=citations,
+            modern_takeaway=cached.get("vernacular", ""),
+            confidence="low",
+            honest_note="AI 服务暂时不可用，已返回预设回答。",
+        )
 
     # ----------------------------------------------------------
     # 3. 与圣贤对话（增强版：结构化 JSON 输出 + 引用校验）
@@ -449,15 +465,9 @@ class AIService:
         cached = sage_cache.match_safe_qa(question)
         if cached is not None:
             logger.info("chat_with_sage_structured 命中安全问答缓存: %s", cached.get("cache_key"))
-            return ChatSageResponse(
-                sage=sage,
-                reply=cached.get("content", ""),
-                disclaimer=cached.get("disclaimer", pt.DISCLAIMER_SAGE),
-                citations=self._build_citations_from_cache(cached),
-                modern_takeaway=cached.get("vernacular", ""),
-                confidence="high",
-                honest_note=None,
-            )
+            rag = get_rag_service()
+            sage_result = await rag.retrieve_for_sage_chat(question, top_k=settings.RAG_TOP_K)
+            return self.build_stream_fallback_response(sage, cached, sage_result)
 
         # ----- 1. RAG 检索 -----
         rag = get_rag_service()
@@ -484,18 +494,20 @@ class AIService:
         )
         messages.append({"role": "user", "content": user_msg})
 
+        # Prepare retrieved evidence before provider invocation for safe fallback validation.
+        rag_refs = list(sage_result.get("verses", [])) + list(sage_result.get("commentaries", []))
         # 4. 调 LLM（JSON 模式）
         try:
             data = await llm_client.complete_json(messages, temperature=0.8)
-        except Exception as e:
-            logger.error("chat_with_sage_structured LLM 调用失败: %s", e)
-            # fallback 到缓存兜底
+        except Exception:
+            logger.error("chat_with_sage_structured LLM 调用失败；已使用缓存兜底")
             fallback = sage_cache.get_fallback_qa(question)
+            citations = self._build_citations_from_cache(fallback, rag_refs)
             return ChatSageResponse(
                 sage=sage,
                 reply=fallback.get("content", ""),
                 disclaimer=fallback.get("disclaimer", pt.DISCLAIMER_SAGE),
-                citations=self._build_citations_from_cache(fallback),
+                citations=citations,
                 modern_takeaway=fallback.get("vernacular", ""),
                 confidence="low",
                 honest_note="AI 服务暂时不可用，已返回预设回答。",
