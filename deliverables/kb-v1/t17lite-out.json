@@ -1,0 +1,366 @@
+{
+  "unsupported": [
+    {
+      "id": "uq-0001",
+      "q": "量子计算机如何改变儒家伦理？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "问题涉及知识库语料之外的主题（量子）",
+      "support": true
+    },
+    {
+      "id": "uq-0002",
+      "q": "如何用《论语》指导短视频运营？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "问题涉及知识库语料之外的主题（短视频）",
+      "support": false
+    },
+    {
+      "id": "uq-0003",
+      "q": "孔子对人工智能的看法是什么？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "问题涉及知识库语料之外的主题（人工智能）",
+      "support": true
+    },
+    {
+      "id": "uq-0004",
+      "q": "请给出《庄子·逍遥游》全文。",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "书（庄子）不在知识库语料中",
+      "support": false
+    },
+    {
+      "id": "uq-0005",
+      "q": "孟子怎么看待绩效考核？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "书（孟子）不在知识库语料中",
+      "support": false
+    },
+    {
+      "id": "uq-0006",
+      "q": "《孙子兵法》里有哪些管理方法？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "书（孙子兵法）不在知识库语料中",
+      "support": true
+    },
+    {
+      "id": "uq-0007",
+      "q": "王阳明如何论述心即理？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "书（王阳明）不在知识库语料中",
+      "support": true
+    },
+    {
+      "id": "uq-0008",
+      "q": "请引用《大学》原文说明修身。",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "书（大学）不在知识库语料中",
+      "support": true
+    },
+    {
+      "id": "uq-0009",
+      "q": "如何面对亲人的离世？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": null,
+      "support": false
+    },
+    {
+      "id": "uq-0010",
+      "q": "请告诉我《道德经》第八十一章的原文。",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "章节第81章不在知识库语料中",
+      "support": false
+    },
+    {
+      "id": "uq-0011",
+      "q": "墨子对人工智能伦理有什么预见？",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "问题涉及知识库语料之外的主题（人工智能）",
+      "support": false
+    },
+    {
+      "id": "uq-0012",
+      "q": "帮我写一段孔子风格的原创古文。",
+      "total": 0,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "oos": "检测到经典文本生成请求，知识库仅做检索引证，不生成经典原文",
+      "support": false
+    }
+  ],
+  "controls": [
+    {
+      "id": "sc-0001",
+      "q": "我该不该躺平",
+      "total": 5,
+      "per": {
+        "confucius": 2,
+        "laozi": 1,
+        "mozi": 1,
+        "hanfeizi": 1
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0002",
+      "q": "什么是仁",
+      "total": 3,
+      "per": {
+        "confucius": 1,
+        "laozi": 1,
+        "mozi": 1,
+        "hanfeizi": 0
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0003",
+      "q": "如何面对失败",
+      "total": 2,
+      "per": {
+        "confucius": 1,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 1
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0004",
+      "q": "什么是无为",
+      "total": 1,
+      "per": {
+        "confucius": 0,
+        "laozi": 1,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0005",
+      "q": "竞争太累了怎么办",
+      "total": 1,
+      "per": {
+        "confucius": 0,
+        "laozi": 1,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0006",
+      "q": "知足常乐",
+      "total": 2,
+      "per": {
+        "confucius": 1,
+        "laozi": 1,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0007",
+      "q": "为什么要自食其力",
+      "total": 2,
+      "per": {
+        "confucius": 0,
+        "laozi": 1,
+        "mozi": 1,
+        "hanfeizi": 0
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0008",
+      "q": "如何对待陌生人",
+      "total": 2,
+      "per": {
+        "confucius": 0,
+        "laozi": 0,
+        "mozi": 2,
+        "hanfeizi": 0
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0009",
+      "q": "战争该不该打",
+      "total": 2,
+      "per": {
+        "confucius": 0,
+        "laozi": 1,
+        "mozi": 0,
+        "hanfeizi": 1
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0010",
+      "q": "如何管理下属",
+      "total": 4,
+      "per": {
+        "confucius": 3,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 1
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0011",
+      "q": "赏罚怎么定",
+      "total": 3,
+      "per": {
+        "confucius": 2,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 1
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0012",
+      "q": "规则要不要变",
+      "total": 3,
+      "per": {
+        "confucius": 1,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 2
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0013",
+      "q": "人生得意时该怎么做",
+      "total": 3,
+      "per": {
+        "confucius": 1,
+        "laozi": 1,
+        "mozi": 1,
+        "hanfeizi": 0
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0014",
+      "q": "如何面对风雨",
+      "total": 2,
+      "per": {
+        "confucius": 2,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0015",
+      "q": "个人和天下哪个先",
+      "total": 3,
+      "per": {
+        "confucius": 1,
+        "laozi": 1,
+        "mozi": 1,
+        "hanfeizi": 0
+      },
+      "support": true
+    },
+    {
+      "id": "sc-0016",
+      "q": "如何看得更远",
+      "total": 2,
+      "per": {
+        "confucius": 1,
+        "laozi": 0,
+        "mozi": 0,
+        "hanfeizi": 1
+      },
+      "support": false
+    },
+    {
+      "id": "sc-0017",
+      "q": "如何修养心性",
+      "total": 6,
+      "per": {
+        "confucius": 3,
+        "laozi": 3,
+        "mozi": 0,
+        "hanfeizi": 0
+      },
+      "support": true
+    }
+  ]
+}

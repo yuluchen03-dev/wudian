@@ -1,0 +1,1155 @@
+[
+  {
+    "id": "rg-0001",
+    "q": "同事抢了我的功劳，我该不该跟他撕破脸？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "workplace_conflict",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "12.2",
+      "15.24",
+      "4.16"
+    ],
+    "got": [
+      "2.24",
+      "3.21",
+      "2.9",
+      "3.9",
+      "1.16"
+    ],
+    "gotn": [
+      "2.24",
+      "3.21",
+      "2.9",
+      "3.9",
+      "1.16"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0002",
+    "q": "被领导误解了，我要不要急着解释？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "workplace_conflict",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.16",
+      "4.24"
+    ],
+    "got": [
+      "2.9",
+      "3.24",
+      "20.1",
+      "1.16",
+      "17.3"
+    ],
+    "gotn": [
+      "2.9",
+      "3.24",
+      "20.1",
+      "1.16",
+      "17.3"
+    ],
+    "hit_at": 4
+  },
+  {
+    "id": "rg-0003",
+    "q": "我该怎么面对失败？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "failure",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "4.8",
+      "9.19"
+    ],
+    "got": [
+      "2.20",
+      "1.4",
+      "1.12",
+      "2.9",
+      "debate:fan_zhongyan:fanzhongyan-yueyanglouji-01"
+    ],
+    "gotn": [
+      "2.20",
+      "1.4",
+      "1.12",
+      "2.9",
+      "fan_zhongyan:fanzhongyan-yueyanglouji-01"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0004",
+    "q": "总是担心别人怎么看我，很内耗",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "self_doubt",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.1",
+      "1.16"
+    ],
+    "got": [
+      "6.30",
+      "1.16",
+      "2.10",
+      "14.24",
+      "3.2"
+    ],
+    "gotn": [
+      "6.30",
+      "1.16",
+      "2.10",
+      "14.24",
+      "3.2"
+    ],
+    "hit_at": 2
+  },
+  {
+    "id": "rg-0005",
+    "q": "怎么才能学到真东西？",
+    "type": "modern_scenario",
+    "diff": "easy",
+    "scenario": "career",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "2.11",
+      "2.15"
+    ],
+    "got": [
+      "2.7",
+      "2.21",
+      "16.9",
+      "5.9",
+      "2.11"
+    ],
+    "gotn": [
+      "2.7",
+      "2.21",
+      "16.9",
+      "5.9",
+      "2.11"
+    ],
+    "hit_at": 5
+  },
+  {
+    "id": "rg-0006",
+    "q": "学了很多但工作里用不上",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "career",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.14",
+      "2.15"
+    ],
+    "got": [
+      "19.7",
+      "1.2",
+      "1.4",
+      "4.5",
+      "14.24"
+    ],
+    "gotn": [
+      "19.7",
+      "1.2",
+      "1.4",
+      "4.5",
+      "14.24"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0007",
+    "q": "如何交到真朋友？",
+    "type": "modern_scenario",
+    "diff": "easy",
+    "scenario": "friendship",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.4",
+      "16.4"
+    ],
+    "got": [
+      "16.4",
+      "1.8",
+      "1.1",
+      "1.4",
+      "1.7"
+    ],
+    "gotn": [
+      "16.4",
+      "1.8",
+      "1.1",
+      "1.4",
+      "1.7"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0008",
+    "q": "怎么做一个讲信用的人？",
+    "type": "modern_scenario",
+    "diff": "easy",
+    "scenario": "responsibility",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.13",
+      "2.22"
+    ],
+    "got": [
+      "2.22",
+      "1.5",
+      "2.10",
+      "3.3",
+      "12.2"
+    ],
+    "gotn": [
+      "2.22",
+      "1.5",
+      "2.10",
+      "3.3",
+      "12.2"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0009",
+    "q": "什么是真正的孝顺？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "parent_child",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.6",
+      "2.7",
+      "2.8"
+    ],
+    "got": [
+      "2.21",
+      "1.2",
+      "2.6",
+      "2.8",
+      "2.5"
+    ],
+    "gotn": [
+      "2.21",
+      "1.2",
+      "2.6",
+      "2.8",
+      "2.5"
+    ],
+    "hit_at": 4
+  },
+  {
+    "id": "rg-0010",
+    "q": "如何领导一个团队？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "leadership",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "13.6",
+      "2.1"
+    ],
+    "got": [
+      "1.2",
+      "2.10",
+      "5.9",
+      "1.5",
+      "2.22"
+    ],
+    "gotn": [
+      "1.2",
+      "2.10",
+      "5.9",
+      "1.5",
+      "2.22"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0011",
+    "q": "我很想快速成功，怎么办？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "ambition",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "13.17"
+    ],
+    "got": [
+      "13.17",
+      "15.16",
+      "2.20",
+      "19.7",
+      "2.12"
+    ],
+    "gotn": [
+      "13.17",
+      "15.16",
+      "2.20",
+      "19.7",
+      "2.12"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0012",
+    "q": "面对利益诱惑，该怎么选？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "money",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "4.16",
+      "4.5"
+    ],
+    "got": [
+      "2.20",
+      "debate:mozi:mozi-jianai-01",
+      "debate:mozi:mozi-feigong-01",
+      "2.10",
+      "3.3"
+    ],
+    "gotn": [
+      "2.20",
+      "mozi:mozi-jianai-01",
+      "mozi:mozi-feigong-01",
+      "2.10",
+      "3.3"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0013",
+    "q": "如何面对亲人的生死？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "11.12",
+      "15.9"
+    ],
+    "got": [
+      "11.12",
+      "2.20",
+      "16.9",
+      "debate:mozi:mozi-feile-01",
+      "2.4"
+    ],
+    "gotn": [
+      "11.12",
+      "2.20",
+      "16.9",
+      "mozi:mozi-feile-01",
+      "2.4"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0014",
+    "q": "怎么看待职场里的竞争？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "competition",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "3.7"
+    ],
+    "got": [
+      "3.7",
+      "2.10",
+      "12.2",
+      "3.3",
+      "4.1"
+    ],
+    "gotn": [
+      "3.7",
+      "2.10",
+      "12.2",
+      "3.3",
+      "4.1"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0015",
+    "q": "努力还有意义吗？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "failure",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "4.8",
+      "9.19"
+    ],
+    "got": [
+      "6.22",
+      "debate:mozi:mozi-feile-01",
+      "3.6",
+      "2.8",
+      "debate:laozi:daodejing-22-01"
+    ],
+    "gotn": [
+      "6.22",
+      "mozi:mozi-feile-01",
+      "3.6",
+      "2.8",
+      "laozi:daodejing-22-01"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0016",
+    "q": "怎么才能不轻易生气？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "anger",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.1",
+      "15.28"
+    ],
+    "got": [
+      "20.3",
+      "11.12",
+      "debate:hanfeizi:hanfeizi-youdu-01",
+      "7.3",
+      "3.1"
+    ],
+    "gotn": [
+      "20.3",
+      "11.12",
+      "hanfeizi:hanfeizi-youdu-01",
+      "7.3",
+      "3.1"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0017",
+    "q": "什么是仁？",
+    "type": "classical_concept",
+    "diff": "easy",
+    "scenario": "meaning",
+    "books": [
+      "朱熹《论语集注》",
+      "论语"
+    ],
+    "exp": [
+      "12.1",
+      "6.30"
+    ],
+    "got": [
+      "4.1",
+      "12.1",
+      "6.22",
+      "2.7",
+      "6.30"
+    ],
+    "gotn": [
+      "4.1",
+      "12.1",
+      "6.22",
+      "2.7",
+      "6.30"
+    ],
+    "hit_at": 2
+  },
+  {
+    "id": "rg-0018",
+    "q": "如何与人相处才得体？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "friendship",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.12",
+      "12.2"
+    ],
+    "got": [
+      "6.30",
+      "17.2",
+      "15.9",
+      "3.3",
+      "11.12"
+    ],
+    "gotn": [
+      "6.30",
+      "17.2",
+      "15.9",
+      "3.3",
+      "11.12"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0019",
+    "q": "我很穷，很自卑",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "self_doubt",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "4.5",
+      "6.11"
+    ],
+    "got": [
+      "1.2",
+      "4.5",
+      "8.7",
+      "1.1",
+      "4.24"
+    ],
+    "gotn": [
+      "1.2",
+      "4.5",
+      "8.7",
+      "1.1",
+      "4.24"
+    ],
+    "hit_at": 2
+  },
+  {
+    "id": "rg-0020",
+    "q": "怎么判断一个人值不值得深交？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "friendship",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.8",
+      "16.4"
+    ],
+    "got": [
+      "2.10",
+      "3.3",
+      "1.10",
+      "1.2",
+      "2.22"
+    ],
+    "gotn": [
+      "2.10",
+      "3.3",
+      "1.10",
+      "1.2",
+      "2.22"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0021",
+    "q": "无为而治是什么意思？",
+    "type": "classical_concept",
+    "diff": "medium",
+    "scenario": "meaning",
+    "books": [
+      "道德经"
+    ],
+    "exp": [
+      "laozi:daodejing-22-01",
+      "laozi:daodejing-33-01"
+    ],
+    "got": [
+      "2.5",
+      "2.21",
+      "3.8",
+      "3.13",
+      "2.15"
+    ],
+    "gotn": [
+      "2.5",
+      "2.21",
+      "3.8",
+      "3.13",
+      "2.15"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0022",
+    "q": "不争真的有用吗？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "competition",
+    "books": [
+      "道德经"
+    ],
+    "exp": [
+      "laozi:daodejing-08-01",
+      "laozi:daodejing-22-01"
+    ],
+    "got": [
+      "debate:laozi:daodejing-08-01",
+      "debate:laozi:daodejing-22-01",
+      "1.1",
+      "2.9",
+      "8.7"
+    ],
+    "gotn": [
+      "laozi:daodejing-08-01",
+      "laozi:daodejing-22-01",
+      "1.1",
+      "2.9",
+      "8.7"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0023",
+    "q": "知足常乐有道理吗？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "money",
+    "books": [
+      "道德经"
+    ],
+    "exp": [
+      "laozi:daodejing-44-01"
+    ],
+    "got": [
+      "debate:laozi:daodejing-44-01",
+      "3.23",
+      "5.9",
+      "3.11",
+      "1.1"
+    ],
+    "gotn": [
+      "laozi:daodejing-44-01",
+      "3.23",
+      "5.9",
+      "3.11",
+      "1.1"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0024",
+    "q": "上善若水应该怎么理解？",
+    "type": "classical_concept",
+    "diff": "easy",
+    "scenario": "meaning",
+    "books": [
+      "道德经"
+    ],
+    "exp": [
+      "laozi:daodejing-08-01"
+    ],
+    "got": [
+      "debate:laozi:daodejing-08-01",
+      "2.24",
+      "3.19",
+      "2.11",
+      "15.16"
+    ],
+    "gotn": [
+      "laozi:daodejing-08-01",
+      "2.24",
+      "3.19",
+      "2.11",
+      "15.16"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0025",
+    "q": "兼爱是什么主张？",
+    "type": "classical_concept",
+    "diff": "medium",
+    "scenario": "justice",
+    "books": [
+      "墨子"
+    ],
+    "exp": [
+      "mozi:mozi-jianai-01",
+      "mozi:mozi-jianai-02"
+    ],
+    "got": [
+      "debate:mozi:mozi-jianai-01",
+      "2.21",
+      "1.6",
+      "1.7",
+      "2.7"
+    ],
+    "gotn": [
+      "mozi:mozi-jianai-01",
+      "2.21",
+      "1.6",
+      "1.7",
+      "2.7"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0026",
+    "q": "为什么要自食其力？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "responsibility",
+    "books": [
+      "墨子"
+    ],
+    "exp": [
+      "mozi:mozi-feile-01"
+    ],
+    "got": [
+      "2.21",
+      "1.4",
+      "debate:mozi:mozi-feile-01",
+      "debate:wang_anshi:wanganshi-dengfeilaifeng-01",
+      "2.7"
+    ],
+    "gotn": [
+      "2.21",
+      "1.4",
+      "mozi:mozi-feile-01",
+      "wang_anshi:wanganshi-dengfeilaifeng-01",
+      "2.7"
+    ],
+    "hit_at": 3
+  },
+  {
+    "id": "rg-0027",
+    "q": "法治和公平怎么兼顾？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "fairness",
+    "books": [
+      "韩非子"
+    ],
+    "exp": [
+      "hanfeizi:hanfeizi-youdu-01"
+    ],
+    "got": [
+      "debate:hanfeizi:hanfeizi-youdu-01",
+      "debate:mozi:mozi-jianai-01",
+      "2.3",
+      "2.21",
+      "3.26"
+    ],
+    "gotn": [
+      "hanfeizi:hanfeizi-youdu-01",
+      "mozi:mozi-jianai-01",
+      "2.3",
+      "2.21",
+      "3.26"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0028",
+    "q": "奖惩制度该怎么设计？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "leadership",
+    "books": [
+      "韩非子"
+    ],
+    "exp": [
+      "hanfeizi:hanfeizi-erbing-01"
+    ],
+    "got": [
+      "debate:hanfeizi:hanfeizi-youdu-01",
+      "15.16",
+      "debate:hanfeizi:hanfeizi-erbing-01",
+      "11.12",
+      "2.10"
+    ],
+    "gotn": [
+      "hanfeizi:hanfeizi-youdu-01",
+      "15.16",
+      "hanfeizi:hanfeizi-erbing-01",
+      "11.12",
+      "2.10"
+    ],
+    "hit_at": 3
+  },
+  {
+    "id": "rg-0029",
+    "q": "时代变了，旧规则要不要改？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "choice",
+    "books": [
+      "韩非子"
+    ],
+    "exp": [
+      "hanfeizi:hanfeizi-wuzhu-01"
+    ],
+    "got": [
+      "13.17",
+      "1.16",
+      "4.5",
+      "1.8",
+      "3.26"
+    ],
+    "gotn": [
+      "13.17",
+      "1.16",
+      "4.5",
+      "1.8",
+      "3.26"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0030",
+    "q": "为什么事情没成就到处说？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "workplace_conflict",
+    "books": [
+      "韩非子"
+    ],
+    "exp": [
+      "hanfeizi:hanfeizi-wai-chu-shuo-01"
+    ],
+    "got": [
+      "2.24",
+      "2.8",
+      "15.40",
+      "2.21",
+      "14.24"
+    ],
+    "gotn": [
+      "2.24",
+      "2.8",
+      "15.40",
+      "2.21",
+      "14.24"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0031",
+    "q": "读书到底为了什么？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "19.6",
+      "19.7"
+    ],
+    "got": [
+      "2.21",
+      "14.24",
+      "3.25",
+      "1.8",
+      "8.7"
+    ],
+    "gotn": [
+      "2.21",
+      "14.24",
+      "3.25",
+      "1.8",
+      "8.7"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0032",
+    "q": "该不该相信鬼神？",
+    "type": "classical_concept",
+    "diff": "medium",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "11.12",
+      "6.22"
+    ],
+    "got": [
+      "2.24",
+      "6.22",
+      "11.12",
+      "3.19",
+      "12.2"
+    ],
+    "gotn": [
+      "2.24",
+      "6.22",
+      "11.12",
+      "3.19",
+      "12.2"
+    ],
+    "hit_at": 2
+  },
+  {
+    "id": "rg-0033",
+    "q": "怎么进行自我修养？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "12.1",
+      "14.42"
+    ],
+    "got": [
+      "14.42",
+      "12.1",
+      "7.3",
+      "1.14",
+      "1.1"
+    ],
+    "gotn": [
+      "14.42",
+      "12.1",
+      "7.3",
+      "1.14",
+      "1.1"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0034",
+    "q": "君子和小人的区别是什么？",
+    "type": "classical_concept",
+    "diff": "easy",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "2.14",
+      "4.16"
+    ],
+    "got": [
+      "4.16",
+      "17.23",
+      "2.14",
+      "4.5",
+      "3.7"
+    ],
+    "gotn": [
+      "4.16",
+      "17.23",
+      "2.14",
+      "4.5",
+      "3.7"
+    ],
+    "hit_at": 1
+  },
+  {
+    "id": "rg-0035",
+    "q": "遇到流言蜚语怎么办？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "workplace_conflict",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.16",
+      "15.28"
+    ],
+    "got": [
+      "15.16",
+      "16.9",
+      "20.3",
+      "5.9",
+      "2.10"
+    ],
+    "gotn": [
+      "15.16",
+      "16.9",
+      "20.3",
+      "5.9",
+      "2.10"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0036",
+    "q": "怎么面对孤独？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "loneliness",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.1",
+      "4.24"
+    ],
+    "got": [
+      "2.20",
+      "11.12",
+      "1.15",
+      "1.5",
+      "debate:li_bai:libai-jiangjinjiu-01"
+    ],
+    "gotn": [
+      "2.20",
+      "11.12",
+      "1.15",
+      "1.5",
+      "li_bai:libai-jiangjinjiu-01"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0037",
+    "q": "孝和事业冲突时怎么办？",
+    "type": "modern_scenario",
+    "diff": "hard",
+    "scenario": "parent_child",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.6",
+      "2.5"
+    ],
+    "got": [
+      "15.16",
+      "11.12",
+      "2.8",
+      "2.10",
+      "3.26"
+    ],
+    "gotn": [
+      "15.16",
+      "11.12",
+      "2.8",
+      "2.10",
+      "3.26"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0038",
+    "q": "如何对待下属的错误？",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "leadership",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "1.8",
+      "2.19"
+    ],
+    "got": [
+      "18.x",
+      "3.23",
+      "5.9",
+      "14.24",
+      "1.7"
+    ],
+    "gotn": [
+      "18.x",
+      "3.23",
+      "5.9",
+      "14.24",
+      "1.7"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0039",
+    "q": "总是后悔过去的选择",
+    "type": "modern_scenario",
+    "diff": "medium",
+    "scenario": "choice",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "18.x"
+    ],
+    "got": [
+      "7.22",
+      "2.18",
+      "4.1",
+      "debate:laozi:daodejing-33-01",
+      "1.10"
+    ],
+    "gotn": [
+      "7.22",
+      "2.18",
+      "4.1",
+      "laozi:daodejing-33-01",
+      "1.10"
+    ],
+    "hit_at": null
+  },
+  {
+    "id": "rg-0040",
+    "q": "怎么看待命运？",
+    "type": "classical_concept",
+    "diff": "hard",
+    "scenario": "meaning",
+    "books": [
+      "论语"
+    ],
+    "exp": [
+      "2.4",
+      "20.3"
+    ],
+    "got": [
+      "20.3",
+      "debate:fan_zhongyan:fanzhongyan-yueyanglouji-01",
+      "debate:mozi:mozi-feigong-01",
+      "3.26",
+      "3.3"
+    ],
+    "gotn": [
+      "20.3",
+      "fan_zhongyan:fanzhongyan-yueyanglouji-01",
+      "mozi:mozi-feigong-01",
+      "3.26",
+      "3.3"
+    ],
+    "hit_at": 1
+  }
+]
