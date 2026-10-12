@@ -6,15 +6,37 @@ the multi-window `spawn EPERM` blocker: `Write-Output "spawn-ok"` → `spawn-ok`
 ## 1. HEAD / git
 
 ```
-HEAD = 162857f   test(rm005): execute RM-005 verification; RM-006 failure decomposition
-prev = 888b0bc   chore: ignore .zcode/ and .agent-teams/ tool state
-branch = codex/overall-optimization   ahead of origin/main by 29
+HEAD = b30745e   test: fix three test-harness defects so the suite is honest evidence
+prev = 7e22173   docs(chroma): correct the fingerprint ledger for the open-time write
+       fd3086f   analysis(rm006): root cause, ceiling, and production chroma attribution
+       fb0b4e4   docs(dsh): record runtime-restored session state and open defect register
+       162857f   test(rm005): execute RM-005 verification; RM-006 failure decomposition
+       888b0bc   chore: ignore .zcode/ and .agent-teams/ tool state
+branch = codex/overall-optimization   ahead of origin/main by 33
 PUSH = NO (never performed)
 ```
 
-Pre-existing uncommitted modifications (NOT authored this round, ownership
+Pre-existing uncommitted modifications (NOT authored this session, ownership
 unchanged): `backend/app/services/rag_service.py`, `backend/init_db.py`,
-`backend/tests/conftest.py`, `eval/eval-run.json` (harness output).
+`eval/eval-run.json` (harness output).
+
+## 1b. Test-harness defects FIXED this round
+
+```
+full backend suite   10 failed / 559 passed / 7 errors  ->  1 failed / 567 passed / 0 errors
+```
+
+- `TEST-HARNESS-INDEX-EMPTY-001` — FIXED (session fixture + production-path guard)
+- `TEST-ASSERTION-MISSPECIFIED-002` — FIXED (assert the invariants the tests name)
+- `TEST-HARNESS-FORCE-REBUILD-003` — FIXED (idempotent index build; proved
+  pre-existing by stashing only conftest: original 6 failed/7 errors)
+- The 1 remaining failure is `test_default_provider_is_openai`:
+  `backend/.env` sets `LLM_PROVIDER=agnes` while the test hardcodes `openai`.
+  Genuine config/test drift, **deliberately not fixed** — both honest fixes are
+  decisions I am not authorised to make alone.
+
+See `test-harness-defect-fixes.md`.
+
 
 ## 2. What was executed this round
 
@@ -61,15 +83,18 @@ RM-005 = TERMINAL (pending only the formal close)
 
 | id | severity | description | owning scope |
 |---|---|---|---|
-| `TEST-HARNESS-INDEX-EMPTY-001` | medium | `build_index()` lives in the FastAPI lifespan (`app/main.py:74`); pytest never enters lifespan, so the per-PID isolated Chroma collection is empty and hit-count assertions measure nothing. Explains `test_all_17_..._keep_reachability` and the 7 `test_fix003_recall.py` ERRORs. | test harness — separate task |
-| `TEST-ASSERTION-MISSPECIFIED-002` | medium | `test_rm005_evidence_sufficiency.py` asserts `_query_has_corpus_support` where it means retrieval reachability; index-independent (reads the file-based 9-entry index), so a warm index does not fix it. 7 queries asserted-True but predicate-False. | test files — separate task |
-| SA-002 | open | `RAGReference` has no `text_type`; `citation_guard.py:381-387` documents the resulting fallback. Gate I structurally cannot see an L2 commentary shown as classical original. | separate task |
-| Gate F / RM-006 | open | recall@5 = 22/40 = 0.55 vs target >= 0.90 (needs >= 36/40) | RM-006 |
-| F1 (t4) | medium | the vector layer of `retrieve_for_debate_sage` is not gated by the sufficiency rule; `请问地铁几点停运` → `mozi-jianai-01`. **Pre-existing at HEAD**, not an RM-005 regression. | RM-006 |
+| `TEST-HARNESS-INDEX-EMPTY-001` | ~~medium~~ **FIXED** | index never built under pytest; fixed via session fixture | done |
+| `TEST-ASSERTION-MISSPECIFIED-002` | ~~medium~~ **FIXED** | reachability vs predicate conflation; assertions strengthened | done |
+| `TEST-HARNESS-FORCE-REBUILD-003` | ~~medium~~ **FIXED** | repeated `build_index(force=True)` corrupted HNSW writer | done |
+| `test_default_provider_is_openai` | env | `.env` `LLM_PROVIDER=agnes` vs test's hardcoded `openai`; real config drift, left failing deliberately | user decision |
+| **Gate F / RM-006** | **blocker** | recall@5 = 22/40 = 0.55; **realistic ceiling 27/40**, so re-ranking CANNOT reach 36/40. Needs a scope decision. | **user decision** |
+| SA-002 | open | `RAGReference` has no `text_type`; `citation_guard.py:381-387` documents the fallback. | separate task |
+| F1 (t4) | medium | debate vector layer not gated; `请问地铁几点停运` → `mozi-jianai-01`. **Pre-existing at HEAD**. | RM-006 |
 | Q3 | blocked | publication year / library holding / license / edition provenance absent | BLOCKED_EXTERNAL_EVIDENCE |
 | Q5 | fail | no real LLM credentials; end-to-end provider E2E never run | FAIL |
 | RFC-1/2/3 | open | unchanged; RFC-2 retains source proof at `lunyu.json:647` | open |
-| `test_default_provider_is_openai` | env | `LLM_PROVIDER=agnes` vs expected `openai`; pre-existing environment mismatch, not a regression | env |
+| chroma.sqlite3 hash drift | attributed | chromadb rewrites it on OPEN; 5 index files byte-identical; **culprit process not identified** | recorded |
+
 
 ## 6. RM-006 — decomposition conclusions (no patch)
 
@@ -105,9 +130,28 @@ Raw per-case data: `deliverables/kb-v1/rm006-percase.json`.
 
 ## 8. Next actions (recommended order)
 
-1. Formally close RM-005 (evidence is complete; t4 = TERMINAL PASS).
-2. Fix `TEST-HARNESS-INDEX-EMPTY-001` and `TEST-ASSERTION-MISSPECIFIED-002` as
-   their own task so the suite can be cited honestly again.
-3. RM-006 implementation, starting with candidate-pool/book balance, measuring
-   recall@1/3/5, MRR, source_attribution, school_leakage before and after each patch.
-4. SA-002 fix: propagate `text_type` through `RAGReference`.
+1. **Decide the Gate F path** (blocking, cannot proceed without you):
+   (a) authorize a semantic-embedding + re-index workstream — recommended, since
+   the 27/40 ceiling is caused by `LocalHashEmbeddingFunction` having no
+   query→document semantic bridge; (b) formally re-scope Gate F with evidence;
+   or (c) record Gate F as an accepted blocker.
+2. **Decide `test_default_provider_is_openai`**: change `.env` provider config or
+   the test's expected default. Both are real choices; nothing is hidden.
+3. SA-002 fix: propagate `text_type` through `RAGReference`.
+4. Consider whether the `_rank_fusion` correctness fix (measured +monotonic,
+   −1 hit) should ship as its own reviewed change — it is currently **not** in
+   the tree.
+
+## 9. RM-006 conclusions that must not be lost
+
+- **Gate F is NOT reachable by re-ranking.** Realistic ceiling measured at
+  **27/40** against a target of **36/40**; 13 golds are unreachable at top-5 even
+  by a perfect reranker over the existing two layers.
+- The union-oracle of 40/40 is **misleading** and must not be cited as the target.
+- **ID normalization is a dead end** (0 gain available); the frozen matcher
+  already strips the `sage:` prefix on both sides.
+- Corpus absence is **ruled out a third time**: 0/40 golds absent.
+- `LocalHashEmbeddingFunction` self-retrieval is rank 1 for every target, but
+  `无为而治是什么意思？` ranks `daodejing-22-01` at **103** — the signal is absent
+  from the query→document mapping, which no weighting can repair.
+
