@@ -130,6 +130,42 @@ def _quote_prediction(rec: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _production_refs() -> List[Dict[str, Any]]:
+    """构造 feed 给生产 ``citation_guard.guard_citations`` 的 refs（生产形态）。
+
+    EVAL-FIDELITY-001：冻结 ``fabricated_classical_quote`` 必须消费**生产**
+    citation 裁决，而不是 ``_quote_prediction`` 里那个合成 ``verifiable``。
+
+    这里从语料构造 refs，并**刻意省略 ``text_type``**，以镜像生产路径实际 feed
+    给 guard 的 ``RAGReference``（生产 ``RAGReference`` 没有 ``text_type``，见
+    ``citation_guard.guard_citations`` 已披露的已知限制）。我们不伪造该元数据；
+    guard 会按既有兼容性回退处理（缺失 ``text_type`` 时按 L1 处理）；这会保留
+    RAGReference 无法统一区分 L1/L2 的已知限制。
+    """
+    from app.services.quote_verifier import load_corpus
+
+    return [{"original": e.original, "source": e.source} for e in load_corpus()]
+
+
+def _production_adversarial_prediction(
+    rec: Dict[str, Any], refs: Sequence[dict],
+) -> Dict[str, Any]:
+    """把一条 adversarial 记录经**生产** citation_guard 裁决后映射为指标预测形状。
+
+    仅做字段映射：裁决由 ``guard_citations``（背后是 ``trust_state.decide_trust_state``
+    / ``is_verifiable``）产出，本函数**不重复**匹配 / 出处 / 完整性门 / L1 /
+    trust-state 逻辑。
+    """
+    from app.services.citation_guard import guard_citations, metric_prediction_from_guarded
+
+    quote, claimed = _extract_quote(rec)
+    guarded, _status = guard_citations(
+        citations=[{"id": rec.get("id"), "source": claimed, "original": quote}],
+        rag_refs=refs,
+    )
+    return metric_prediction_from_guarded(guarded[0])
+
+
 # ---------------------------------------------------------------------------
 # 1. Quote Exactness / Source Attribution —— 直接委派冻结实现
 # ---------------------------------------------------------------------------
@@ -148,11 +184,17 @@ def eval_quote_metrics() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def eval_adversarial() -> Dict[str, Any]:
-    """伪造引文（冻结口径）+ 摘句展示诊断（本模块补充，单独命名）。"""
+    """伪造引文（冻结口径）+ 摘句展示诊断（本模块补充，单独命名）。
+
+    EVAL-FIDELITY-001：冻结 ``fabricated_classical_quote`` 现由**生产**
+    ``citation_guard.guard_citations`` 裁决驱动（``metric_prediction_from_guarded``
+    映射），不再使用 ``_quote_prediction`` 里的合成 ``verifiable``。
+    """
     from app.services.trust_state import is_displayable_as_classic
 
     records = _load("adversarial_quotes")
-    preds = [_quote_prediction(r) for r in records]
+    refs = _production_refs()
+    preds = [_production_adversarial_prediction(r, refs) for r in records]
 
     frozen = compute_fabricated_classical_quote(records, preds)
 
@@ -171,6 +213,15 @@ def eval_adversarial() -> Dict[str, Any]:
         "value": len(fragment_hits),
         "samples": len(records),
         "failures": fragment_hits[:10],
+    }
+    frozen["diagnostic_verdict_path"] = {
+        "note": "EVAL-FIDELITY-001：fabricated_classical_quote 现由生产 "
+                "citation_guard.guard_citations 的 GuardedCitation.verifiable 驱动，"
+                "而非 run_eval 的合成 verifiable。",
+        "path": "backend/app/services/citation_guard.py::guard_citations -> "
+                "GuardedCitation.verifiable",
+        "refs_basis": "corpus-derived; text_type omitted to mirror production "
+                      "RAGReference (documented limitation, no metadata invented)",
     }
     return {"fabricated_classical_quote": frozen}
 
