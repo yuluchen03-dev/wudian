@@ -231,15 +231,23 @@ def _load_debate_classics(bucket: List[CorpusEntry]) -> None:
         logger.warning("quote_verifier: 缺少语料文件 %s", path)
         return
     data = json.loads(path.read_text(encoding="utf-8"))
-    for _sage_key, classic in (data.get("classics") or {}).items():
+    for sage_key, classic in (data.get("classics") or {}).items():
         book = classic.get("book", "")
         for verse in classic.get("verses", []):
             verse_id = verse.get("id", "")
             if not verse_id:
                 continue
+            # FIX-004（id 空间统一）：Gold 的 expected_passage_ids 用双层前缀
+            # debate:{sage_key}:{verse_id}（如 debate:laozi:daodejing-22-01），
+            # 而本层此前以裸 verse_id（daodejing-22-01）作 corpus 键 →
+            # eval_claim_coverage 的 corpus.get(pid) 恒 miss → G 门 10 条
+            #（rg-0021..0030）结构性 unsupported。与 rag_service.py 中 FIX-003
+            # D1 的输出层拼接 `debate:{sage_key}:{vid}` 同构；passage_id 仅作
+            # 语料索引键与排序 tie-break，verify_quote 按 norm+source 全库匹配，
+            # 键名变化不影响匹配语义（t1 影响面评估已逐调用方确认）。
             _add_entry(
                 bucket,
-                passage_id=verse_id,
+                passage_id=f"debate:{sage_key}:{verse_id}",
                 source=verse.get("source", f"《{book}》"),
                 book=book,
                 chapter=verse.get("chapter", ""),

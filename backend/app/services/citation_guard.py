@@ -252,6 +252,40 @@ class GuardedCitation:
     source_correct: bool
     correct_source: Optional[str]
     reason: str
+    #: Exposed so the eval adapter can map the production verdict into the
+    #: frozen-metric prediction shape WITHOUT re-implementing matching /
+    #: source / completeness / L1 / trust-state logic (EVAL-FIDELITY-001).
+    exact_match: bool = False
+    match_type: str = "none"
+
+
+def metric_prediction_from_guarded(g: GuardedCitation) -> Dict[str, object]:
+    """Map a production ``GuardedCitation`` into the frozen-metric prediction shape.
+
+    Mapping only: reads the production verdict fields returned by
+    :func:`guard_citations`. It does NOT re-run matching, source,
+    completeness, L1 or trust-state logic. This is the thin EVAL-FIDELITY-001
+    adapter that lets ``compute_fabricated_classical_quote`` consume the real
+    production citation verdict instead of a harness-synthesized ``verifiable``.
+
+    ``similarity`` is left ``None`` because the production verdict does not
+    expose a per-citation similarity score; the frozen fabricated metric does
+    not consume it.
+    """
+    return {
+        "quote_exists": g.quote_exists,
+        "exact_match": g.exact_match,
+        "normalized_match": bool(
+            g.quote_exists and g.match_type in ("exact", "normalized")
+        ),
+        "source_correct": g.source_correct,
+        "correct_source": g.correct_source,
+        "trust_state": g.trust_state,
+        "match_type": g.match_type,
+        "similarity": None,
+        "verifiable": g.verifiable,
+        "verdict_basis": "production citation_guard.guard_citations",
+    }
 
 
 def guard_citations(
@@ -335,6 +369,10 @@ def guard_citations(
             "partial" if is_fragment
             else ("exact" if (quote_exists and source_correct) else "none")
         )
+        # 生产裁决的 exact_match：与 decide_trust_state 使用同一谓词
+        # （quote_exists ∧ source_correct ∧ 非片段）。注意 guard 路径按既有契约
+        # 不执行 §3.3 句界规则（见文件头注释与下方已知限制），该缺口单独披露。
+        exact_match = quote_exists and source_correct and not is_fragment
 
         # CONTRACT-001 v2 §3.1/§3.2/§4：
         #   完整性门 = 非片段（len(N(q)) >= MIN_FULL_QUOTE_CHARS）
@@ -361,7 +399,7 @@ def guard_citations(
         trust_state = decide_trust_state(
             quote_exists=quote_exists,
             source_correct=source_correct,
-            exact_match=quote_exists and source_correct and not is_fragment,
+            exact_match=exact_match,
             match_type=real_match_type,
             completeness_gate=not is_fragment,
             is_l1=is_l1,
@@ -380,6 +418,8 @@ def guard_citations(
             source_correct=source_correct,
             correct_source=correct_source,
             reason=reason,
+            exact_match=exact_match,
+            match_type=real_match_type,
         ))
 
     has_valid = any(g.verifiable and g.original != "无" for g in guarded)
@@ -410,6 +450,7 @@ __all__ = [
     "CitationWhitelist",
     "GuardedCitation",
     "guard_citations",
+    "metric_prediction_from_guarded",
     "quote_is_supported_by_refs",
     "source_matches_quote",
 ]
