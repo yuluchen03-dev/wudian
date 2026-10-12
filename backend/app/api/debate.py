@@ -116,7 +116,7 @@ async def next_round(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("next-round 异常: %s", e)
+        logger.error("next-round 异常")
         raise HTTPException(status_code=500, detail="辩论引擎内部错误")
 
 
@@ -148,7 +148,7 @@ async def _stream_next_round(session_id: str, phase: str) -> AsyncGenerator[str,
         else:
             yield _sse({"type": "error", "detail": f"未知阶段: {phase}"})
     except Exception as e:
-        logger.error("流式 next-round 异常: %s", e)
+        logger.error("流式 next-round 异常")
         yield _sse({"type": "error", "detail": "内部服务错误"})
 
     if transition:
@@ -185,7 +185,7 @@ async def intervene(
         speech = await debate_engine.handle_user_intervention(session_id, req)
         return DebateInterventionResponse(session_id=session_id, speech=speech, phase=session.phase)
     except Exception as e:
-        logger.error("intervene 异常: %s", e)
+        logger.error("intervene 异常")
         raise HTTPException(status_code=500, detail="辩论引擎内部错误")
 
 
@@ -194,7 +194,7 @@ async def _stream_intervene(session_id: str, req: UserInterventionRequest) -> As
         async for chunk in debate_engine.stream_intervention(session_id, req):
             yield _sse_raw(chunk)
     except Exception as e:
-        logger.error("流式 intervene 异常: %s", e)
+        logger.error("流式 intervene 异常")
         yield _sse({"type": "error", "detail": "内部服务错误"})
     yield "data: [DONE]\n\n"
 
@@ -221,7 +221,7 @@ async def stand_with_sage(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("站队失败: %s", e)
+        logger.error("站队失败")
         raise HTTPException(status_code=500, detail="站队失败")
 
 
@@ -261,7 +261,7 @@ async def mutual_question(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("互问失败: %s", e)
+        logger.error("互问失败")
         raise HTTPException(status_code=500, detail="互问失败")
 
 
@@ -290,7 +290,7 @@ async def random_guest(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("随机踢馆失败: %s", e)
+        logger.error("随机踢馆失败")
         raise HTTPException(status_code=500, detail="随机踢馆失败")
 
 
@@ -330,7 +330,7 @@ async def decide_guest(
     except StopIteration:
         raise HTTPException(status_code=400, detail=f"未知踢馆名人: {sage_key}")
     except Exception as e:
-        logger.error("踢馆名人去留决策失败: %s", e)
+        logger.error("踢馆名人去留决策失败")
         raise HTTPException(status_code=500, detail="踢馆名人去留决策失败")
 
 
@@ -359,7 +359,7 @@ async def summon_guest(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("召唤失败: %s", e)
+        logger.error("召唤失败")
         raise HTTPException(status_code=500, detail="召唤失败")
 
 
@@ -383,7 +383,7 @@ async def get_report(
         report = await debate_engine.generate_report(session_id)
         return DebateReportResponse(session_id=session_id, report=report, phase="done")
     except Exception as e:
-        logger.error("获取报告异常: %s", e)
+        logger.error("获取报告异常")
         raise HTTPException(status_code=500, detail="会诊报告生成失败")
 
 

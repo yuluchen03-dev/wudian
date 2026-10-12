@@ -511,8 +511,9 @@ class DebateEngine:
                 rd.speeches.append(sp)
                 yield json.dumps({"type":"sage_end","sage_key":sk,"sage_name":sn,"speech":sp.model_dump()}, ensure_ascii=False)
             except Exception as e:
-                logger.error("R1流式 - %s 失败: %s", sn, e)
-                yield json.dumps({"type":"sage_error","sage_key":sk,"sage_name":sn,"error":str(e)}, ensure_ascii=False)
+                # 不记录异常负载（可能含 Authorization/Bearer）；对外也只给稳定错误码。
+                logger.error("R1流式 - %s 失败", sn)
+                yield json.dumps({"type":"sage_error","sage_key":sk,"sage_name":sn,"error":"llm_unavailable"}, ensure_ascii=False)
         session.rounds.append(rd)
         session.round_counter = 1
         session.phase = "round2"
@@ -592,8 +593,9 @@ class DebateEngine:
                         clash_type=data.get("clash_type","disagree"), summary=sp.content[:100]))
                 yield json.dumps({"type":"sage_end","sage_key":sk,"sage_name":sn,"speech":sp.model_dump()}, ensure_ascii=False)
             except Exception as e:
-                logger.error("R2流式 - %s 失败: %s", sn, e)
-                yield json.dumps({"type":"sage_error","sage_key":sk,"sage_name":sn,"error":str(e)}, ensure_ascii=False)
+                # 不记录异常负载（可能含 Authorization/Bearer）；对外也只给稳定错误码。
+                logger.error("R2流式 - %s 失败", sn)
+                yield json.dumps({"type":"sage_error","sage_key":sk,"sage_name":sn,"error":"llm_unavailable"}, ensure_ascii=False)
         session.rounds.append(rd)
         session.round_counter = 2
         session.phase = "intervention"
@@ -828,8 +830,9 @@ class DebateEngine:
         msgs = _build_report_messages(session)
         try:
             data = await llm_client.complete_json(msgs, temperature=0.5)
-        except Exception as e:
-            logger.error("会诊报告生成失败: %s", e)
+        except Exception:
+            # 不记录异常负载（可能含 Authorization/Bearer）。
+            logger.error("会诊报告生成失败")
             data = {
                 "consensus": [
                     "纯粹消极的放弃不可取，进退都需要保留清醒判断。",

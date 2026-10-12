@@ -117,8 +117,9 @@ class AIService:
         # 3. 调 LLM（JSON 模式）
         try:
             data = await llm_client.complete_json(messages, temperature=0.5)
-        except Exception as e:
-            logger.error(f"explain_verse LLM 调用失败: {e}")
+        except Exception:
+            # 不记录异常负载：SDK 异常文本可能含 Authorization/Bearer（401/403）。
+            logger.error("explain_verse LLM 调用失败")
             # 兜底：返回带错误提示的结构
             return VerseExplanation(
                 verse_id=verse_id,
@@ -591,8 +592,9 @@ class AIService:
         # 3. 调 LLM
         try:
             data = await llm_client.complete_json(messages, temperature=0.7)
-        except Exception as e:
-            logger.error(f"generate_quiz LLM 调用失败: {e}")
+        except Exception:
+            # 不记录异常负载：SDK 异常文本可能含 Authorization/Bearer（401/403）。
+            logger.error("generate_quiz LLM 调用失败")
             return []
 
         # 4. 解析题目列表

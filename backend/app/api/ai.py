@@ -163,9 +163,10 @@ async def chat_with_sage(
                 history=history,
             )
             return response
-        except Exception as e:
+        except Exception:
             # 兜底：缓存兜底，不报 500
-            logger.error("chat-sage 非流式 error，启用缓存兜底: %s", e)
+            # 不记录异常负载：SDK 异常文本可能含 Authorization/Bearer（401/403）。
+            logger.error("chat-sage 非流式 error，启用缓存兜底")
             from app.services import sage_cache
             from app.services.prompt_templates import DISCLAIMER_SAGE
             fallback = sage_cache.get_fallback_qa(req.question)
