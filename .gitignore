@@ -56,3 +56,7 @@ nul
 # Python 字节码缓存（不应入库）
 __pycache__/
 *.pyc
+
+# Agent tool-state directories (not project content; must not be committed)
+.zcode/
+.agent-teams/
