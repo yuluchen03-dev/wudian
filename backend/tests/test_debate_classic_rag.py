@@ -17,7 +17,11 @@ class DebateClassicRAGTest(unittest.TestCase):
         if rag.collection is None:
             self.skipTest("ChromaDB collection is not available")
 
-        count = rag.build_index(force=True)
+        # TEST-HARNESS-FORCE-REBUILD-003：同一进程内重复 build_index(force=True)
+        # 会破坏 HNSW 段；改用幂等助手，每进程最多一次破坏性重建。
+        from conftest import ensure_index_built
+
+        count = ensure_index_built(rag)
         rows = rag.collection.get(
             where={"scope": "debate_classic"},
             include=["metadatas"],
@@ -48,7 +52,10 @@ class DebateClassicRAGTest(unittest.TestCase):
         if rag.collection is None:
             self.skipTest("ChromaDB collection is not available")
 
-        rag.build_index(force=True)
+        # TEST-HARNESS-FORCE-REBUILD-003：改用幂等助手（理由同上）。
+        from conftest import ensure_index_built
+
+        ensure_index_built(rag)
         original_index = rag._debate_classic_index
         rag._debate_classic_index = {}
         try:

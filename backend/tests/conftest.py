@@ -32,7 +32,41 @@ for _suffix in ("", "-wal", "-shm"):
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-pytest-only-do-not-use-in-production")
 os.environ.setdefault("APP_ENV", "development")
 os.environ.setdefault("APP_DEBUG", "false")
-os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///./test_wudian_{_PID}.db")
+
+# ---------------------------------------------------------------------------
+# 测试数据库隔离（安全硬约束，DSH-SA-003 / SA001-02）
+# ---------------------------------------------------------------------------
+# 原实现用的是「环境里已有则沿用」的写入方式（setdefault）：
+#     os.environ.setdefault("DATABASE_URL", ...隔离测试库...)
+# 其语义是只要 DATABASE_URL 已经存在（开发者 shell、CI 变量、.env、或继承自
+# 父进程），pytest 就**静默采纳**它。若它指向真实数据库，conftest.py 的
+# `await init_db()` 会对其 Base.metadata.create_all，TestClient 随后还会写入
+# ——测试直接改真实库。
+#
+# 这与本文件下方 CHROMA_PERSIST_DIR 的 SAFETY-001 修复是**同一类**继承型缺陷：
+# 2026-10-08 的索引损坏事故正是「继承来的值指向生产目录」造成的，当时把
+# CHROMA_PERSIST_DIR 从 setdefault 改成硬赋值，却漏掉了 DATABASE_URL。
+# 本段即补齐这一对称性（两个变量必须同纪律，见 test_conftest_db_isolation.py）。
+#
+# 现在改为与 CHROMA_PERSIST_DIR 完全相同的两条规则：
+#   1) 一律强制指向 per-process 隔离测试库（PID 后缀，见上方 :20-23 的并发竞态说明）；
+#   2) 若发现继承来的值**不是**隔离测试库，额外打印醒目警告，让人看见发生了什么。
+# 之所以保留相对路径 "./test_wudian_{_PID}.db"：config._resolve_backend_path 会把
+# 相对值解析到 backend/ 之下，与上面 :24 删除、:126 init_db() 用的是同一个文件，
+# 换成绝对路径会让 test_hackathon_readiness.py 的 startswith(backend_root) 断言失败。
+# ---------------------------------------------------------------------------
+_ISOLATED_DB_URL = f"sqlite+aiosqlite:///./test_wudian_{_PID}.db"
+
+_inherited_db_url = os.environ.get("DATABASE_URL")
+if _inherited_db_url and _inherited_db_url != _ISOLATED_DB_URL:
+    print(
+        "\n[SAFETY-001/DB] 检测到继承的 DATABASE_URL："
+        f"{_inherited_db_url}\n"
+        f"    已强制改用本进程隔离测试库 {_ISOLATED_DB_URL}，"
+        "以免测试对真实数据库建表/写入。\n",
+        file=sys.stderr,
+    )
+os.environ["DATABASE_URL"] = _ISOLATED_DB_URL
 
 # ---------------------------------------------------------------------------
 # 向量索引隔离（安全硬约束）
@@ -98,6 +132,113 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+
+
+# ---------------------------------------------------------------------------
+# TEST-HARNESS-INDEX-EMPTY-001 修复：显式构建隔离索引
+# ---------------------------------------------------------------------------
+# 缺陷：`build_index()` 只注册在 FastAPI 的 lifespan 里（app/main.py:58-74），
+# 而本文件的 TestClient 说明（见下方 client 夹具）已明确记录本环境的
+# starlette/httpx 组合下 **TestClient 上下文管理器不触发 lifespan**。因此
+# 直接调用检索服务的测试（不经 client 夹具的那些）面对的是一个
+# collection.count() == 0 的空索引，命中数类断言测的是"没有索引"而不是行为。
+#
+# 实测证据（隔离副本）：
+#   A 生产副本          -> 17 条 sc 查询 0 dead
+#   B 空目录            -> 8 dead
+#   C 隔离目录+显式建索引 -> 0 dead
+#   D 仅 import app.main -> count=0, 8 dead
+#   E D + build_index()  -> 0 dead
+# 空索引复现出与 RM-005 代码无关的同一组 8 dead，证明是 harness 缺陷。
+#
+# 修法：加一个 session 级 autouse 夹具，在**隔离目录**上构建一次索引。
+# 安全性：CHROMA_PERSIST_DIR 已在本文件上方被硬赋值为 per-PID 隔离目录
+# （SAFETY-001），因此 build_index() 只会写测试目录；生产索引不会被打开。
+# 另加一道断言，确保隔离目录确实不是生产目录，避免将来有人改动上面的赋值
+# 时这里静默变成"重建生产索引"。
+# ---------------------------------------------------------------------------
+def _assert_isolated_chroma() -> None:
+    """硬保证 build_index() 不会作用于生产索引。"""
+
+    def _resolve(value: str) -> Path:
+        p = Path(value)
+        return (p if p.is_absolute() else (backend_dir / p)).resolve()
+
+    active = _resolve(os.environ["CHROMA_PERSIST_DIR"])
+    if active == _PROD_CHROMA_DIR:
+        raise RuntimeError(
+            "拒绝在**生产索引**上构建测试索引：CHROMA_PERSIST_DIR "
+            f"指向 {_PROD_CHROMA_DIR}。这是 SAFETY-001 保护的目录。"
+        )
+    if active.name.startswith("_test_iso_chroma_") is False:
+        raise RuntimeError(
+            f"测试索引目录不是预期的 per-PID 隔离目录：{active}"
+        )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_test_index():
+    """在隔离目录上构建一次索引，使检索类断言面对真实语料而非空集合。
+
+    TEST-HARNESS-INDEX-EMPTY-001。不触碰生产索引（上方断言强制）。
+    """
+    _assert_isolated_chroma()
+
+    from app.services.rag_service import get_rag_service
+
+    rag = get_rag_service()
+    if rag.collection is None or rag.collection.count() == 0:
+        rag.build_index()
+    yield
+
+
+# ---------------------------------------------------------------------------
+# TEST-HARNESS-FORCE-REBUILD-003：进程内只允许一次破坏性重建
+# ---------------------------------------------------------------------------
+# 缺陷：多个测试类各自调用 ``build_index(force=True)``，而 force 会先
+# ``_clear_collection()`` 再重新 upsert。在**同一进程内反复**清空并重建 HNSW
+# 段，会在 chromadb 内部留下不一致状态，实测报错：
+#
+#     chromadb.errors.InternalError:
+#         Error in compaction: Failed to apply logs to the hnsw segment writer
+#
+# 该错误随后使 test_fix003_recall.py 的 7 个用例在 setUpClass 阶段 ERROR。
+#
+# 实测（21 个模块固定顺序，同一台机器）：
+#   原始 conftest                         -> 6 failed, 7 errors
+#   + 本文件 _ensure_test_index 夹具      -> 1 failed, 7 errors
+# 也就是说这 7 个 ERROR 是**既有缺陷**，与本轮 RM-005/RM-006 改动无关；
+# 但它妨碍把测试套件当作可信证据引用，因此在这里一并消除。
+#
+# 修法：提供共享助手，保证**每进程只做一次**破坏性重建。后续调用若发现索引
+# 已就绪且含百家论道语料，就直接复用而不再清空——保留测试原意（在真实索引上
+# 断言），同时消除自我破坏的重复重建。
+# ---------------------------------------------------------------------------
+_REBUILD_DONE = False
+
+
+def ensure_index_built(rag) -> int:
+    """幂等地保证隔离索引已构建。每进程最多一次破坏性重建。
+
+    返回当前 collection 条数。不触碰生产索引（见 _assert_isolated_chroma）。
+    """
+    global _REBUILD_DONE
+
+    _assert_isolated_chroma()
+
+    if rag.collection is None:
+        return 0
+
+    ready = (rag.collection.count() > 0 and rag._collection_has_debate_classics())
+
+    if _REBUILD_DONE and ready:
+        return rag.collection.count()
+
+    if not ready:
+        rag.build_index(force=True)
+    _REBUILD_DONE = True
+    return rag.collection.count()
+
 
 
 @pytest.fixture(scope="session")
