@@ -1,0 +1,36 @@
+{
+  "task": "RM-004 frozen gate rebaseline",
+  "date": "2026-10-12",
+  "branch": "codex/overall-optimization",
+  "evaluation": {
+    "command": "backend/.venv/Scripts/python.exe ../eval/scripts/run_eval.py --out <isolated-temp-file>",
+    "used_production_chroma": false,
+    "production_client_opened": false,
+    "metrics_source": "eval/scripts/metrics.py",
+    "gold_modified": false,
+    "targets_modified": false,
+    "observed": {
+      "quote_exactness": {"numerator": 18, "denominator": 18, "value": 1.0, "passed": true},
+      "unsupported_correct_refusal": {"numerator": 11, "denominator": 12, "value": 0.9166666666666666, "passed": false, "failures": ["uq-0009"]},
+      "recall_at_5": {"numerator": 22, "denominator": 40, "value": 0.55, "passed": false},
+      "core_claim_evidence_coverage": {"numerator": 40, "denominator": 40, "value": 1.0, "passed": true},
+      "source_attribution": {"numerator": 18, "denominator": 18, "value": 1.0, "passed": true},
+      "fabricated_classical_quote": {"value": 0, "samples": 20, "passed": true},
+      "school_leakage": {"numerator": 0, "denominator": 19, "value": 0.0, "passed": true}
+    }
+  },
+  "production_chroma_fingerprint_read_only": {
+    "chroma.sqlite3": {"bytes": 4120576, "sha256": "4C97B5D03991E436457206D7D26682C71C634D2C09F93F639E769172479EDA31"},
+    "4a2cb26c-8aee-409b-a934-af1dcf8578d7/data_level0.bin": {"bytes": 167600, "sha256": "2A3617E926A15F4587921C9B8245D4838B0C3EA7B7474AED135629228AD657F0"},
+    "4a2cb26c-8aee-409b-a934-af1dcf8578d7/header.bin": {"bytes": 100, "sha256": "A0E81C3B22454233BC12D0762F06DCCA48261A75231CF87C79B75E69A6C00150"},
+    "4a2cb26c-8aee-409b-a934-af1dcf8578d7/index_metadata.pickle": {"bytes": 124, "sha256": "F2F8EBED3E12A7E2FD749CC7768509826ABC35C07294A1DA59B925B408636CF6"},
+    "4a2cb26c-8aee-409b-a934-af1dcf8578d7/length.bin": {"bytes": 400, "sha256": "FC0C4D072FAD28088E8A1BBABD2B683334A8014D038591B373B9AAE04198B5FD"},
+    "4a2cb26c-8aee-409b-a934-af1dcf8578d7/link_lists.bin": {"bytes": 0, "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"}
+  },
+  "verdict": "BASELINE_RECORDED",
+  "limitations": [
+    "uq-0009 remains the only E failure and is not cleared by this rebaseline.",
+    "F remains bounded by the current local hash embedding; this task does not alter retrieval behavior.",
+    "The sqlite fingerprint is a byte observation only; it is not semantic corpus integrity proof."
+  ]
+}

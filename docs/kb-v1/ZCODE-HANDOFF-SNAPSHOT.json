@@ -1,0 +1,83 @@
+{
+  "protected_files": [
+    {
+      "path": "eval/quote_verification.jsonl",
+      "bytes": 8678,
+      "sha256": "552f504849e0546d23f6138d65569e266653977e5e7927c227f1b77b15b653cb"
+    },
+    {
+      "path": "eval/source_attribution.jsonl",
+      "bytes": 6671,
+      "sha256": "6d0708e514bf195e6f54ca27823df2719cceba6f5dfd4574862fe08c7236863f"
+    },
+    {
+      "path": "eval/adversarial_quotes.jsonl",
+      "bytes": 10867,
+      "sha256": "a83b90d776f78fc3c9a5a7b816d4701dbb4ee83cf262fe1963526f041279c521"
+    },
+    {
+      "path": "eval/unsupported_questions.jsonl",
+      "bytes": 5327,
+      "sha256": "5b82a95eecf87f9db473ffeaacd8bb19f86accdbee71fcf70077da59ea3fd435"
+    },
+    {
+      "path": "eval/retrieval_gold.jsonl",
+      "bytes": 16666,
+      "sha256": "2b3f9a62367a0eee37f2071d0d85f5734e6eb71f874b59559970c24b5252fd68"
+    },
+    {
+      "path": "eval/school_consistency.jsonl",
+      "bytes": 5800,
+      "sha256": "a7445e658b90f1425473ba1bbb715772ae78c4a6088345b3c46230e4677444a1"
+    },
+    {
+      "path": "eval/modern_to_classic.jsonl",
+      "bytes": 9954,
+      "sha256": "3f4a0563c14896a3688b464593a7fb64880948f67abf3f243f1df37c5fa5034d"
+    },
+    {
+      "path": "eval/scripts/metrics.py",
+      "bytes": 16320,
+      "sha256": "8b1fb654056ba3f44e2f77e89ef95e2ed847ef9069eecc80366545aba4311a71"
+    }
+  ],
+  "chroma_files": [
+    {
+      "path": "backend/chroma_db/4a2cb26c-8aee-409b-a934-af1dcf8578d7/data_level0.bin",
+      "bytes": 167600,
+      "sha256": "2a3617e926a15f4587921c9b8245d4838b0c3ea7b7474aed135629228ad657f0"
+    },
+    {
+      "path": "backend/chroma_db/4a2cb26c-8aee-409b-a934-af1dcf8578d7/header.bin",
+      "bytes": 100,
+      "sha256": "a0e81c3b22454233bc12d0762f06dcca48261a75231cf87c79b75e69a6c00150"
+    },
+    {
+      "path": "backend/chroma_db/4a2cb26c-8aee-409b-a934-af1dcf8578d7/index_metadata.pickle",
+      "bytes": 124,
+      "sha256": "f2f8ebed3e12a7e2fd749cc7768509826abc35c07294a1da59b925b408636cf6"
+    },
+    {
+      "path": "backend/chroma_db/4a2cb26c-8aee-409b-a934-af1dcf8578d7/length.bin",
+      "bytes": 400,
+      "sha256": "fc0c4d072fad28088e8a1bbabd2b683334a8014d038591b373b9aae04198b5fd"
+    },
+    {
+      "path": "backend/chroma_db/4a2cb26c-8aee-409b-a934-af1dcf8578d7/link_lists.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/chroma_db/chroma.sqlite3",
+      "bytes": 4120576,
+      "sha256": "d5184ba4f9f77729d629c832278fb6ac43f628b3267799f3e474278459989bda"
+    }
+  ],
+  "prepared_date": "2026-10-09",
+  "timezone": "Asia/Tokyo",
+  "kind": "handoff preparation filesystem snapshot; not independent audit",
+  "head": "899519b7735045c54d7a8fec44f87fef867cdc12",
+  "origin_main_local_ref": "64c861828eb8f1ec8816eb8d95212f78cdc7faeb",
+  "ahead": 22
+}
+

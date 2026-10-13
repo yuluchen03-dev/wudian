@@ -1,0 +1,791 @@
+{
+  "isolation": {
+    "iso_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\dsh_rm005_trace_wuk9ru58",
+    "prod_dir": "D:\\systemDir\\Desktop\\悟典\\backend\\chroma_db"
+  },
+  "queries": {
+    "uq-0009": {
+      "id": "uq-0009",
+      "query": "如何面对亲人的离世？",
+      "gold": "must_refuse / unsupported (gold)",
+      "guard": null,
+      "synonyms_matched": {},
+      "expanded_query": "如何面对亲人的离世？",
+      "keywords": [
+        "如何面对亲人的离世",
+        "何面",
+        "面对",
+        "对亲",
+        "亲人",
+        "人离",
+        "离世",
+        "何",
+        "面",
+        "对",
+        "亲",
+        "人",
+        "离",
+        "世"
+      ],
+      "per_sage": {
+        "confucius": {
+          "vec_n": 0,
+          "kw_n": 2,
+          "final_verses_n": 2,
+          "final_commentaries_n": 0,
+          "branch": "keyword",
+          "items": [
+            {
+              "verse_id": "lunyu-taibo-01",
+              "similarity": 0.25,
+              "original": "士不可以不弘毅，任重而道远。",
+              "source": "《论语·泰伯》",
+              "keywords": [
+                "弘毅",
+                "任重道远",
+                "责任",
+                "志向",
+                "有为",
+                "躺平",
+                "担当"
+              ],
+              "index_original": "士不可以不弘毅，任重而道远。",
+              "translation": "士人不可以不胸怀宽广、意志坚定，因为责任重大，道路遥远。"
+            },
+            {
+              "verse_id": "lunyu-weilinggong-01",
+              "similarity": 0.25,
+              "original": "君子谋道不谋食。",
+              "source": "《论语·卫灵公》",
+              "keywords": [
+                "君子",
+                "谋道",
+                "价值",
+                "工作",
+                "人生",
+                "金钱"
+              ],
+              "index_original": "君子谋道不谋食。",
+              "translation": "君子谋求的是道义，不只是口腹生计。"
+            }
+          ]
+        },
+        "laozi": {
+          "vec_n": 0,
+          "kw_n": 3,
+          "final_verses_n": 3,
+          "final_commentaries_n": 0,
+          "branch": "keyword",
+          "items": [
+            {
+              "verse_id": "daodejing-33-01",
+              "similarity": 0.375,
+              "original": "知人者智，自知者明。",
+              "source": "《道德经·第三十三章》",
+              "keywords": [
+                "自知",
+                "明",
+                "选择",
+                "人生",
+                "困惑",
+                "判断"
+              ],
+              "index_original": "知人者智，自知者明。",
+              "translation": "了解别人是智慧，了解自己才是明达。"
+            },
+            {
+              "verse_id": "daodejing-22-01",
+              "similarity": 0.25,
+              "original": "夫唯不争，故天下莫能与之争。",
+              "source": "《道德经·第二十二章》",
+              "keywords": [
+                "不争",
+                "自在",
+                "放下",
+                "躺平",
+                "内卷",
+                "争胜",
+                "顺势"
+              ],
+              "index_original": "夫唯不争，故天下莫能与之争。",
+              "translation": "正因为不与人争，所以天下反而没有谁能与他相争。"
+            },
+            {
+              "verse_id": "daodejing-08-01",
+              "similarity": 0.25,
+              "original": "上善若水，水善利万物而不争。",
+              "source": "《道德经·第八章》",
+              "keywords": [
+                "不争",
+                "柔弱",
+                "水",
+                "处世",
+                "安放",
+                "顺道"
+              ],
+              "index_original": "上善若水，水善利万物而不争。",
+              "translation": "最高的善像水一样，善于利益万物而不争夺。"
+            }
+          ]
+        },
+        "mozi": {
+          "vec_n": 0,
+          "kw_n": 3,
+          "final_verses_n": 3,
+          "final_commentaries_n": 0,
+          "branch": "keyword",
+          "items": [
+            {
+              "verse_id": "mozi-feile-01",
+              "similarity": 0.25,
+              "original": "赖其力者生，不赖其力者不生。",
+              "source": "《墨子·非乐上》",
+              "keywords": [
+                "强力",
+                "努力",
+                "躺平",
+                "非命",
+                "行动",
+                "生存",
+                "责任"
+              ],
+              "index_original": "赖其力者生，不赖其力者不生。",
+              "translation": "依靠自己出力的人能够生存，不依靠自己出力的人难以生存。"
+            },
+            {
+              "verse_id": "mozi-jianai-01",
+              "similarity": 0.25,
+              "original": "兼相爱，交相利。",
+              "source": "《墨子·兼爱上》",
+              "keywords": [
+                "兼爱",
+                "利他",
+                "社会",
+                "责任",
+                "公平",
+                "天下"
+              ],
+              "index_original": "兼相爱，交相利。",
+              "translation": "人与人应当普遍相爱，并且相互成就利益。"
+            },
+            {
+              "verse_id": "mozi-feigong-01",
+              "similarity": 0.25,
+              "original": "兴天下之利，除天下之害。",
+              "source": "《墨子·非攻上》",
+              "keywords": [
+                "天下",
+                "利害",
+                "责任",
+                "发声",
+                "不公",
+                "行动"
+              ],
+              "index_original": "兴天下之利，除天下之害。",
+              "translation": "兴办对天下有利的事，除去对天下有害的事。"
+            }
+          ]
+        },
+        "hanfeizi": {
+          "vec_n": 0,
+          "kw_n": 1,
+          "final_verses_n": 1,
+          "final_commentaries_n": 0,
+          "branch": "keyword",
+          "items": [
+            {
+              "verse_id": "hanfeizi-wuzhu-01",
+              "similarity": 0.375,
+              "original": "世异则事异，事异则备变。",
+              "source": "《韩非子·五蠹》",
+              "keywords": [
+                "变化",
+                "现实",
+                "务实",
+                "内卷",
+                "选择",
+                "变通"
+              ],
+              "index_original": "世异则事异，事异则备变。",
+              "translation": "世道不同，事情就不同；事情不同，准备也应随之变化。"
+            }
+          ]
+        }
+      },
+      "total_hits": 9,
+      "refusal_branch_fires": false,
+      "harness_prediction": {
+        "trust_state": "quote_relaxed",
+        "answer_text": "",
+        "presented_quote_as_classic": true
+      },
+      "downstream": [
+        {
+          "sage": "confucius",
+          "verse_id": "lunyu-taibo-01",
+          "similarity": 0.25,
+          "original": "士不可以不弘毅，任重而道远。",
+          "source": "《论语·泰伯》",
+          "keywords": [
+            "弘毅",
+            "任重道远",
+            "责任",
+            "志向",
+            "有为",
+            "躺平",
+            "担当"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "论语",
+            "春秋",
+            "诗经",
+            "尚书",
+            "礼记",
+            "周易"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "confucius",
+          "verse_id": "lunyu-weilinggong-01",
+          "similarity": 0.25,
+          "original": "君子谋道不谋食。",
+          "source": "《论语·卫灵公》",
+          "keywords": [
+            "君子",
+            "谋道",
+            "价值",
+            "工作",
+            "人生",
+            "金钱"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "论语",
+            "春秋",
+            "诗经",
+            "尚书",
+            "礼记",
+            "周易"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "laozi",
+          "verse_id": "daodejing-33-01",
+          "similarity": 0.375,
+          "original": "知人者智，自知者明。",
+          "source": "《道德经·第三十三章》",
+          "keywords": [
+            "自知",
+            "明",
+            "选择",
+            "人生",
+            "困惑",
+            "判断"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "道德经",
+            "老子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "laozi",
+          "verse_id": "daodejing-22-01",
+          "similarity": 0.25,
+          "original": "夫唯不争，故天下莫能与之争。",
+          "source": "《道德经·第二十二章》",
+          "keywords": [
+            "不争",
+            "自在",
+            "放下",
+            "躺平",
+            "内卷",
+            "争胜",
+            "顺势"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "道德经",
+            "老子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "laozi",
+          "verse_id": "daodejing-08-01",
+          "similarity": 0.25,
+          "original": "上善若水，水善利万物而不争。",
+          "source": "《道德经·第八章》",
+          "keywords": [
+            "不争",
+            "柔弱",
+            "水",
+            "处世",
+            "安放",
+            "顺道"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "道德经",
+            "老子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "mozi",
+          "verse_id": "mozi-feile-01",
+          "similarity": 0.25,
+          "original": "赖其力者生，不赖其力者不生。",
+          "source": "《墨子·非乐上》",
+          "keywords": [
+            "强力",
+            "努力",
+            "躺平",
+            "非命",
+            "行动",
+            "生存",
+            "责任"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "墨子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "mozi",
+          "verse_id": "mozi-jianai-01",
+          "similarity": 0.25,
+          "original": "兼相爱，交相利。",
+          "source": "《墨子·兼爱上》",
+          "keywords": [
+            "兼爱",
+            "利他",
+            "社会",
+            "责任",
+            "公平",
+            "天下"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "墨子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "mozi",
+          "verse_id": "mozi-feigong-01",
+          "similarity": 0.25,
+          "original": "兴天下之利，除天下之害。",
+          "source": "《墨子·非攻上》",
+          "keywords": [
+            "天下",
+            "利害",
+            "责任",
+            "发声",
+            "不公",
+            "行动"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "墨子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "hanfeizi",
+          "verse_id": "hanfeizi-wuzhu-01",
+          "similarity": 0.375,
+          "original": "世异则事异，事异则备变。",
+          "source": "《韩非子·五蠹》",
+          "keywords": [
+            "变化",
+            "现实",
+            "务实",
+            "内卷",
+            "选择",
+            "变通"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "韩非子",
+            "韩非"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        }
+      ]
+    },
+    "sc-0003": {
+      "id": "sc-0003",
+      "query": "如何面对失败",
+      "gold": "legal control, sage=confucius (gold)",
+      "guard": null,
+      "synonyms_matched": {
+        "失败": [
+          "败",
+          "失"
+        ]
+      },
+      "expanded_query": "如何面对失败 败 失",
+      "keywords": [
+        "如何面对失败",
+        "何面",
+        "面对",
+        "对失",
+        "失败",
+        "何",
+        "面",
+        "对",
+        "失",
+        "败"
+      ],
+      "per_sage": {
+        "confucius": {
+          "vec_n": 0,
+          "kw_n": 0,
+          "final_verses_n": 1,
+          "final_commentaries_n": 0,
+          "branch": "sage_chat_fallback",
+          "items": [
+            {
+              "verse_id": "2.20",
+              "similarity": 0.1125,
+              "original": "季康子问：「使民敬、忠以劝，如之何？」子曰：「临之以庄则敬，孝慈则忠，举善而教不能则劝。」",
+              "source": "《论语·为政》",
+              "keywords": [],
+              "index_original": "",
+              "translation": "季康子问道：「要让百姓恭敬、忠诚并互相勉励，怎么办？」孔子说：「以庄重的态度对待"
+            }
+          ]
+        },
+        "laozi": {
+          "vec_n": 0,
+          "kw_n": 0,
+          "final_verses_n": 0,
+          "final_commentaries_n": 0,
+          "branch": "empty",
+          "items": []
+        },
+        "mozi": {
+          "vec_n": 0,
+          "kw_n": 1,
+          "final_verses_n": 1,
+          "final_commentaries_n": 0,
+          "branch": "keyword",
+          "items": [
+            {
+              "verse_id": "mozi-feigong-01",
+              "similarity": 0.25,
+              "original": "兴天下之利，除天下之害。",
+              "source": "《墨子·非攻上》",
+              "keywords": [
+                "天下",
+                "利害",
+                "责任",
+                "发声",
+                "不公",
+                "行动"
+              ],
+              "index_original": "兴天下之利，除天下之害。",
+              "translation": "兴办对天下有利的事，除去对天下有害的事。"
+            }
+          ]
+        },
+        "hanfeizi": {
+          "vec_n": 1,
+          "kw_n": 1,
+          "final_verses_n": 1,
+          "final_commentaries_n": 0,
+          "branch": "vector",
+          "items": [
+            {
+              "verse_id": "hanfeizi-wai-chu-shuo-01",
+              "similarity": 0.115108,
+              "original": "事以密成，语以泄败。",
+              "source": "《韩非子·外储说左上》",
+              "keywords": [
+                "务实",
+                "策略",
+                "风险",
+                "现实",
+                "行动",
+                "判断"
+              ],
+              "index_original": "事以密成，语以泄败。",
+              "translation": "事情因为保密而成，言语因为泄露而败。"
+            }
+          ]
+        }
+      },
+      "total_hits": 3,
+      "refusal_branch_fires": false,
+      "harness_prediction": {
+        "trust_state": "quote_relaxed",
+        "answer_text": "",
+        "presented_quote_as_classic": true
+      },
+      "downstream": [
+        {
+          "sage": "confucius",
+          "verse_id": "2.20",
+          "similarity": 0.1125,
+          "original": "季康子问：「使民敬、忠以劝，如之何？」子曰：「临之以庄则敬，孝慈则忠，举善而教不能则劝。」",
+          "source": "《论语·为政》",
+          "keywords": [],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "论语",
+            "春秋",
+            "诗经",
+            "尚书",
+            "礼记",
+            "周易"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "mozi",
+          "verse_id": "mozi-feigong-01",
+          "similarity": 0.25,
+          "original": "兴天下之利，除天下之害。",
+          "source": "《墨子·非攻上》",
+          "keywords": [
+            "天下",
+            "利害",
+            "责任",
+            "发声",
+            "不公",
+            "行动"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "墨子"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        },
+        {
+          "sage": "hanfeizi",
+          "verse_id": "hanfeizi-wai-chu-shuo-01",
+          "similarity": 0.115108,
+          "original": "事以密成，语以泄败。",
+          "source": "《韩非子·外储说左上》",
+          "keywords": [
+            "务实",
+            "策略",
+            "风险",
+            "现实",
+            "行动",
+            "判断"
+          ],
+          "expand_matched_keywords": [],
+          "school_whitelist": [
+            "韩非子",
+            "韩非"
+          ],
+          "in_school_whitelist": true,
+          "verify_quote": {
+            "quote_exists": true,
+            "source_correct": true,
+            "match_type": "exact",
+            "trust_state": "verified",
+            "correct_source": null
+          },
+          "displayable_as_classic": true,
+          "citation_validator_status": "all_verified",
+          "citation_validator_verifiable": true,
+          "claim_support": "supported",
+          "claim_message": ""
+        }
+      ]
+    }
+  },
+  "divergence_table": [
+    {
+      "field": "query text",
+      "uq-0009": "如何面对亲人的离世？",
+      "sc-0003": "如何面对失败"
+    },
+    {
+      "field": "guard",
+      "uq-0009": "None",
+      "sc-0003": "None"
+    },
+    {
+      "field": "SYNONYM_MAP hits",
+      "uq-0009": "{}",
+      "sc-0003": "{'失败': ['败', '失']}"
+    },
+    {
+      "field": "expanded query",
+      "uq-0009": "如何面对亲人的离世？",
+      "sc-0003": "如何面对失败 败 失"
+    },
+    {
+      "field": "_extract_keywords",
+      "uq-0009": "['如何面对亲人的离世', '何面', '面对', '对亲', '亲人', '人离', '离世', '何', '面', '对', '亲', '人', '离', '世']",
+      "sc-0003": "['如何面对失败', '何面', '面对', '对失', '失败', '何', '面', '对', '失', '败']"
+    },
+    {
+      "field": "vector hits (4 sages)",
+      "uq-0009": "0",
+      "sc-0003": "1"
+    },
+    {
+      "field": "keyword hits (4 sages)",
+      "uq-0009": "9",
+      "sc-0003": "2"
+    },
+    {
+      "field": "four-sage verse hits",
+      "uq-0009": "9",
+      "sc-0003": "3"
+    },
+    {
+      "field": "refusal branch fires",
+      "uq-0009": "False",
+      "sc-0003": "False"
+    },
+    {
+      "field": "harness trust_state",
+      "uq-0009": "quote_relaxed",
+      "sc-0003": "quote_relaxed"
+    }
+  ],
+  "prod_chroma_unchanged": true
+}

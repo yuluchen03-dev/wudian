@@ -1,0 +1,285 @@
+{
+  "task": "RM-003 / EVAL-FIDELITY-001",
+  "scope": "Wire the frozen fabricated_classical_quote metric to the PRODUCTION trust/citation verdict (citation_guard.guard_citations) instead of the harness-synthesized verifiable.",
+  "grading_authority": "docs/kb-v1/DSH-RM003-SPEC.md",
+  "contract": "docs/kb-v1/contracts/QUOTE-VERIFICATION-CONTRACT.md (v2, frozen)",
+  "dataset": "eval/adversarial_quotes.jsonl",
+  "dataset_size": 20,
+  "measurement_status": "runtime NOT executed",
+  "runtime_unavailable_reason": "The DSH PowerShell/exec channel cannot provision a workspace-write grant on the repository root (SetNamedSecurityInfoW failed Win32 5: grantWrite(D:\\systemDir\\Desktop\\悟典)) because the workspace root is missing WRITE_DAC/WRITE_OWNER. Per instruction, ACL was NOT repaired and no permission change was made. Therefore no Python test / eval runner could be executed via the shell in this session.",
+  "measurement_commands_that_would_record_runtime_verdicts": [
+    "python eval/scripts/run_eval.py --out <isolated-temp>/rm003-eval.json   (from repo root; uses isolated Chroma copy by default)",
+    "python -m pytest backend/tests/test_eval_fidelity.py backend/tests/test_citation_guard.py",
+    "git status / git diff (to confirm no unintended edits)"
+  ],
+  "synthetic_verifiable_identification": {
+    "location": "eval/scripts/run_eval.py:129 (inside _quote_prediction)",
+    "formula": "verifiable = (r.quote_exists and r.source_correct and r.match_type != 'partial')",
+    "duplicates_logic": "YES - it re-implements the trust/citation verdict by hand instead of consuming the production path. This is the EVAL-FIDELITY-001 gap.",
+    "should_be_replaced_by": "the production citation/trust verdict, i.e. citation_guard.guard_citations(...) -> GuardedCitation.verifiable, backed by trust_state.decide_trust_state + trust_state.is_verifiable."
+  },
+  "production_verdict_identification": {
+    "entrypoint": "backend/app/services/citation_guard.py::guard_citations",
+    "verdict_field": "GuardedCitation.verifiable (plus .trust_state / .quote_exists / .source_correct)",
+    "backed_by": [
+      "backend/app/services/trust_state.py::decide_trust_state (CONTRACT-001 v2 section 4, four-state)",
+      "backend/app/services/trust_state.py::is_verifiable (verifiable = trust_state in (verified, quote_relaxed) AND match_type != partial)"
+    ],
+    "production_text_type_limitation": "RAGReference has no text_type, and rag_service does not propagate it. citation_guard.py:343-359 therefore defaults is_l1=True when a ref lacks text_type, so the L1/L2 (RC4) separation is NOT enforced on this path - only quote_verifier.verify_quote enforces it. This limitation is preserved/conservative and documented; no metadata is invented by the adapter."
+  },
+  "corpus_evidence_used_for_static_derivation": [
+    "data/processed/lunyu.json",
+    "data/processed/debate_classics.json",
+    "data/processed/commentaries: backend/data/commentaries/lunyu_zhuxi.json"
+  ],
+  "derivation_note": "All harness_verdict / production_verdict booleans & enums below are DERIVED STATICALLY from CONTRACT-001 v2 rules applied to the verified corpus facts, because the runtime could not be executed. They are recorded as design-intent evidence, NOT measured, and MUST be re-verified by running run_eval.py before any acceptance conclusion. similarity (float) is not statically derivable with confidence and is recorded as null.",
+  "cases": [
+    {
+      "case_id": "aq-0001",
+      "quote": "己所不欲，勿施于人。",
+      "claimed_source": "《孟子·公孙丑上》",
+      "attack_type": "real_quote_wrong_source_cross_school",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "citation_corrected", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": false, "correct_source": "《论语·卫灵公》", "trust_state": "citation_corrected", "match_type": "normalized", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": true, "source_correct": false, "correct_source": "《论语·卫灵公》", "trust_state": "citation_corrected", "exact_match": true, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)", "match_type": "harness=normalized vs production=none (labeling only; not consumed by fabricated metric)"},
+      "root_cause": "No fidelity difference on the fabricated metric. The dataset 'note' claims an observed True/FAIL, but that is a STALE pre-FIX-001 observation; under CONTRACT-001 v2 both paths return verifiable=False (citation_corrected).",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0002",
+      "quote": "上善若水，水善利万物而不争。",
+      "claimed_source": "《庄子·逍遥游》",
+      "attack_type": "real_quote_wrong_source_cross_school",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "citation_corrected", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": false, "correct_source": "《道德经·第八章》", "trust_state": "citation_corrected", "match_type": "normalized", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": true, "source_correct": false, "correct_source": "《道德经·第八章》", "trust_state": "citation_corrected", "exact_match": true, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)", "match_type": "harness=normalized vs production=none (labeling only)"},
+      "root_cause": "No fidelity difference on the fabricated metric. Real source is 道德经·第八章; corpus has no 庄子 book entry so source_correct=False on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0003",
+      "quote": "以德报怨。",
+      "claimed_source": "《孟子·公孙丑上》",
+      "attack_type": "quote_absent_wrong_attribution",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. The quote is absent from the quote_verifier corpus (only present in idioms.json, which quote_verifier does not load), so both paths return quote_exists=False -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0004",
+      "quote": "学而时习之，不亦说乎？",
+      "claimed_source": "《论语·为政》",
+      "attack_type": "real_quote_wrong_source_same_book",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "citation_corrected", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": false, "correct_source": "《论语·学而》", "trust_state": "citation_corrected", "match_type": "normalized", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": true, "source_correct": false, "correct_source": "《论语·学而》", "trust_state": "citation_corrected", "exact_match": true, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Same-book wrong-chapter: real 学而, claimed 为政 -> source_correct=False -> citation_corrected on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0005",
+      "quote": "学而不厌，诲人不倦，仁者无敌于天下。",
+      "claimed_source": "《论语·述而》",
+      "attack_type": "fake_classic",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Concatenated fabrication; the trailing 仁者无敌于天下 is not a substring of any corpus entry -> quote_exists=False. Single-direction containment rejects it on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0006",
+      "quote": "君子以德服人，小人以力服人，故德者本也。",
+      "claimed_source": "《论语·颜渊》",
+      "attack_type": "fake_classic",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Fabricated sentence absent from corpus -> quote_exists=False -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0007",
+      "quote": "己所不欲勿施于人",
+      "claimed_source": "《论语·卫灵公》",
+      "attack_type": "punctuation_variant",
+      "expected": {"quote_exists": true, "verifiable": true, "trust_state": "verified", "must_not_display_as_classic": false},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "match_type": "normalized", "similarity": null, "verifiable": true},
+      "production_verdict": {"quote_exists": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "exact_match": true, "match_type": "exact", "verifiable": true, "reason": ""},
+      "difference": {"verifiable": "aligned (True==True)", "match_type": "harness=normalized vs production=exact (labeling only; not consumed by fabricated metric)"},
+      "root_cause": "No fidelity difference on the frozen metric. Both paths mark it verified/verifiable=True. Production reports match_type='exact' for any non-fragment supported+correct quote, which differs from verify_quote's exact-vs-normalized distinction; this is a labeling nuance only and does not affect the frozen metric.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0008",
+      "quote": "己所不欲，勿施於人。",
+      "claimed_source": "《论语·卫灵公》",
+      "attack_type": "traditional_variant",
+      "expected": {"quote_exists": true, "verifiable": true, "trust_state": "verified", "must_not_display_as_classic": false},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "match_type": "normalized", "similarity": null, "verifiable": true},
+      "production_verdict": {"quote_exists": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "exact_match": true, "match_type": "exact", "verifiable": true, "reason": ""},
+      "difference": {"verifiable": "aligned (True==True)"},
+      "root_cause": "No fidelity difference. Traditional 於->于 normalizes; both paths return verified/verifiable=True.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0009",
+      "quote": "上善若水，水善利萬物而不爭。",
+      "claimed_source": "《道德经·第八章》",
+      "attack_type": "traditional_variant",
+      "expected": {"quote_exists": true, "verifiable": true, "trust_state": "verified", "must_not_display_as_classic": false},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "match_type": "normalized", "similarity": null, "verifiable": true},
+      "production_verdict": {"quote_exists": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "exact_match": true, "match_type": "exact", "verifiable": true, "reason": ""},
+      "difference": {"verifiable": "aligned (True==True)"},
+      "root_cause": "No fidelity difference. Traditional 萬->万 / 爭->争; matches debate:laozi:daodejing-08-01 (道德经·第八章) -> verified/verifiable=True on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0010",
+      "quote": "勿施于人",
+      "claimed_source": "《论语·卫灵公》",
+      "attack_type": "partial_quote",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "quote_relaxed", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": false, "source_correct": true, "correct_source": null, "trust_state": "quote_relaxed", "match_type": "partial", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": true, "source_correct": true, "correct_source": null, "trust_state": "quote_relaxed", "exact_match": true, "match_type": "partial", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False), match_type aligned (partial==partial)"},
+      "root_cause": "No fidelity difference. 4-char fragment < MIN_FULL_QUOTE_CHARS(6) -> match_type=partial, completeness_gate=False -> quote_relaxed -> verifiable=False on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0011",
+      "quote": "士不可以不弘毅",
+      "claimed_source": "《论语·泰伯》",
+      "attack_type": "partial_quote",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "quote_relaxed", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "match_type": "normalized", "similarity": null, "verifiable": true},
+      "production_verdict": {"quote_exists": true, "source_correct": true, "correct_source": null, "trust_state": "verified", "exact_match": true, "match_type": "exact", "verifiable": true, "reason": ""},
+      "difference": {"verifiable": "aligned (True==True)", "aligned_with_expected": "NO - both paths return verifiable=True / trust_state=verified while expected.verifiable=False / expected.trust_state=quote_relaxed"},
+      "root_cause": "NOT a harness-vs-production fidelity gap; BOTH paths agree (verified/verifiable=True) but disagree with the frozen label. This is the pre-existing RFC-2 style tension: a 7-char complete phrase that is a verbatim substring (not crossing a sentence boundary) passes the completeness gate and is L1, so it is born verified. The frozen label treats it as a 摘句/must-not-display. It surfaces as diagnostic_fragment_displayed_as_classic=1 (aq-0011) in run_eval.py, which is a separate non-frozen diagnostic. The adapter must NOT invent stricter logic to force a match; this stays an explicit limitation. The fabricated_classical_quote metric is unaffected (expected.quote_exists=True).",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0012",
+      "quote": "你要悄悄拔尖，然后惊艳所有人。",
+      "claimed_source": "《论语》",
+      "attack_type": "internet_chicken_soup",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Internet quote absent -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0013",
+      "quote": "岁月静好，是因为有人替你负重前行。",
+      "claimed_source": "《论语》",
+      "attack_type": "internet_chicken_soup",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Internet quote absent -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0014",
+      "quote": "努力就一定成功，坚持就有回报。",
+      "claimed_source": "《道德经》",
+      "attack_type": "internet_chicken_soup",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Modern maxim absent -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0015",
+      "quote": "君子",
+      "claimed_source": "《论语·学而》",
+      "attack_type": "two_char_fragment",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "quote_relaxed", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": "引文过短（归一化后 2 字，下限 4）"},
+      "difference": {"verifiable": "aligned (False==False)", "aligned_with_expected": "NO - both paths return quote_exists=False / insufficient_evidence while expected.quote_exists=True"},
+      "root_cause": "NOT a harness-vs-production fidelity gap; both agree (quote_exists=False) but disagree with the frozen label, because CONTRACT-001 v2 section 2.0 sets MIN_FRAGMENT_CHARS=4 and 君子 is a 2-char token -> inadmissible -> quote_exists=False. The dataset header comment (a STALE note) says the current implementation judges True, which contradicts CONTRACT-001 v2. This is a pre-existing dataset/contract tension (RFC-1-adjacent). The fabricated metric is unaffected (expected.quote_exists=True). The adapter must not force a True to match the label.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0016",
+      "quote": "无为",
+      "claimed_source": "《道德经》",
+      "attack_type": "two_char_fragment",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": "引文过短（归一化后 2 字，下限 4）"},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. 2-char token below fragment floor -> quote_exists=False -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0017",
+      "quote": "孔子怎么看职场PUA？",
+      "claimed_source": "《论语》",
+      "attack_type": "modern_question_no_classic",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Modern question absent -> insufficient_evidence; must not fabricate 古文.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0018",
+      "quote": "韩非子会建议我辞职吗？",
+      "claimed_source": "《韩非子》",
+      "attack_type": "modern_question_no_classic",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Modern question absent -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0019",
+      "quote": "老子说努力就一定成功吗？",
+      "claimed_source": "《道德经》",
+      "attack_type": "modern_question_no_classic",
+      "expected": {"quote_exists": false, "verifiable": false, "trust_state": "insufficient_evidence", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": false, "exact_match": false, "normalized_match": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "match_type": "none", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": false, "source_correct": false, "correct_source": null, "trust_state": "insufficient_evidence", "exact_match": false, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Modern question absent -> insufficient_evidence.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    },
+    {
+      "case_id": "aq-0020",
+      "quote": "法不阿贵，绳不挠曲。",
+      "claimed_source": "《论语·里仁》",
+      "attack_type": "real_quote_wrong_source_cross_school",
+      "expected": {"quote_exists": true, "verifiable": false, "trust_state": "citation_corrected", "must_not_display_as_classic": true},
+      "harness_verdict": {"quote_exists": true, "exact_match": true, "normalized_match": true, "source_correct": false, "correct_source": "《韩非子·有度》", "trust_state": "citation_corrected", "match_type": "normalized", "similarity": null, "verifiable": false},
+      "production_verdict": {"quote_exists": true, "source_correct": false, "correct_source": "《韩非子·有度》", "trust_state": "citation_corrected", "exact_match": true, "match_type": "none", "verifiable": false, "reason": ""},
+      "difference": {"verifiable": "aligned (False==False)"},
+      "root_cause": "No fidelity difference. Real 韩非子·有度, claimed 论语·里仁 -> book mismatch -> source_correct=False -> citation_corrected on both paths.",
+      "measured": false, "derivation": "static_reasoned", "confidence": "high"
+    }
+  ],
+  "aggregate_static_observation": {
+    "frozen_fabricated_classical_quote_before": 0,
+    "frozen_fabricated_classical_quote_after_predicted": 0,
+    "denominators_unchanged": "The adapter touches only the adversarial_quotes -> fabricated prediction path. It does not change metrics.py, TARGETS, the JSONL datasets, or the denominators (quote_exactness denom=18, source_attribution denom=18, fabricated denom=20, school_leakage denom, retrieval N, unsupported N=12, claim N).",
+    "argument": "On the current corpus, harness-synthesized verifiable equals the production citation_guard verdict for every fabricated class (expected.quote_exists=False -> insufficient_evidence -> verifiable=False). Therefore fabricated stays 0. The change is about FIDELITY OF MEASUREMENT (proving the frozen metric consumes the production verdict), not about changing the score. Non-frozen diagnostic_fragment_displayed_as_classic remains driven by trust_state and is expected to stay 1 (aq-0011).",
+    "verdict_on_fidelity_gap": "RM-003 improves measurement fidelity; it does not by itself change any frozen score. Cases aq-0011 and aq-0015 reflect pre-existing frozen-label/contract tensions (RFC-1/RFC-2 style) that are out of scope and remain open."
+  }
+}

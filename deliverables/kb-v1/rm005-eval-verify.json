@@ -1,0 +1,252 @@
+{
+  "note": "实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**（独立复核 D1 后收紧，早期版本仅 2 项委派）。目标数字来自 metrics.TARGETS，未做任何修改。",
+  "chroma": {
+    "used_production": false,
+    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_1ngiqlmg",
+    "integrity_checked": false,
+    "before": null,
+    "after": null
+  },
+  "targets_frozen": {
+    "quote_exactness": 0.99,
+    "source_attribution": 0.98,
+    "school_leakage_max": 0.01,
+    "recall_at_5": 0.9,
+    "unsupported_correct_refusal": 0.95,
+    "core_claim_evidence_coverage": 0.95,
+    "fabricated_classical_quote": 0,
+    "p50_seconds": 1.0,
+    "p95_seconds": 3.0
+  },
+  "results": {
+    "quote_exactness": {
+      "metric": "quote_exactness",
+      "numerator": 18,
+      "denominator": 18,
+      "value": 1.0,
+      "target": 0.99,
+      "passed": true,
+      "failures": []
+    },
+    "source_attribution": {
+      "metric": "source_attribution",
+      "numerator": 18,
+      "denominator": 18,
+      "value": 1.0,
+      "target": 0.98,
+      "passed": true,
+      "failures": []
+    },
+    "fabricated_classical_quote": {
+      "metric": "fabricated_classical_quote",
+      "value": 0,
+      "target": 0,
+      "passed": true,
+      "failures": [],
+      "diagnostic_fragment_displayed_as_classic": {
+        "note": "本模块补充的诊断，非 PROJECT-BRIEF ch.17 冻结指标。统计「语料中存在但仅为摘句」却被视为可作为完整经典原文展示的条数。",
+        "value": 1,
+        "samples": 20,
+        "failures": [
+          {
+            "id": "aq-0011",
+            "trust_state": "verified",
+            "match_type": "exact"
+          }
+        ]
+      },
+      "diagnostic_verdict_path": {
+        "note": "EVAL-FIDELITY-001：fabricated_classical_quote 现由生产 citation_guard.guard_citations 的 GuardedCitation.verifiable 驱动，而非 run_eval 的合成 verifiable。",
+        "path": "backend/app/services/citation_guard.py::guard_citations -> GuardedCitation.verifiable",
+        "refs_basis": "corpus-derived; text_type omitted to mirror production RAGReference (documented limitation, no metadata invented)"
+      }
+    },
+    "unsupported_correct_refusal": {
+      "metric": "unsupported_correct_refusal",
+      "numerator": 11,
+      "denominator": 12,
+      "value": 0.9166666666666666,
+      "target": 0.95,
+      "passed": false,
+      "failures": [
+        {
+          "id": "uq-0009",
+          "trust_state": "quote_relaxed",
+          "has_phrase": false,
+          "presented_quote_as_classic": true
+        }
+      ],
+      "basis": "信任层判定（无 LLM 凭证，Q5 阻塞）：四派检索均无命中 -> insufficient_evidence + ch.12 拒答文案。不是 LLM 端到端回答的验证。"
+    },
+    "school_leakage": {
+      "metric": "school_leakage",
+      "numerator": 0,
+      "denominator": 19,
+      "value": 0.0,
+      "target_max": 0.01,
+      "passed": true,
+      "failures": []
+    },
+    "retrieval": {
+      "recall_at_1": 0.325,
+      "recall_at_3": 0.475,
+      "recall_at_5": 0.55,
+      "mrr": 0.4091666666666667,
+      "target_recall_at_5": 0.9,
+      "passed": false,
+      "samples": 40,
+      "failures": [
+        {
+          "id": "rg-0001",
+          "expected": [
+            "12.2",
+            "15.24",
+            "4.16"
+          ],
+          "topk": [
+            "2.24",
+            "3.21",
+            "2.9",
+            "3.9",
+            "1.16"
+          ]
+        },
+        {
+          "id": "rg-0003",
+          "expected": [
+            "4.8",
+            "9.19"
+          ],
+          "topk": [
+            "2.20",
+            "1.4",
+            "1.12",
+            "2.9",
+            "fan_zhongyan:fanzhongyan-yueyanglouji-01"
+          ]
+        },
+        {
+          "id": "rg-0006",
+          "expected": [
+            "1.14",
+            "2.15"
+          ],
+          "topk": [
+            "19.7",
+            "1.2",
+            "1.4",
+            "4.5",
+            "14.24"
+          ]
+        },
+        {
+          "id": "rg-0010",
+          "expected": [
+            "13.6",
+            "2.1"
+          ],
+          "topk": [
+            "1.2",
+            "2.10",
+            "5.9",
+            "1.5",
+            "2.22"
+          ]
+        },
+        {
+          "id": "rg-0012",
+          "expected": [
+            "4.16",
+            "4.5"
+          ],
+          "topk": [
+            "2.20",
+            "mozi:mozi-jianai-01",
+            "mozi:mozi-feigong-01",
+            "2.10",
+            "3.3"
+          ]
+        },
+        {
+          "id": "rg-0015",
+          "expected": [
+            "4.8",
+            "9.19"
+          ],
+          "topk": [
+            "6.22",
+            "mozi:mozi-feile-01",
+            "3.6",
+            "2.8",
+            "laozi:daodejing-22-01"
+          ]
+        },
+        {
+          "id": "rg-0016",
+          "expected": [
+            "1.1",
+            "15.28"
+          ],
+          "topk": [
+            "20.3",
+            "11.12",
+            "hanfeizi:hanfeizi-youdu-01",
+            "7.3",
+            "3.1"
+          ]
+        },
+        {
+          "id": "rg-0018",
+          "expected": [
+            "1.12",
+            "12.2"
+          ],
+          "topk": [
+            "6.30",
+            "17.2",
+            "15.9",
+            "3.3",
+            "11.12"
+          ]
+        },
+        {
+          "id": "rg-0020",
+          "expected": [
+            "1.8",
+            "16.4"
+          ],
+          "topk": [
+            "2.10",
+            "3.3",
+            "1.10",
+            "1.2",
+            "2.22"
+          ]
+        },
+        {
+          "id": "rg-0021",
+          "expected": [
+            "laozi:daodejing-22-01",
+            "laozi:daodejing-33-01"
+          ],
+          "topk": [
+            "2.5",
+            "2.21",
+            "3.8",
+            "3.13",
+            "2.15"
+          ]
+        }
+      ]
+    },
+    "core_claim_evidence_coverage": {
+      "metric": "core_claim_evidence_coverage",
+      "numerator": 40,
+      "denominator": 40,
+      "value": 1.0,
+      "target": 0.95,
+      "passed": true,
+      "failures": []
+    }
+  }
+}
