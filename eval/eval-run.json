@@ -2,7 +2,7 @@
   "note": "实测结果：全部 7 项指标均调用 eval/scripts/metrics.py 的**冻结实现**（独立复核 D1 后收紧，早期版本仅 2 项委派）。目标数字来自 metrics.TARGETS，未做任何修改。",
   "chroma": {
     "used_production": false,
-    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_09auj3wq",
+    "isolated_dir": "C:\\Users\\hacjr\\AppData\\Local\\Temp\\wudian_eval_iso_chroma_5r3kwt4t",
     "integrity_checked": false,
     "before": null,
     "after": null
@@ -51,92 +51,24 @@
           {
             "id": "aq-0011",
             "trust_state": "verified",
-            "match_type": "normalized"
+            "match_type": "exact"
           }
         ]
+      },
+      "diagnostic_verdict_path": {
+        "note": "EVAL-FIDELITY-001：fabricated_classical_quote 现由生产 citation_guard.guard_citations 的 GuardedCitation.verifiable 驱动，而非 run_eval 的合成 verifiable。",
+        "path": "backend/app/services/citation_guard.py::guard_citations -> GuardedCitation.verifiable",
+        "refs_basis": "corpus-derived; text_type omitted to mirror production RAGReference (documented limitation, no metadata invented)"
       }
     },
     "unsupported_correct_refusal": {
       "metric": "unsupported_correct_refusal",
-      "numerator": 0,
+      "numerator": 12,
       "denominator": 12,
-      "value": 0.0,
+      "value": 1.0,
       "target": 0.95,
-      "passed": false,
-      "failures": [
-        {
-          "id": "uq-0001",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0002",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0003",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0004",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0005",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0006",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0007",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0008",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0009",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0010",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0011",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        },
-        {
-          "id": "uq-0012",
-          "trust_state": "quote_relaxed",
-          "has_phrase": false,
-          "presented_quote_as_classic": true
-        }
-      ],
+      "passed": true,
+      "failures": [],
       "basis": "信任层判定（无 LLM 凭证，Q5 阻塞）：四派检索均无命中 -> insufficient_evidence + ch.12 拒答文案。不是 LLM 端到端回答的验证。"
     },
     "school_leakage": {
@@ -149,10 +81,10 @@
       "failures": []
     },
     "retrieval": {
-      "recall_at_1": 0.1,
-      "recall_at_3": 0.275,
-      "recall_at_5": 0.325,
-      "mrr": 0.17916666666666667,
+      "recall_at_1": 0.325,
+      "recall_at_3": 0.475,
+      "recall_at_5": 0.55,
+      "mrr": 0.4091666666666667,
       "target_recall_at_5": 0.9,
       "passed": false,
       "samples": 40,
@@ -179,25 +111,11 @@
             "9.19"
           ],
           "topk": [
+            "2.20",
             "1.4",
             "1.12",
             "2.9",
-            "fanzhongyan-yueyanglouji-01",
-            "2.20"
-          ]
-        },
-        {
-          "id": "rg-0004",
-          "expected": [
-            "1.1",
-            "1.16"
-          ],
-          "topk": [
-            "2.10",
-            "6.30",
-            "3.2",
-            "3.18",
-            "15.16"
+            "fan_zhongyan:fanzhongyan-yueyanglouji-01"
           ]
         },
         {
@@ -207,11 +125,11 @@
             "2.15"
           ],
           "topk": [
+            "19.7",
+            "1.2",
             "1.4",
             "4.5",
-            "14.24",
-            "1.2",
-            "8.7"
+            "14.24"
           ]
         },
         {
@@ -221,11 +139,11 @@
             "2.1"
           ],
           "topk": [
-            "20.1",
             "1.2",
-            "3.19",
-            "16.9",
-            "2.10"
+            "2.10",
+            "5.9",
+            "1.5",
+            "2.22"
           ]
         },
         {
@@ -235,11 +153,11 @@
             "4.5"
           ],
           "topk": [
-            "2.10",
             "2.20",
-            "3.3",
-            "mozi-jianai-01",
-            "4.1"
+            "mozi:mozi-jianai-01",
+            "mozi:mozi-feigong-01",
+            "2.10",
+            "3.3"
           ]
         },
         {
@@ -249,11 +167,11 @@
             "9.19"
           ],
           "topk": [
+            "6.22",
+            "mozi:mozi-feile-01",
             "3.6",
             "2.8",
-            "daodejing-22-01",
-            "17.23",
-            "libai-jiangjinjiu-01"
+            "laozi:daodejing-22-01"
           ]
         },
         {
@@ -265,7 +183,7 @@
           "topk": [
             "20.3",
             "11.12",
-            "hanfeizi-youdu-01",
+            "hanfeizi:hanfeizi-youdu-01",
             "7.3",
             "3.1"
           ]
@@ -277,78 +195,51 @@
             "12.2"
           ],
           "topk": [
+            "6.30",
+            "17.2",
             "15.9",
             "3.3",
-            "11.12",
-            "mozi-jianai-01",
-            "6.30"
+            "11.12"
           ]
         },
         {
-          "id": "rg-0019",
+          "id": "rg-0020",
           "expected": [
-            "4.5",
-            "6.11"
+            "1.8",
+            "16.4"
           ],
           "topk": [
+            "2.10",
+            "3.3",
+            "1.10",
             "1.2",
-            "1.1",
-            "4.24",
-            "wanganshi-dengfeilaifeng-01",
-            "3.8"
+            "2.22"
+          ]
+        },
+        {
+          "id": "rg-0021",
+          "expected": [
+            "laozi:daodejing-22-01",
+            "laozi:daodejing-33-01"
+          ],
+          "topk": [
+            "2.5",
+            "2.21",
+            "3.8",
+            "3.13",
+            "2.15"
           ]
         }
       ]
     },
     "core_claim_evidence_coverage": {
       "metric": "core_claim_evidence_coverage",
-      "numerator": 30,
+      "numerator": 40,
       "denominator": 40,
-      "value": 0.75,
+      "value": 1.0,
       "target": 0.95,
-      "passed": false,
-      "failures": [
-        {
-          "id": "rg-0021",
-          "claim": "无为而治是什么意思？"
-        },
-        {
-          "id": "rg-0022",
-          "claim": "不争真的有用吗？"
-        },
-        {
-          "id": "rg-0023",
-          "claim": "知足常乐有道理吗？"
-        },
-        {
-          "id": "rg-0024",
-          "claim": "上善若水应该怎么理解？"
-        },
-        {
-          "id": "rg-0025",
-          "claim": "兼爱是什么主张？"
-        },
-        {
-          "id": "rg-0026",
-          "claim": "为什么要自食其力？"
-        },
-        {
-          "id": "rg-0027",
-          "claim": "法治和公平怎么兼顾？"
-        },
-        {
-          "id": "rg-0028",
-          "claim": "奖惩制度该怎么设计？"
-        },
-        {
-          "id": "rg-0029",
-          "claim": "时代变了，旧规则要不要改？"
-        },
-        {
-          "id": "rg-0030",
-          "claim": "为什么事情没成就到处说？"
-        }
-      ]
+      "passed": true,
+      "failures": []
     }
   }
 }

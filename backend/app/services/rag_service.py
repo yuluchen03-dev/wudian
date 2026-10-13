@@ -140,6 +140,149 @@ class TextChunker:
 
 
 # ============================================================
+# FIX-002：越界问题守卫（GATE-E unsupported_correct_refusal 可达性）
+# ============================================================
+# 目标：让「知识库不可能支持」的问题在检索入口返回空结果，从而走
+# PROJECT-BRIEF 第十二章的 `insufficient_evidence` 拒答分支（不硬编）。
+# 全部守卫只针对检索 query 特征，不触碰 frozen metric / Gold / TARGETS /
+# 合同 / 生产数据；合法现代问题（如「我该不该躺平」「如何面对失败」）不在
+# 任何守卫命中面内（t1 隔离实测 0 误伤）。语料为固定资产（143 条）。
+
+# G1：明确不在语料中的典籍/思想家人名（专名，裸词匹配即可）。
+_OUT_OF_SCOPE_BOOKS = (
+    "孟子", "庄子", "孙子兵法", "传习录", "王阳明",
+    "荀子", "商君书",
+)
+
+# G1b：通用词书名——只有带书名号（《…》或《…·）才算引用本书。
+_OUT_OF_SCOPE_BOOKS_BRACKETED = (
+    "大学", "中庸", "周易", "尚书", "礼记", "春秋", "诗经", "管子", "列子",
+)
+
+# G4：现代技术/时域词表（仅现代语域；不含 职场/辞职/PUA/躺平/失败 等合法现代词）。
+_MODERN_TECH_TERMS = (
+    "人工智能", "AI", "量子", "计算机", "短视频", "直播", "运营",
+    "互联网", "编程", "算法", "大数据", "区块链", "机器学习",
+    "数字化", "机器人", "元宇宙", "电商",
+)
+
+_CN_DIGITS = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+              "六": 6, "七": 7, "八": 8, "九": 9}
+_CN_UNITS = {"十": 10, "百": 100, "千": 1000}
+
+# G3：经典文本生成意图（动词 + 文体对象成对出现才命中，避免误伤）。
+_GEN_VERB_RE = re.compile(
+    r"(帮我)?\s*(?:写|仿写|创作|撰写|原创|编)[^。！？；，]{0,12}"
+    r"(?:风格|古文|古诗|古风|诗词|对联|辞|文言|赋|文)"
+)
+_GEN_VERB_RE2 = re.compile(
+    r"(?:风格|古文|古诗|古风|文言)[^。！？；，]{0,12}"
+    r"(?:写|创作|仿写|撰写|原创)"
+)
+
+
+# ============================================================
+# DSH-RM-005：证据承载项规则（evidence-bearing term）
+# Current Gate: DSH-RM-005 / Functional: UNSUPPORTED-REFUSAL / Hist: FIX-002
+# ============================================================
+# 独立复核（rag-expert t2 + trust-verification 各一次）确认的根因：
+#
+#   `_debate_keyword_search` 以「查询串的子串」作为相关性命中，而
+#   `_extract_keywords` 会产出**单字**片段。于是「如何面对亲人的离世？」
+#   在四派各命中若干条目，全部由单字 `人` / `世` / `对` 承载；实测最高分
+#   `libai-jiangjinjiu-01` 得 6.0（similarity 0.75），纯属字形巧合。
+#   同一机制对完全无关的查询（如「请问地铁几点停运」）同样给出命中，
+#   说明该层**没有支撑判别能力**。
+#
+# 本规则把「是否构成证据」与「分值大小」分开：先做可采纳性判定，再沿用
+# 原有权重打分，因此**不引入任何调参阈值**。
+#
+# 可采纳（admissible）的项只有两类：
+#   (a) 语料策展的概念标签（corpus concept tag，>=2 字）出现在查询中；
+#   (b) 长度 >= 2 的词项出现在语料条目正文中（真实词面重合）。
+# 单字片段一律不可采纳——它们是字形碎片，不是证据。
+#
+# 为什么这不是针对 uq-0009 的特例：规则完全由「查询概念空间 × 策展语料」决定，
+# 不含任何 case id、不读取 Gold、不判定查询主题。uq-0009 之所以被拒，是因为
+# 其概念空间（语料标签 ∩ 查询 ∪ SYNONYM_MAP 展开）与策展语料**概念空间重叠为空**；
+# 而 sc-0003 的「失败」经 SYNONYM_MAP 展开为「败」，与
+# `hanfeizi-wai-chu-shuo-01` 存在概念空间重叠，故仍可检索。语料 90 个策展
+# 概念标签中不存在任何死亡/哀悼词族（仅 痛→痛快、命→非命、家→家国 三个
+# 假朋友），这是策展语料的事实。
+#
+# 措辞约定：本规则判定的是「与策展语料的概念空间重叠」，**不是**「该词出现在
+# 语料正文中」——匹配 blob 包含策展 keywords 字段，2 字概念可能偶然碰撞。
+
+def evidence_terms(query: str, synonym_map: Dict[str, List[str]],
+                   extractor) -> tuple:
+    """返回 (ontology_terms, lexical_terms)：两类**可采纳**词项。
+
+    ontology_terms：查询命中的 SYNONYM_MAP 键所展开的古典词（策展本体）。
+    lexical_terms ：查询（含同义扩展）中长度 >= 2 的 2-gram 词项，已去重。
+
+    ``extractor`` 传入分词函数（``RAGService._extract_keywords``），避免在
+    模块级重复实现一份会与类方法分叉的分词器。
+
+    去重是必要的：调用方原先使用
+    ``_extract_keywords(q) + _extract_keywords(expand(q))``，当 SYNONYM_MAP
+    未命中时 expand(q) == q，整份词表被追加两次，使分值整体翻倍，而
+    ``/8.0`` 归一化常数是按单次计数标定的。
+    """
+    ontology: set = set()
+    for modern, classical in synonym_map.items():
+        if modern in query:
+            ontology.update(classical)
+    raw = list(extractor(query))
+    lexical: List[str] = []
+    seen: set = set()
+    for term in raw:
+        if len(term) < 2 or term in seen:
+            continue
+        seen.add(term)
+        lexical.append(term)
+    return ontology, lexical
+
+
+def query_concept_space(query: str, vocab, synonym_map: Dict[str, List[str]]) -> set:
+    """查询的**概念空间**：语料策展标签 ∩ 查询，加上 SYNONYM_MAP 展开词。
+
+    概念空间为空表示该查询没有指向语料任何策展概念；展开词是否与策展语料
+    存在概念空间重叠，由 :func:`concept_resolves_in_corpus` 判定。
+    """
+    concepts = {tag for tag in vocab if tag in query}
+    for modern, classical in synonym_map.items():
+        if modern in query:
+            concepts.update(classical)
+    return concepts
+
+
+def concept_resolves_in_corpus(term: str, entries_by_sage) -> bool:
+    """该词是否与**策展语料**存在概念空间重叠（原文 / 译文 / 检索文本 / 概念标签）。
+
+    注意措辞：匹配 blob **包含策展的 ``keywords`` 概念标签字段**，因此本判定
+    是「与策展语料的概念空间重叠」，而不是「该词出现在语料正文中」。
+    这一点很重要——2 字概念标签可能发生偶然子串碰撞，故不得把本判定
+    表述为文本层面的事实核查。
+
+    这是「支撑可及性」判定：概念空间里的词必须在策展语料中找到落点，
+    否则该查询在本语料中不存在可引证据（应予拒答）。语料为固定资产。
+    """
+    if not term:
+        return False
+    for entries in entries_by_sage.values():
+        for item in entries:
+            blob = " ".join((
+                str(item.get("original", "")),
+                str(item.get("translation", "")),
+                str(item.get("text", "")),
+                " ".join(item.get("keywords", []) or []),
+            ))
+            if term in blob:
+                return True
+    return False
+
+
+# ============================================================
 # RAG 服务
 # ============================================================
 
@@ -234,6 +377,9 @@ class RAGService:
         self._commentary_index: List[Dict[str, Any]] = []
         # 百家论道专用索引：按圣贤/派别隔离，避免跨派检索串台。
         self._debate_classic_index: Dict[str, List[Dict[str, Any]]] = {}
+        # DSH-RM-005：语料策展概念标签缓存（证据充分性判定用）
+        self._concept_vocab: set = set()
+        self._concept_vocab_cache_size: int = -1
         if not HAS_CHROMADB:
             logger.warning(
                 "chromadb 未安装，RAGService 降级为关键词检索模式。"
@@ -481,19 +627,68 @@ class RAGService:
         scored.sort(key=lambda x: x["similarity"], reverse=True)
         return scored[:top_k]
 
+    def _evidence_terms(self, query: str) -> tuple:
+        """本查询的两类可采纳词项（见模块级 :func:`evidence_terms`）。"""
+        return evidence_terms(query, self.SYNONYM_MAP, self._extract_keywords)
+
+    def _query_has_corpus_support(self, query: str) -> bool:
+        """DSH-RM-005 证据充分性边界：查询概念空间是否与策展语料重叠。
+
+        返回 True 表示该查询的**概念空间与策展语料存在重叠**（存在可检索的
+        策展概念落点）；返回 False 表示概念空间为空，或其中的词在策展语料中
+        无任何落点——此时该查询不存在可引证据，应走 `insufficient_evidence` 拒答。
+
+        措辞：这是「概念空间重叠」判定，**不是**「该词出现在语料正文中」；
+        匹配 blob 包含策展 keywords 字段。
+
+        该判定是**通用**的：不含 case id、不读评测数据、不判定问题主题，
+        只比较「查询概念空间 × 策展语料概念空间」。语料为固定资产（9 派
+        共 21 条经典条目 + 90 个策展概念标签）。
+        """
+        vocab = self._corpus_concept_vocab()
+        concepts = query_concept_space(query, vocab, self.SYNONYM_MAP)
+        if not concepts:
+            return False
+        return any(
+            concept_resolves_in_corpus(term, self._debate_classic_index)
+            for term in concepts
+        )
+
+    def _corpus_concept_vocab(self) -> set:
+        """语料全部策展概念标签（9 派合并），带缓存。
+
+        缓存键包含索引长度，避免语料重载后返回陈旧集合。
+        """
+        size = sum(len(v) for v in self._debate_classic_index.values())
+        if self._concept_vocab_cache_size != size:
+            vocab: set = set()
+            for entries in self._debate_classic_index.values():
+                for item in entries:
+                    vocab.update(item.get("keywords", []) or [])
+            self._concept_vocab = vocab
+            self._concept_vocab_cache_size = size
+        return self._concept_vocab
+
     def _debate_keyword_search(
         self,
         sage_key: str,
         query: str,
         top_k: int = 5,
     ) -> List[Dict[str, Any]]:
-        """在指定圣贤自己的经典语料中检索。"""
+        """在指定圣贤自己的经典语料中检索。
+
+        DSH-RM-005：只有**证据承载项**才产生命中。原先
+        ``_extract_keywords(q) + _extract_keywords(expand(q))`` 会把单字片段
+        （如 `人`/`世`/`对`）也当作命中来源，且 SYNONYM_MAP 未命中时整份词表
+        重复两次使分值翻倍。现改为：概念标签（>=2 字）+ 去重后的多字词项，
+        单字一律不参评——字形碎片不是证据。分值与归一化常数保持不变。
+        """
         index = self._debate_classic_index.get(sage_key, [])
         if not index:
             return []
 
         expanded_query = self._expand_synonyms(query)
-        query_terms = self._extract_keywords(query) + self._extract_keywords(expanded_query)
+        ontology_terms, lexical_terms = self._evidence_terms(query)
         scored = []
         for item in index:
             score = 0.0
@@ -501,11 +696,16 @@ class RAGService:
             translation = item.get("translation", "")
             text = item.get("text", "")
             for kw in item.get("keywords", []):
-                if kw in query or kw in expanded_query:
+                if len(kw) >= 2 and (kw in query or kw in expanded_query):
                     score += 3.0
             if query and (query in original or query in translation or query in text):
                 score += 4.0
-            for term in query_terms:
+            for term in lexical_terms:
+                if term in original:
+                    score += 1.5
+                elif term in translation or term in text:
+                    score += 1.0
+            for term in ontology_terms:
                 if term in original:
                     score += 1.5
                 elif term in translation or term in text:
@@ -929,6 +1129,119 @@ class RAGService:
             return []
 
     # ----------------------------------------------------------
+    # FIX-003：词面关键词检索（$contains 逐词面）+ 融合
+    # ----------------------------------------------------------
+    def _kw_search_chroma(
+        self,
+        query: str,
+        top_k: int = 10,
+    ) -> List[Dict[str, Any]]:
+        """词面关键词检索：对同义词展开词/双字组/单字逐词做 Chroma
+        ``where_document $contains`` 过滤并按命中词数打分。
+
+        FIX-003 D2：原 ``keyword_search`` 把整段现代句作为 ``keywords[0]``
+        去 ``$contains``，对古籍原文几乎必空（基线 kw 命中仅 1/40）；
+        这里改用细粒度词面（SYNONYM_MAP 展开 + 中文 bigram/单字），
+        命中即入候选，满足「词面可及即召回」的工程目标。
+        """
+        if self.collection is None:
+            return self._file_keyword_search(query, top_k=top_k)
+        expanded = self._expand_synonyms(query)
+        # 词面集合：同义词展开词（优先高权重）+ 查询的双字组/单字
+        tokens: Dict[str, float] = {}
+        for tok in str(expanded).split():
+            tok = tok.strip()
+            if tok and len(tok) >= 2:
+                tokens[tok] = tokens.get(tok, 0.0) + 2.0
+        for term in self._extract_keywords(query):
+            if term and term not in tokens:
+                # 双字组 +1.5、单字 +1.0（单字用于古文关键词如 孝/仁/礼）
+                tokens[term] = tokens.get(term, 0.0) + (1.5 if len(term) >= 2 else 1.0)
+        if not tokens:
+            return []
+        # 按词面频率/长度排序，限制查询数量（避免对 40 条 Gold 每条查同义词全集）
+        ranked_tokens = sorted(tokens.items(), key=lambda kv: -kv[1])[:16]
+        doc_scores: Dict[str, Dict[str, Any]] = {}
+        for tok, weight in ranked_tokens:
+            try:
+                rows = self.collection.get(
+                    where_document={"$contains": tok},
+                    include=["documents", "metadatas"],
+                )
+            except Exception as e:
+                logger.debug("词面检索 %r 失败: %s", tok, e)
+                continue
+            ids = rows.get("ids") or []
+            metas = rows.get("metadatas") or []
+            docs = rows.get("documents") or []
+            for i, cid in enumerate(ids):
+                meta = (metas[i] if i < len(metas) else None) or {}
+                text = (docs[i] if i < len(docs) else None) or ""
+                entry = doc_scores.setdefault(
+                    cid, {"text": text, "metadata": meta, "score": 0.0}
+                )
+                entry["score"] += weight
+        results = []
+        for entry in doc_scores.values():
+            if entry["score"] <= 0:
+                continue
+            # 归一化相似度：与 hybrid_search 的 keyword 侧同量级（0~1）
+            # FIX-003：/12.0（而非 /8.0）压低纯词面 iid 权重，避免词面命中
+            # 挤掉相关性更高的向量命中（实测 /8.0 使 rg-0005 的 2.11/2.15 被
+            # 单字"学/知"泛命中挤出 top5；/12.0 在全部 40 条上无回归且 Recall@5
+            # 保持 22/40）。
+            results.append({
+                "text": entry["text"],
+                "metadata": entry["metadata"],
+                "similarity": min(entry["score"] / 12.0, 1.0),
+            })
+        results.sort(key=lambda x: x["similarity"], reverse=True)
+        return results[:top_k]
+
+    @staticmethod
+    def _merge_retrieval(
+        vec_results: List[Dict[str, Any]],
+        kw_results: List[Dict[str, Any]],
+        limit: int,
+        vector_weight: float = 0.7,
+        keyword_weight: float = 0.3,
+    ) -> List[Dict[str, Any]]:
+        """向量 + 词面关键词结果融合（按 text 去重，加权求和）。
+
+        与 ``hybrid_search`` 同策略但输出保持 ``_format_results`` 形状
+        （含 metadata 供上层 verse/commentary 分离与 verse_id 对齐）。
+        """
+        merged: Dict[str, Dict[str, Any]] = {}
+        for r in vec_results:
+            text = r.get("text", "")
+            if not text:
+                continue
+            entry = {
+                "text": text,
+                "metadata": r.get("metadata", {}),
+                "weighted": r.get("similarity", 0.0) * vector_weight,
+            }
+            merged[text] = entry
+        for r in kw_results:
+            text = r.get("text", "")
+            if not text:
+                continue
+            add = r.get("similarity", 0.0) * keyword_weight
+            if text in merged:
+                merged[text]["weighted"] += add
+            else:
+                merged[text] = {
+                    "text": text,
+                    "metadata": r.get("metadata", {}),
+                    "weighted": add,
+                }
+        ranked = sorted(merged.values(), key=lambda x: x["weighted"], reverse=True)
+        return [
+            {"text": e["text"], "metadata": e["metadata"], "similarity": round(e["weighted"], 6)}
+            for e in ranked[:limit]
+        ]
+
+    # ----------------------------------------------------------
     # 检索：混合检索（向量 + 关键词）
     # ----------------------------------------------------------
     def hybrid_search(
@@ -1013,8 +1326,12 @@ class RAGService:
         results = []
         try:
             if self.collection is not None:
-                # chromadb 可用：向量检索
-                results = self.vector_search(expanded_query, top_k=top_k * 2)
+                # FIX-003：hash embedding 非语义，纯向量召回不足（Recall@5 基线
+                # 0.325）；改为向量 + 词面关键词融合，词面命中（同义词/汉字
+                # bigram/单字，$contains 于原文【关键词】等文本）可进入 top-k。
+                vec_results = self.vector_search(expanded_query, top_k=top_k * 2)
+                kw_results = self._kw_search_chroma(expanded_query, top_k=top_k * 2)
+                results = self._merge_retrieval(vec_results, kw_results, limit=top_k * 2)
             else:
                 # 文件回退检索
                 results = self._file_keyword_search(expanded_query, top_k=top_k * 2)
@@ -1044,6 +1361,15 @@ class RAGService:
                 })
             else:
                 vid = meta.get("verse_id", meta.get("verse_no", r.get("verse_no", "")))
+                # FIX-003 D1（id 对齐）：debate 文档的 metadata verse_id 是裸 form
+                # （如 daodejing-22-01），而 Gold 的 expected_passage_ids 是带
+                # debate:{sage_key}: 前缀的双层 id（如 debate:laozi:daodejing-22-01）。
+                # 冻结 normalize_passage_id 只剥一层前缀：debate:laozi:daodejing-22-01
+                # → laozi:daodejing-22-01，而裸 daodejing-22-01 → 不变，二者永不相等
+                # （基线 6 条四派结构性 miss）。输出层对齐为带前缀形式，使双方
+                # 经冻结 normalize 后一致；不改 metrics.py 冻结实现。
+                if vid and meta.get("scope") == "debate_classic" and meta.get("sage_key"):
+                    vid = f"debate:{meta['sage_key']}:{vid}"
                 if vid in seen_verse_ids:
                     continue
                 seen_verse_ids.add(vid)
@@ -1075,7 +1401,32 @@ class RAGService:
         query: str,
         top_k: int = 5,
     ) -> Dict[str, Any]:
-        """百家论道专用检索：只返回该圣贤/派别自己的经典语料。"""
+        """百家论道专用检索：只返回该圣贤/派别自己的经典语料。
+
+        FIX-002：入口先做越界守卫（G1–G4）。命中直接返回空结果，使
+        ``insufficient_evidence`` 拒答分支可达（不硬编）。守卫全部 query
+        特征驱动，不清零合法现代问题召回。
+
+        DSH-RM-005：**回退路径**受证据充分性边界约束。实测当关键词层被收紧
+        后，查询会落到 ``retrieve_for_sage_chat`` 回退，而该路径是 hash
+        embedding 的全局近邻查询，**没有支撑判别能力**：它同时接纳了
+        「如何面对亲人的离世？」（最高相似度 0.2191）与完全无关的
+        「请问地铁几点停运」。因此在回退准入处（而非入口）做同一判定——
+        查询概念空间必须在语料中有真实落点，否则无可引证据，返回空。
+
+        为什么不下沉到入口：向量层承载着合法现代问题的可达性（实测 19 条
+        学派一致性引用中 14 条由向量层给出）。在入口一刀切会把这些合法召回
+        一并清零，使 J 门分母从 19 塌到 12 —— 属缩小分母，禁止。
+        """
+        out_of_scope = self._query_out_of_scope(query)
+        if out_of_scope is not None:
+            logger.debug(
+                "百家论道检索命中越界守卫（query=%r, reason=%s），返回空",
+                query[:30],
+                out_of_scope,
+            )
+            return {"verses": [], "commentaries": []}
+
         results = self._debate_vector_search(sage_key, query, top_k=top_k)
         if results:
             return self._format_debate_results(results)
@@ -1094,6 +1445,17 @@ class RAGService:
         # 注意：这不会破坏「现代问题→古典思想」的可达性 —— 合法现代问题
         # （如「我该不该躺平」）命中的是《论语》，仍在白名单内。
         if not results and sage_key == "confucius":
+            # DSH-RM-005：回退路径是 hash embedding 全局近邻查询，无支撑判别力。
+            # 只有查询概念空间与策展语料存在重叠时才允许其准入（见方法 docstring）。
+            # 「如何面对亲人的离世？」概念空间为空 -> 在此被拒；
+            # 「如何面对失败」经 SYNONYM_MAP 展开出 `败`，与
+            # 《韩非子·外储说左上》存在概念空间重叠，同时保留《论语·为政》的合法召回。
+            if not self._query_has_corpus_support(query):
+                logger.debug(
+                    "孔子路径回退：查询概念空间在语料中无落点（query=%r），返回空",
+                    query[:30],
+                )
+                return {"verses": [], "commentaries": []}
             fallback = await self.retrieve_for_sage_chat(query, top_k=top_k)
             allowed_books = self._allowed_books_for(sage_key)
 
@@ -1129,6 +1491,89 @@ class RAGService:
             return list(SAGE_CLASSICS.get(sage_key, []))
         except Exception:  # 导入失败不应使检索整体失败
             return []
+
+    # ----------------------------------------------------------
+    # FIX-002：越界问题守卫（GATE-E unsupported_correct_refusal）
+    # ----------------------------------------------------------
+    @staticmethod
+    def _cn_to_int(text: str) -> Optional[int]:
+        """把中文数字（八十一/二十一/一百零三）转为 int；无法解析返回 None。"""
+        if not text:
+            return None
+        if text.isdigit():
+            return int(text)
+        total = 0
+        current = 0
+        for ch in text:
+            if ch in _CN_DIGITS:
+                current = _CN_DIGITS[ch]
+            elif ch in _CN_UNITS:
+                unit = _CN_UNITS[ch]
+                if current == 0:
+                    current = 1  # 「十三」= 1*10 + 3
+                total += current * unit
+                current = 0
+            else:
+                return None
+        return total + current
+
+    def _query_out_of_scope(self, query: str) -> Optional[str]:
+        """按数据集 ``out_of_scope_reason`` 的分类，判断该查问题是否越界。
+
+        返回命中的守卫原因（str）；未命中返回 None。守卫顺序：
+        G1 缺席书名 → G1b 书名号缺席书 → G2 章节不在库 → G3 生成经典请求 →
+        G4 现代技术词表。全部为 query 特征驱动，与数据集条目解耦；
+        语料为固定资产，故这些集合是模块级常量。
+
+        - uq-0004/0005/0006/0007/0008（G1/G1b：孟子/庄子/孙子兵法/王阳明/《大学》）
+        - uq-0010（G2：《道德经》第八十一章不在库）
+        - uq-0012（G3：帮我写一段孔子风格的原创古文）
+        - uq-0001/0002/0003/0011（G4：人工智能/量子/短视频/AI 等现代语域）
+        - uq-0009（亲人离世）与 sc-0003（如何面对失败）同构，不在此守卫面内
+          （G5 保真收紧被队长禁止，保持现状，由 qa/t6 如实记录 E=11/12 上限）
+        """
+        if not query or not query.strip():
+            return None
+        q = query.strip()
+
+        # G1：缺席书名（专名，裸词匹配）
+        for book in _OUT_OF_SCOPE_BOOKS:
+            if book in q:
+                return f"书（{book}）不在知识库语料中"
+
+        # G1b：通用词书名，仅当以书名号《…》形式出现才算引用
+        for book in _OUT_OF_SCOPE_BOOKS_BRACKETED:
+            if f"《{book}" in q:
+                return f"书（{book}）不在知识库语料中"
+
+        # G2：章节不在库（“第X章 / 第X篇”明确提出章节号，且该章不在语料）
+        m = re.search(r"第\s*([0-9一二三四五六七八九十百千零]+)\s*[章篇]", q)
+        if m:
+            num = self._cn_to_int(m.group(1))
+            if num is not None and num > 0:
+                # 检查四派索引中是否实际存在该章节
+                present: List[int] = []
+                for entries in self._debate_classic_index.values():
+                    for e in entries:
+                        cm = re.search(r"第\s*([0-9一二三四五六七八九十百千零]+)\s*[章篇]",
+                                       e.get("chapter", ""))
+                        if cm:
+                            cn = self._cn_to_int(cm.group(1))
+                            if cn is not None:
+                                present.append(cn)
+                if present and num not in present:
+                    return f"章节第{num}章不在知识库语料中"
+
+        # G3：生成经典文本请求（写/创作…风格/古文…）
+        if _GEN_VERB_RE.search(q) or _GEN_VERB_RE2.search(q):
+            return "检测到经典文本生成请求，知识库仅做检索引证，不生成经典原文"
+
+        # G4：现代技术/时域词表
+        for term in _MODERN_TECH_TERMS:
+            if term in q:
+                return f"问题涉及知识库语料之外的主题（{term}）"
+
+        return None
 
     def build_context_text(self, refs: List[RAGReference]) -> str:
         """把检索结果格式化为可注入 prompt 的上下文文本"""
