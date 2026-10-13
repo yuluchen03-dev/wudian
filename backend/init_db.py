@@ -18,6 +18,7 @@ import sys
 import os
 import random
 from pathlib import Path
+from typing import List, Optional
 from datetime import datetime
 
 # Windows 控制台 UTF-8 支持（避免 emoji/中文输出报错）
@@ -66,10 +67,146 @@ def hash_password(password: str) -> str:
 
 
 # ============================================================
+# 破坏性操作守卫（安全硬约束，DSH-SA-004 / SA001-01）
+# ============================================================
+# clear_data() 会对 18 张表执行 DELETE FROM（含 users/notes/study_groups/verses）。
+# 原实现在 main() 的「步骤 2」无条件调用它，所以 `python init_db.py` 一条命令
+# 就会清空 settings.DATABASE_URL 解析到的**任何**数据库——包括真实/生产库。
+# 原代码只是在 :517-518 打印目标与环境，那是**告知**，不是**守卫**。
+#
+# 现在改为 fail-closed 的两道门（不确定即拒绝）：
+#   1) 目标白名单：解析出的数据库必须是本地 SQLite 且落在 backend/ 目录之下，
+#      并且文件名形如 wudian.db / test_wudian_*.db / *_dev.db。
+#      任何其它目标（PostgreSQL、远程主机、backend 之外的路径、无法解析的 URL）
+#      一律拒绝。
+#   2) 显式意图：破坏性清空必须显式给出 --yes（或 WUDIAN_INIT_DB_ALLOW_DESTRUCTIVE=1），
+#      否则拒绝，避免它成为例行调用的静默副作用。
+# 拒绝时打印解析后的真实目标与环境，让人看清被保护的是什么、以及如何有意继续。
+# ============================================================
+
+#: 允许被清空的 SQLite 文件名模式（仅限本地开发/测试库）。
+#: 注意：**不含 wudian.db** —— backend/wudian.db 是本项目的真实/生产库
+#: （见 main.py 的健康检查与 config.resolved_database_path）。把它放进白名单会让
+#: `--yes` 直接清空生产库，违背 fail-closed。开发库请用 *_dev.db 或 test_wudian_*.db。
+_ALLOWED_DB_SUFFIXES = ("_dev.db",)
+_ALLOWED_DB_PREFIXES = ("test_wudian_",)
+
+#: 明确拒绝的文件名（真实/生产库），即使给了 --yes 也拒绝。
+_FORBIDDEN_DB_NAMES = ("wudian.db",)
+
+
+class DestructiveOperationRefused(RuntimeError):
+    """破坏性数据库操作被守卫拒绝。"""
+
+
+def _resolve_db_file(url: str) -> Optional[Path]:
+    """把 sqlite URL 解析为绝对文件路径；非本地 SQLite 返回 None。"""
+    if not url or not url.startswith("sqlite"):
+        return None
+    # 形如 sqlite+aiosqlite:///./wudian.db 或 sqlite:///D:/x/y.db
+    raw = url.split(":///", 1)[1] if ":///" in url else url.rsplit("/", 1)[-1]
+    if not raw:
+        return None
+    p = Path(raw)
+    if not p.is_absolute():
+        p = BACKEND_DIR / raw
+    return p.resolve()
+
+
+def _is_allowed_target(db_file: Optional[Path]) -> bool:
+    """目标是否属于允许清空的本地开发/测试库。
+
+    fail-closed：只有**明确认得**的开发/测试库特征才返回 True。
+    """
+    if db_file is None:
+        return False
+    try:
+        if BACKEND_DIR.resolve() not in db_file.parents:
+            return False
+    except OSError:
+        return False
+    name = db_file.name
+    # 真实/生产库名一律拒绝（不受 --yes 影响）。
+    if name in _FORBIDDEN_DB_NAMES:
+        return False
+    return (
+        name.endswith(_ALLOWED_DB_SUFFIXES)
+        or name.startswith(_ALLOWED_DB_PREFIXES)
+    )
+
+
+def ensure_destructive_allowed(session: AsyncSession) -> None:
+    """在 clear_data 执行任何 DELETE **之前**校验；不允许则抛异常拒绝。
+
+    仅在 --yes / 环境变量给出显式意图时返回正常；否则抛
+    :class:`DestructiveOperationRefused`，且**不执行任何 DELETE**。
+    """
+    url = settings.resolved_database_url
+    db_file = _resolve_db_file(url)
+    env = settings.APP_ENV
+    confirmed = bool(os.environ.get("WUDIAN_INIT_DB_ALLOW_DESTRUCTIVE")) or _CLI_CONFIRMED
+
+    problems = []
+    if db_file is None:
+        problems.append(
+            "目标不是本地 SQLite 文件（可能是 PostgreSQL 或远程数据库）"
+        )
+    elif db_file.name in _FORBIDDEN_DB_NAMES:
+        problems.append(
+            f"目标文件名 {db_file.name} 是真实/生产库，即使显式确认也不允许清空"
+        )
+    elif not _is_allowed_target(db_file):
+        problems.append(
+            "目标不在允许清空的本地开发/测试库特征内"
+            f"（允许：*{_ALLOWED_DB_SUFFIXES} / {_ALLOWED_DB_PREFIXES}*）"
+        )
+    if env == "production":
+        problems.append("APP_ENV=production，绝不允许清空")
+    if not confirmed:
+        problems.append(
+            "缺少显式意图：请加 --yes，或设 WUDIAN_INIT_DB_ALLOW_DESTRUCTIVE=1"
+        )
+
+    if problems:
+        raise DestructiveOperationRefused(
+            "\n"
+            "======================================================================\n"
+            "🛑 已拒绝执行破坏性操作（clear_data：18 张表的 DELETE FROM）。\n"
+            f"   解析后的数据库目标: {url}\n"
+            f"   解析后的数据库文件: {db_file if db_file is not None else '（非本地 SQLite）'}\n"
+            f"   APP_ENV           : {env}\n"
+            f"   已给出的显式确认  : {confirmed}\n"
+            "   拒绝原因:\n"
+            + "".join(f"     - {p}\n" for p in problems)
+            + "   本操作未被拒绝时才会执行删除；本次**未执行任何 DELETE**。\n"
+            "   若目标是可清空的开发库（*_dev.db / test_wudian_*.db），请显式确认后重试：\n"
+            "     python init_db.py --yes\n"
+            "======================================================================\n"
+        )
+
+
+#: 由 __main__ 在解析 argv 后设置：是否显式给出 --yes。
+_CLI_CONFIRMED = False
+
+
+def _parse_cli_confirm(argv: List[str]) -> bool:
+    """解析 --yes / -y；不认识的参数一律忽略（保持原 CLI 行为）。"""
+    return any(a in ("--yes", "-y") for a in argv)
+
+
+# ============================================================
 # 清空旧数据（幂等）
 # ============================================================
 async def clear_data(session: AsyncSession):
-    """清空相关表数据（按依赖顺序）"""
+    """清空相关表数据（按依赖顺序）。
+
+    DSH-SA-004：本函数是破坏性操作，执行前必须通过
+    :func:`ensure_destructive_allowed` 守卫；守卫在**第一条 execute 之前**，
+    拒绝时不会发出任何 DELETE。
+    """
+    # 守卫必须位于任何 execute 之前 —— 不要在本行之上添加 DELETE。
+    ensure_destructive_allowed(session)
+
     print("🧹 清空旧数据...")
     # 按外键依赖顺序删除
     tables = [
@@ -515,8 +652,19 @@ async def main():
     print("=" * 60)
     print("🚀 悟典数据库初始化脚本")
     print(f"   数据库: {settings.DATABASE_URL}")
+    print(f"   解析后: {settings.resolved_database_url}")
     print(f"   环境: {settings.APP_ENV}")
+    if not _CLI_CONFIRMED and not os.environ.get("WUDIAN_INIT_DB_ALLOW_DESTRUCTIVE"):
+        print("   ⚠️ 未给出 --yes：若目标不允许清空，步骤 2 将被拒绝。")
     print("=" * 60)
+
+    # 0. 破坏性操作预检（DSH-SA-004）：在**建表之前**就先拒绝，
+    #    避免「表已创建、清空才失败」的半途状态。
+    try:
+        ensure_destructive_allowed(None)  # session 不参与校验，仅为复用同一守卫
+    except DestructiveOperationRefused as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
     # 1. 创建所有表
     print("\n📦 步骤 1: 创建数据库表...")
@@ -562,7 +710,11 @@ async def main():
     print("=" * 60)
 
     await close_db()
+    return 0
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # DSH-SA-004：破坏性清空必须显式给出 --yes（或 WUDIAN_INIT_DB_ALLOW_DESTRUCTIVE=1）。
+    _CLI_CONFIRMED = _parse_cli_confirm(sys.argv[1:])
+    _rc = asyncio.run(main())
+    sys.exit(_rc or 0)
